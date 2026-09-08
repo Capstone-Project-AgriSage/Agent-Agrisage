@@ -1,7 +1,11 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { debtCustomers as DEBT_CUSTOMERS } from '../../data/mockDebts'
+
+const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 
 export default function DebtsPage() {
   usePageHeader({
@@ -10,28 +14,25 @@ export default function DebtsPage() {
     subtitle: 'Theo dõi công nợ, hạn thanh toán và lịch sử thu nợ của đại lý',
   })
 
-  const [selectedId, setSelectedId] = useState(DEBT_CUSTOMERS[0].id)
-  const selected = DEBT_CUSTOMERS.find((c) => c.id === selectedId) ?? DEBT_CUSTOMERS[0]
+  const { selectedId, setSelectedId, selected } = useSelectableList(DEBT_CUSTOMERS, (c) => c.id)
 
-  const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
-
-  const filteredCustomers = DEBT_CUSTOMERS.filter((customer) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      customer.name.toLowerCase().includes(keyword) ||
-      customer.phone.toLowerCase().includes(keyword) ||
-      customer.addressShort.toLowerCase().includes(keyword)
-    const matchesStatus = statusFilter === STATUS_OPTIONS[0] || customer.statusBadge.label === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setStatusFilter(STATUS_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtered: filteredCustomers,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    DEBT_CUSTOMERS,
+    STATUS_OPTIONS[0],
+    (customer, keyword, status) =>
+      (!keyword ||
+        customer.name.toLowerCase().includes(keyword) ||
+        customer.phone.toLowerCase().includes(keyword) ||
+        customer.addressShort.toLowerCase().includes(keyword)) &&
+      (status === STATUS_OPTIONS[0] || customer.statusBadge.label === status),
+  )
 
   return (
     <>
@@ -206,11 +207,7 @@ export default function DebtsPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 font-body-sm text-[13px]">
                   {filteredCustomers.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-8 text-center text-slate-400 text-xs">
-                        Không tìm thấy khách hàng phù hợp với bộ lọc.
-                      </td>
-                    </tr>
+                    <EmptyTableRow colSpan={8} message="Không tìm thấy khách hàng phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
                   {filteredCustomers.map((customer) => {
                     const isSelected = customer.id === selectedId

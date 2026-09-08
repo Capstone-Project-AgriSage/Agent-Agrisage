@@ -1,7 +1,11 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { payments as PAYMENTS } from '../../data/mockPayments'
+
+const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
 
 export default function PaymentsPage() {
   usePageHeader({
@@ -10,28 +14,25 @@ export default function PaymentsPage() {
     subtitle: 'Theo dõi và đối soát các khoản thanh toán từ đơn hàng',
   })
 
-  const [selectedId, setSelectedId] = useState(PAYMENTS[0].id)
-  const selected = PAYMENTS.find((p) => p.id === selectedId) ?? PAYMENTS[0]
+  const { selectedId, setSelectedId, selected } = useSelectableList(PAYMENTS, (p) => p.id)
 
-  const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
-
-  const filteredPayments = PAYMENTS.filter((payment) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      payment.id.toLowerCase().includes(keyword) ||
-      payment.orderId.toLowerCase().includes(keyword) ||
-      payment.customerName.toLowerCase().includes(keyword)
-    const matchesStatus = statusFilter === STATUS_OPTIONS[0] || payment.statusBadge.label === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setStatusFilter(STATUS_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtered: filteredPayments,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    PAYMENTS,
+    STATUS_OPTIONS[0],
+    (payment, keyword, status) =>
+      (!keyword ||
+        payment.id.toLowerCase().includes(keyword) ||
+        payment.orderId.toLowerCase().includes(keyword) ||
+        payment.customerName.toLowerCase().includes(keyword)) &&
+      (status === STATUS_OPTIONS[0] || payment.statusBadge.label === status),
+  )
 
   return (
     <>
@@ -202,11 +203,7 @@ export default function PaymentsPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
                   {filteredPayments.length === 0 ? (
-                    <tr>
-                      <td colSpan={9} className="py-8 text-center text-outline text-xs">
-                        Không tìm thấy giao dịch phù hợp với bộ lọc.
-                      </td>
-                    </tr>
+                    <EmptyTableRow colSpan={9} message="Không tìm thấy giao dịch phù hợp với bộ lọc." />
                   ) : null}
                   {filteredPayments.map((payment) => {
                     const isSelected = payment.id === selectedId

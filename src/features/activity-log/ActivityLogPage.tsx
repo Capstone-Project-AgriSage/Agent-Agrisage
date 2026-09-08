@@ -1,6 +1,10 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
+
+const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
 
 export default function ActivityLogPage() {
   usePageHeader({
@@ -9,29 +13,26 @@ export default function ActivityLogPage() {
     badge: 'Kiểm toán hệ thống',
   })
 
-  const [selectedId, setSelectedId] = useState(LOG_ENTRIES[0].id)
-  const selected = LOG_ENTRIES.find((entry) => entry.id === selectedId) ?? LOG_ENTRIES[0]
+  const { selectedId, setSelectedId, selected } = useSelectableList(LOG_ENTRIES, (entry) => entry.id)
 
-  const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
-  const [search, setSearch] = useState('')
-  const [moduleFilter, setModuleFilter] = useState(MODULE_OPTIONS[0])
-
-  const filteredEntries = LOG_ENTRIES.filter((entry) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      entry.id.toLowerCase().includes(keyword) ||
-      entry.actorName.toLowerCase().includes(keyword) ||
-      entry.description.toLowerCase().includes(keyword) ||
-      entry.objectId.toLowerCase().includes(keyword)
-    const matchesModule = moduleFilter === MODULE_OPTIONS[0] || entry.moduleLabel === moduleFilter
-    return matchesSearch && matchesModule
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setModuleFilter(MODULE_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter: moduleFilter,
+    setStatusFilter: setModuleFilter,
+    filtered: filteredEntries,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    LOG_ENTRIES,
+    MODULE_OPTIONS[0],
+    (entry, keyword, moduleFilter) =>
+      (!keyword ||
+        entry.id.toLowerCase().includes(keyword) ||
+        entry.actorName.toLowerCase().includes(keyword) ||
+        entry.description.toLowerCase().includes(keyword) ||
+        entry.objectId.toLowerCase().includes(keyword)) &&
+      (moduleFilter === MODULE_OPTIONS[0] || entry.moduleLabel === moduleFilter),
+  )
 
   return (
     <>
@@ -256,11 +257,7 @@ export default function ActivityLogPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-body-sm font-body-sm">
                   {filteredEntries.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="py-8 text-center text-outline text-xs">
-                        Không tìm thấy nhật ký phù hợp với bộ lọc.
-                      </td>
-                    </tr>
+                    <EmptyTableRow colSpan={8} message="Không tìm thấy nhật ký phù hợp với bộ lọc." />
                   ) : null}
                   {filteredEntries.map((entry) => {
                     const isSelected = entry.id === selectedId

@@ -1,6 +1,10 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { farmers as FARMERS } from '../../data/mockFarmers'
+
+const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
 
 export default function FarmersPage() {
   usePageHeader({
@@ -8,32 +12,28 @@ export default function FarmersPage() {
     subtitle: 'Tra cứu thông tin khách hàng, đơn hàng, thanh toán và công nợ',
   })
 
-  const [selectedId, setSelectedId] = useState(FARMERS[0].id)
-  const selectedFarmer = FARMERS.find((f) => f.id === selectedId) ?? FARMERS[0]
+  const { selectedId, setSelectedId, selected: selectedFarmer } = useSelectableList(FARMERS, (f) => f.id)
 
-  const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
-  const [search, setSearch] = useState('')
-  const [debtFilter, setDebtFilter] = useState(DEBT_OPTIONS[0])
-
-  const filteredFarmers = FARMERS.filter((farmer) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      farmer.name.toLowerCase().includes(keyword) ||
-      farmer.phone.toLowerCase().includes(keyword) ||
-      farmer.areaShort.toLowerCase().includes(keyword)
-    const matchesDebt =
-      debtFilter === DEBT_OPTIONS[0] ||
-      (debtFilter === 'Có công nợ' && farmer.hasDebt) ||
-      (debtFilter === 'Không có nợ' && !farmer.hasDebt) ||
-      (debtFilter === 'Nợ quá hạn' && farmer.statusBadge.label === 'Quá hạn nợ')
-    return matchesSearch && matchesDebt
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setDebtFilter(DEBT_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter: debtFilter,
+    setStatusFilter: setDebtFilter,
+    filtered: filteredFarmers,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    FARMERS,
+    DEBT_OPTIONS[0],
+    (farmer, keyword, debtFilter) =>
+      (!keyword ||
+        farmer.name.toLowerCase().includes(keyword) ||
+        farmer.phone.toLowerCase().includes(keyword) ||
+        farmer.areaShort.toLowerCase().includes(keyword)) &&
+      (debtFilter === DEBT_OPTIONS[0] ||
+        (debtFilter === 'Có công nợ' && farmer.hasDebt) ||
+        (debtFilter === 'Không có nợ' && !farmer.hasDebt) ||
+        (debtFilter === 'Nợ quá hạn' && farmer.statusBadge.label === 'Quá hạn nợ')),
+  )
 
   return (
     <>
@@ -217,11 +217,7 @@ export default function FarmersPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-normal">
                 {filteredFarmers.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-400 text-xs">
-                      Không tìm thấy nông dân phù hợp với bộ lọc.
-                    </td>
-                  </tr>
+                  <EmptyTableRow colSpan={9} message="Không tìm thấy nông dân phù hợp với bộ lọc." className="text-slate-400" />
                 ) : null}
                 {filteredFarmers.map((farmer) => {
                   const isSelected = farmer.id === selectedId

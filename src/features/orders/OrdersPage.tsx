@@ -1,7 +1,11 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { orders as ORDERS } from '../../data/mockOrders'
+
+const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
 
 export default function OrdersPage() {
   usePageHeader({
@@ -10,29 +14,26 @@ export default function OrdersPage() {
     subtitle: 'Theo dõi và xử lý đơn hàng của Cán bộ Thôn #04 - Mekong',
   })
 
-  const [selectedId, setSelectedId] = useState(ORDERS[0].id)
-  const selectedOrder = ORDERS.find((o) => o.id === selectedId) ?? ORDERS[0]
+  const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(ORDERS, (o) => o.id)
   const itemsTotalLabel = 'Tổng thanh toán'
 
-  const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
-
-  const filteredOrders = ORDERS.filter((order) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      order.id.toLowerCase().includes(keyword) ||
-      order.customerName.toLowerCase().includes(keyword) ||
-      order.phone.toLowerCase().includes(keyword)
-    const matchesStatus = statusFilter === STATUS_OPTIONS[0] || order.statusBadge.label === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setStatusFilter(STATUS_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtered: filteredOrders,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    ORDERS,
+    STATUS_OPTIONS[0],
+    (order, keyword, status) =>
+      (!keyword ||
+        order.id.toLowerCase().includes(keyword) ||
+        order.customerName.toLowerCase().includes(keyword) ||
+        order.phone.toLowerCase().includes(keyword)) &&
+      (status === STATUS_OPTIONS[0] || order.statusBadge.label === status),
+  )
 
   return (
     <>
@@ -231,11 +232,7 @@ export default function OrdersPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant/60 font-body-sm">
                 {filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-8 text-center text-outline text-xs">
-                      Không tìm thấy đơn hàng phù hợp với bộ lọc.
-                    </td>
-                  </tr>
+                  <EmptyTableRow colSpan={9} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
                 ) : null}
                 {filteredOrders.map((order) => {
                   const isSelected = order.id === selectedId

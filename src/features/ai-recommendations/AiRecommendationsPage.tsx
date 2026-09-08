@@ -1,7 +1,16 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { aiCases as AI_CASES } from '../../data/mockAiRecommendations'
+
+const STATUS_LABELS: Record<string, string> = {
+  'cho-duyet': 'Chờ duyệt',
+  'da-duyet': 'Đã phê duyệt',
+  'da-tu-choi': 'Đã từ chối',
+  'chua-chac-chan': 'Chưa đủ chắc chắn',
+}
 
 export default function AiRecommendationsPage() {
   usePageHeader({
@@ -9,33 +18,26 @@ export default function AiRecommendationsPage() {
     subtitle: 'Kiểm tra kết quả nhận diện bệnh và duyệt gợi ý sản phẩm trước khi hiển thị cho nông dân',
   })
 
-  const [selectedId, setSelectedId] = useState(AI_CASES[0].id)
-  const selected = AI_CASES.find((c) => c.id === selectedId) ?? AI_CASES[0]
+  const { selectedId, setSelectedId, selected } = useSelectableList(AI_CASES, (c) => c.id)
 
-  const STATUS_LABELS: Record<string, string> = {
-    'cho-duyet': 'Chờ duyệt',
-    'da-duyet': 'Đã phê duyệt',
-    'da-tu-choi': 'Đã từ chối',
-    'chua-chac-chan': 'Chưa đủ chắc chắn',
-  }
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('cho-duyet')
-
-  const filteredCases = AI_CASES.filter((item) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      item.id.toLowerCase().includes(keyword) ||
-      item.farmerName.toLowerCase().includes(keyword) ||
-      item.field.farmerPhone.toLowerCase().includes(keyword)
-    const matchesStatus = !statusFilter || item.statusBadge.label === STATUS_LABELS[statusFilter]
-    return matchesSearch && matchesStatus
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setStatusFilter('')
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtered: filteredCases,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    AI_CASES,
+    'cho-duyet',
+    (item, keyword, status) =>
+      (!keyword ||
+        item.id.toLowerCase().includes(keyword) ||
+        item.farmerName.toLowerCase().includes(keyword) ||
+        item.field.farmerPhone.toLowerCase().includes(keyword)) &&
+      (!status || item.statusBadge.label === STATUS_LABELS[status]),
+    '',
+  )
 
   return (
     <>
@@ -200,11 +202,7 @@ export default function AiRecommendationsPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant/60 font-body-sm text-body-sm">
                 {filteredCases.length === 0 ? (
-                  <tr>
-                    <td colSpan={9} className="py-8 text-center text-outline text-xs">
-                      Không tìm thấy kết quả phù hợp với bộ lọc.
-                    </td>
-                  </tr>
+                  <EmptyTableRow colSpan={9} message="Không tìm thấy kết quả phù hợp với bộ lọc." />
                 ) : null}
                 {filteredCases.map((item) => {
                   const isSelected = item.id === selectedId

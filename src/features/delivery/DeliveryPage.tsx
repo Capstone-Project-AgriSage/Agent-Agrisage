@@ -1,8 +1,20 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import type { TripTimelineStep } from '../../types'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { useFilteredList } from '../../hooks/useFilteredList'
 import { trips as TRIPS } from '../../data/mockDeliveries'
+
+const STATUS_OPTIONS = [
+  'Tất cả trạng thái (Chờ, Đang giao, Thành công...)',
+  'Chờ phân công',
+  'Đã phân công',
+  'Đang lấy hàng',
+  'Đang giao',
+  'Giao thành công',
+  'Giao thất bại',
+]
 
 export default function DeliveryPage() {
   usePageHeader({
@@ -11,36 +23,25 @@ export default function DeliveryPage() {
     subtitle: 'Theo dõi và điều phối các đơn hàng đang giao đến nông dân',
   })
 
-  const [selectedId, setSelectedId] = useState(TRIPS[0].id)
-  const selectedTrip = TRIPS.find((t) => t.id === selectedId) ?? TRIPS[0]
+  const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(TRIPS, (t) => t.id)
 
-  const STATUS_OPTIONS = [
-    'Tất cả trạng thái (Chờ, Đang giao, Thành công...)',
-    'Chờ phân công',
-    'Đã phân công',
-    'Đang lấy hàng',
-    'Đang giao',
-    'Giao thành công',
-    'Giao thất bại',
-  ]
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
-
-  const filteredTrips = TRIPS.filter((trip) => {
-    const keyword = search.trim().toLowerCase()
-    const matchesSearch =
-      !keyword ||
-      trip.id.toLowerCase().includes(keyword) ||
-      trip.orderId.toLowerCase().includes(keyword) ||
-      trip.customerName.toLowerCase().includes(keyword)
-    const matchesStatus = statusFilter === STATUS_OPTIONS[0] || trip.statusBadge.label === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const handleClearFilters = () => {
-    setSearch('')
-    setStatusFilter(STATUS_OPTIONS[0])
-  }
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtered: filteredTrips,
+    clearFilters: handleClearFilters,
+  } = useFilteredList(
+    TRIPS,
+    STATUS_OPTIONS[0],
+    (trip, keyword, status) =>
+      (!keyword ||
+        trip.id.toLowerCase().includes(keyword) ||
+        trip.orderId.toLowerCase().includes(keyword) ||
+        trip.customerName.toLowerCase().includes(keyword)) &&
+      (status === STATUS_OPTIONS[0] || trip.statusBadge.label === status),
+  )
 
   const timelineCircleClassName = (state: TripTimelineStep['state']) => {
     switch (state) {
@@ -238,11 +239,7 @@ export default function DeliveryPage() {
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {filteredTrips.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-[#94A3B8] text-xs">
-                      Không tìm thấy chuyến giao phù hợp với bộ lọc.
-                    </td>
-                  </tr>
+                  <EmptyTableRow colSpan={7} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-[#94A3B8]" />
                 ) : null}
                 {filteredTrips.map((trip) => {
                   const isSelected = trip.id === selectedId
