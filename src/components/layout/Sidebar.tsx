@@ -1,0 +1,162 @@
+import { NavLink } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
+import type { NavItem } from '../../types'
+
+const NAV_ITEMS: NavItem[] = [
+  { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
+  { label: 'Sản phẩm', to: '/products', icon: 'category', badge: '312' },
+  { label: 'Kho hàng', to: '/inventory', icon: 'inventory_2', badge: '6', badgeTone: 'error' },
+  { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: '48', badgeTone: 'primary' },
+  { label: 'Giao hàng', to: '/delivery', icon: 'local_shipping', badge: '12' },
+  { label: 'Thanh toán', to: '/payments', icon: 'payments', badge: '9 chờ', badgeTone: 'primary' },
+  { label: 'Công nợ', to: '/debts', icon: 'pending_actions', badge: '412.8M', badgeTone: 'warning' },
+  { label: 'Gợi ý AI', to: '/ai-recommendations', icon: 'psychology', badge: '5', badgeTone: 'error', iconTone: 'primary' },
+  { label: 'Nông dân', to: '/farmers', icon: 'groups' },
+  { label: 'Nhật ký thao tác', to: '/activity-log', icon: 'history_toggle_off' },
+  { label: 'Cài đặt', to: '/settings', icon: 'settings' },
+]
+
+function badgeClasses(tone: NavItem['badgeTone']) {
+  switch (tone) {
+    case 'error':
+      return 'bg-error-container text-on-error-container font-bold'
+    case 'primary':
+      return 'bg-surface-container-high text-primary font-semibold'
+    case 'warning':
+      return 'bg-secondary-fixed text-on-secondary-fixed-variant font-semibold'
+    default:
+      return 'bg-surface-container text-on-surface-variant font-semibold'
+  }
+}
+
+interface SidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export default function Sidebar({ open, onClose }: SidebarProps) {
+  const { user } = useAuth()
+
+  return (
+    <>
+      {open ? (
+        <div
+          className="fixed inset-0 bg-inverse-surface/40 z-40 lg:hidden"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      ) : null}
+      <aside
+        className={`fixed left-0 top-0 h-screen w-nav-sidebar-width flex flex-col py-space-md px-space-xs z-50 bg-surface-container-lowest border-r border-outline-variant select-none transition-transform duration-200 ease-out lg:translate-x-0 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+      <div className="shrink-0">
+        <div className="px-space-md mb-space-md">
+          <div className="flex items-center gap-space-sm">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm flex-shrink-0">
+              <span className="material-symbols-outlined text-[20px]">eco</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
+                  AgriSage
+                </span>
+                <span className="bg-surface-container text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded border border-outline-variant">
+                  OS
+                </span>
+              </div>
+              <p className="font-body-sm text-body-sm text-on-surface-variant font-medium">
+                Trung tâm điều hành trạm vật tư
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="lg:hidden shrink-0 w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container-low"
+              aria-label="Đóng menu"
+            >
+              <span className="material-symbols-outlined text-[20px]">close</span>
+            </button>
+          </div>
+          <div className="mt-space-sm p-space-xs bg-surface-container-low rounded border border-outline-variant flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer">
+            <div className="flex items-center gap-1.5 overflow-hidden">
+              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
+              <span className="font-label-md text-label-md text-on-surface truncate font-semibold">
+                {user.hub}
+              </span>
+            </div>
+            <span className="material-symbols-outlined text-on-surface-variant text-[16px]">unfold_more</span>
+          </div>
+        </div>
+      </div>
+
+      <nav aria-label="Main Operations Navigation" className="flex-1 min-h-0 overflow-y-auto space-y-0.5 px-space-xs">
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === '/'}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center justify-between px-space-md py-space-sm font-label-md text-label-md rounded transition-all ${
+                  isActive
+                    ? 'bg-surface-container text-primary font-title-md text-title-md border-r-2 border-primary rounded-l'
+                    : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <div className="flex items-center gap-space-sm">
+                    <span
+                      className={`material-symbols-outlined text-[20px] ${
+                        isActive || item.iconTone === 'primary' ? 'text-primary' : ''
+                      }`}
+                    >
+                      {item.icon}
+                    </span>
+                    <span>{item.label}</span>
+                  </div>
+                  {item.badge ? (
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[11px] tabular-nums ${badgeClasses(item.badgeTone)}`}
+                    >
+                      {item.badge}
+                    </span>
+                  ) : isActive ? (
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  ) : null}
+                </>
+              )}
+            </NavLink>
+          ))}
+      </nav>
+
+      <div className="shrink-0 px-space-xs pt-space-sm border-t border-outline-variant">
+        <div className="p-space-sm bg-surface-container-low rounded border border-outline-variant">
+          <div className="flex items-center gap-2.5">
+            <div className="relative flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">
+                {user.initials}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-primary ring-1 ring-white"></span>
+            </div>
+            <div className="overflow-hidden">
+              <h4 className="font-title-md text-title-md text-on-surface truncate">{user.name}</h4>
+              <p className="font-body-sm text-body-sm text-on-surface-variant truncate">{user.role}</p>
+            </div>
+          </div>
+          <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-[11px] text-on-surface-variant font-medium">
+            <span className="flex items-center gap-1 text-primary">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              Syncing Can Tho Node
+            </span>
+            <span className="tabular-nums text-outline">v2.4.1</span>
+          </div>
+        </div>
+      </div>
+      </aside>
+    </>
+  )
+}
