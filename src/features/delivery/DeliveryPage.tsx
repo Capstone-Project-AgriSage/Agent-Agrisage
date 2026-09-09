@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import type { TripTimelineStep } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
-import { trips as TRIPS } from '../../data/mockDeliveries'
+import { trips as INITIAL_TRIPS } from '../../data/mockDeliveries'
 
 const STATUS_OPTIONS = [
   'Tất cả trạng thái (Chờ, Đang giao, Thành công...)',
@@ -16,6 +17,15 @@ const STATUS_OPTIONS = [
   'Giao thất bại',
 ]
 
+const STATUS_VISUALS: Record<string, { className: string; dotClassName: string; dotPulseClassName?: string }> = {
+  'Chờ phân công': { className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
+  'Đã phân công': { className: 'bg-[#E0E7FF] text-[#3730A3] border-[#C7D2FE]', dotClassName: 'bg-[#4F46E5]' },
+  'Đang lấy hàng': { className: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]', dotClassName: 'bg-[#D97706]' },
+  'Đang giao': { className: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]', dotClassName: 'bg-[#2563EB]', dotPulseClassName: 'animate-ping' },
+  'Giao thành công': { className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
+  'Giao thất bại': { className: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]', dotClassName: 'bg-[#DC2626]' },
+}
+
 export default function DeliveryPage() {
   usePageHeader({
     title: 'Quản lý giao hàng',
@@ -23,7 +33,39 @@ export default function DeliveryPage() {
     subtitle: 'Theo dõi và điều phối các đơn hàng đang giao đến nông dân',
   })
 
-  const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(TRIPS, (t) => t.id)
+  const [trips, setTrips] = useState(INITIAL_TRIPS)
+
+  const setTripStatus = (id: string, label: string) => {
+    const visuals = STATUS_VISUALS[label]
+    if (!visuals) return
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === id
+          ? {
+              ...t,
+              statusBadge: { label, className: visuals.className, dotClassName: visuals.dotClassName, dotPulseClassName: visuals.dotPulseClassName },
+              rowClassName: undefined,
+            }
+          : t,
+      ),
+    )
+  }
+
+  const confirmDelivery = (id: string) => {
+    setTripStatus(id, 'Giao thành công')
+    setTrips((prev) =>
+      prev.map((t) =>
+        t.id === id ? { ...t, codBadge: { label: 'Đã thu COD', className: 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]' } } : t,
+      ),
+    )
+  }
+
+  const handleTripAction = (id: string, label: string) => {
+    if (label === 'Phân công tài xế') setTripStatus(id, 'Đã phân công')
+    else if (label === 'Xử lý lại chuyến giao') setTripStatus(id, 'Đang giao')
+  }
+
+  const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(trips, (t) => t.id)
 
   const {
     search,
@@ -33,7 +75,7 @@ export default function DeliveryPage() {
     filtered: filteredTrips,
     clearFilters: handleClearFilters,
   } = useFilteredList(
-    TRIPS,
+    trips,
     STATUS_OPTIONS[0],
     (trip, keyword, status) =>
       (!keyword ||
@@ -290,7 +332,13 @@ export default function DeliveryPage() {
                       </td>
                       <td className="py-3 px-3 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end">
-                          <RowActionsMenu triggerLabel={`Thao tác chuyến #${trip.id}`} actions={trip.actions} />
+                          <RowActionsMenu
+                            triggerLabel={`Thao tác chuyến #${trip.id}`}
+                            actions={trip.actions.map((action) => ({
+                              ...action,
+                              onClick: () => handleTripAction(trip.id, action.label),
+                            }))}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -488,9 +536,16 @@ export default function DeliveryPage() {
             </div>
           </div>
           <div className="p-4 bg-[#F8FAFC] space-y-2">
-            <button className="w-full py-2.5 px-3 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-lg font-title-md text-title-md font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors" type="button">
+            <button
+              className="w-full py-2.5 px-3 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-lg font-title-md text-title-md font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              type="button"
+              disabled={selectedTrip.statusBadge.label === 'Giao thành công'}
+              onClick={() => confirmDelivery(selectedTrip.id)}
+            >
               <span className="material-symbols-outlined text-[18px]" data-icon="check_circle">check_circle</span>
-              <span className="">Xác nhận giao hàng &amp; Thu COD</span>
+              <span className="">
+                {selectedTrip.statusBadge.label === 'Giao thành công' ? 'Đã giao thành công' : 'Xác nhận giao hàng & Thu COD'}
+              </span>
             </button>
             <div className="grid grid-cols-2 gap-2">
               <button className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors" type="button">

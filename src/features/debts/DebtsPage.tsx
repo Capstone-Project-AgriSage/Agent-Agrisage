@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
-import { debtCustomers as DEBT_CUSTOMERS } from '../../data/mockDebts'
+import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 
@@ -14,7 +15,38 @@ export default function DebtsPage() {
     subtitle: 'Theo dõi công nợ, hạn thanh toán và lịch sử thu nợ của đại lý',
   })
 
-  const { selectedId, setSelectedId, selected } = useSelectableList(DEBT_CUSTOMERS, (c) => c.id)
+  const [customers, setCustomers] = useState(INITIAL_DEBT_CUSTOMERS)
+
+  const markDebtPaid = (id: string) => {
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              paidAmount: c.totalPurchase,
+              remaining: '0 đ',
+              remainingCellClassName: 'text-emerald-700',
+              overdueDays: '0 ngày',
+              overdueDaysClassName: 'text-slate-400',
+              statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
+              rowAttentionClassName: undefined,
+              remainingSectionClassName: 'bg-emerald-50/80 border-emerald-200',
+              remainingStatusClassName: 'text-emerald-800',
+              remainingAmount: '0',
+              paidLabel: `${c.totalDebtLabel} (100%)`,
+              paidPercent: '100%',
+              progressBarWidth: '100%',
+            }
+          : c,
+      ),
+    )
+  }
+
+  const handleDebtAction = (id: string, label: string) => {
+    if (label === 'Ghi nhận thu nợ') markDebtPaid(id)
+  }
+
+  const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
 
   const {
     search,
@@ -24,7 +56,7 @@ export default function DebtsPage() {
     filtered: filteredCustomers,
     clearFilters: handleClearFilters,
   } = useFilteredList(
-    DEBT_CUSTOMERS,
+    customers,
     STATUS_OPTIONS[0],
     (customer, keyword, status) =>
       (!keyword ||
@@ -250,7 +282,13 @@ export default function DebtsPage() {
                         </td>
                         <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center">
-                            <RowActionsMenu triggerLabel={`Thao tác công nợ ${customer.name}`} actions={customer.actions} />
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác công nợ ${customer.name}`}
+                              actions={customer.actions.map((action) => ({
+                                ...action,
+                                onClick: () => handleDebtAction(customer.id, action.label),
+                              }))}
+                            />
                           </div>
                         </td>
                       </tr>
@@ -384,9 +422,14 @@ export default function DebtsPage() {
               </div>
             </div>
             <div className="p-3.5 bg-slate-50 flex flex-col gap-2">
-              <button className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-md shadow-sm transition-colors" type="button">
+              <button
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-md shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                disabled={selected.statusBadge.label === 'Đã thanh toán'}
+                onClick={() => markDebtPaid(selected.id)}
+              >
                 <span className="material-symbols-outlined text-[18px]">add</span>
-                <span className="">Ghi nhận thu nợ</span>
+                <span className="">{selected.statusBadge.label === 'Đã thanh toán' ? 'Đã tất toán' : 'Ghi nhận thu nợ'}</span>
               </button>
               <div className="grid grid-cols-2 gap-2">
                 <button className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors" type="button">

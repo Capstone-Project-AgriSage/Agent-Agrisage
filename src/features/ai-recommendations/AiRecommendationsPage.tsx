@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
-import { aiCases as AI_CASES } from '../../data/mockAiRecommendations'
+import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
 
 const STATUS_LABELS: Record<string, string> = {
   'cho-duyet': 'Chờ duyệt',
@@ -18,7 +19,45 @@ export default function AiRecommendationsPage() {
     subtitle: 'Kiểm tra kết quả nhận diện bệnh và duyệt gợi ý sản phẩm trước khi hiển thị cho nông dân',
   })
 
-  const { selectedId, setSelectedId, selected } = useSelectableList(AI_CASES, (c) => c.id)
+  const [cases, setCases] = useState(INITIAL_AI_CASES)
+
+  const approveCase = (id: string) => {
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              statusBadge: { label: 'Đã phê duyệt', className: 'bg-emerald-100 text-emerald-800 border border-emerald-300', dotClassName: 'bg-emerald-600' },
+              panelBadge: { label: 'Đã gửi đến nông dân', className: 'bg-emerald-100 text-emerald-800', dotClassName: 'bg-emerald-600' },
+              actionsMode: 'sent' as const,
+              rowClassName: undefined,
+            }
+          : c,
+      ),
+    )
+  }
+
+  const rejectCase = (id: string) => {
+    setCases((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? {
+              ...c,
+              statusBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700 border border-slate-300', dotClassName: 'bg-slate-500' },
+              panelBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700', dotClassName: 'bg-slate-500' },
+              rowClassName: undefined,
+            }
+          : c,
+      ),
+    )
+  }
+
+  const handleCaseAction = (id: string, label: string) => {
+    if (label === 'Duyệt nhanh gợi ý') approveCase(id)
+    else if (label === 'Từ chối') rejectCase(id)
+  }
+
+  const { selectedId, setSelectedId, selected } = useSelectableList(cases, (c) => c.id)
 
   const {
     search,
@@ -28,7 +67,7 @@ export default function AiRecommendationsPage() {
     filtered: filteredCases,
     clearFilters: handleClearFilters,
   } = useFilteredList(
-    AI_CASES,
+    cases,
     'cho-duyet',
     (item, keyword, status) =>
       (!keyword ||
@@ -267,7 +306,13 @@ export default function AiRecommendationsPage() {
                       <td className="py-3 px-3 text-right">
                         {item.actionsMode === 'menu' ? (
                           <div className="flex items-center justify-end">
-                            <RowActionsMenu triggerLabel={`Thao tác #${item.id}`} actions={item.actions ?? []} />
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác #${item.id}`}
+                              actions={(item.actions ?? []).map((action) => ({
+                                ...action,
+                                onClick: () => handleCaseAction(item.id, action.label),
+                              }))}
+                            />
                           </div>
                         ) : item.actionsMode === 'sent' ? (
                           <span className="text-[11px] text-outline">Đã gửi</span>
@@ -455,13 +500,21 @@ export default function AiRecommendationsPage() {
               </select>
             </div>
             <div className="grid grid-cols-2 gap-space-sm pt-1">
-              <button className="w-full py-2.5 px-4 rounded-lg bg-surface-container-lowest border border-error/40 hover:bg-error/5 text-error font-title-md text-title-md flex items-center justify-center gap-1.5 transition-colors shadow-xs">
+              <button
+                className="w-full py-2.5 px-4 rounded-lg bg-surface-container-lowest border border-error/40 hover:bg-error/5 text-error font-title-md text-title-md flex items-center justify-center gap-1.5 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={selected.actionsMode === 'sent'}
+                onClick={() => rejectCase(selected.id)}
+              >
                 <span className="material-symbols-outlined text-[18px]">close</span>
                 <span className="">Từ chối</span>
               </button>
-              <button className="w-full py-2.5 px-4 rounded-lg bg-primary-container hover:bg-primary text-white font-title-md text-title-md flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+              <button
+                className="w-full py-2.5 px-4 rounded-lg bg-primary-container hover:bg-primary text-white font-title-md text-title-md flex items-center justify-center gap-1.5 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={selected.actionsMode === 'sent'}
+                onClick={() => approveCase(selected.id)}
+              >
                 <span className="material-symbols-outlined text-[18px]">check</span>
-                <span className="">Phê duyệt gợi ý</span>
+                <span className="">{selected.actionsMode === 'sent' ? 'Đã phê duyệt' : 'Phê duyệt gợi ý'}</span>
               </button>
             </div>
           </div>

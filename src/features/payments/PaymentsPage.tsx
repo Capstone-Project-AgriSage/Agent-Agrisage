@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
-import { payments as PAYMENTS } from '../../data/mockPayments'
+import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
 
@@ -14,7 +15,44 @@ export default function PaymentsPage() {
     subtitle: 'Theo dõi và đối soát các khoản thanh toán từ đơn hàng',
   })
 
-  const { selectedId, setSelectedId, selected } = useSelectableList(PAYMENTS, (p) => p.id)
+  const [payments, setPayments] = useState(INITIAL_PAYMENTS)
+
+  const markPaymentPaid = (id: string) => {
+    setPayments((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? {
+              ...p,
+              paidAmount: p.totalAmount,
+              paidAmountClassName: 'text-emerald-700',
+              remainingAmount: '0 đ',
+              remainingAmountClassName: 'text-outline',
+              statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
+              collectedLabel: `${p.totalAmount} (100%)`,
+              progressWidth: '100%',
+              hasRemaining: false,
+            }
+          : p,
+      ),
+    )
+  }
+
+  const markPaymentReconciled = (id: string) => {
+    setPayments((prev) =>
+      prev.map((p) =>
+        p.id === id
+          ? { ...p, statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' } }
+          : p,
+      ),
+    )
+  }
+
+  const handlePaymentAction = (id: string, label: string) => {
+    if (label === 'Thu tiếp' || label === 'Ghi nhận TT') markPaymentPaid(id)
+    else if (label === 'Đối soát') markPaymentReconciled(id)
+  }
+
+  const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
 
   const {
     search,
@@ -24,7 +62,7 @@ export default function PaymentsPage() {
     filtered: filteredPayments,
     clearFilters: handleClearFilters,
   } = useFilteredList(
-    PAYMENTS,
+    payments,
     STATUS_OPTIONS[0],
     (payment, keyword, status) =>
       (!keyword ||
@@ -255,7 +293,13 @@ export default function PaymentsPage() {
                         <td className="py-3 px-space-md text-outline whitespace-nowrap text-[12px] font-mono">{payment.time}</td>
                         <td className="py-3 px-space-md text-center whitespace-nowrap">
                           <div className="flex items-center justify-center">
-                            <RowActionsMenu triggerLabel={`Thao tác giao dịch #${payment.id}`} actions={payment.actions} />
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác giao dịch #${payment.id}`}
+                              actions={payment.actions.map((action) => ({
+                                ...action,
+                                onClick: () => handlePaymentAction(payment.id, action.label),
+                              }))}
+                            />
                           </div>
                         </td>
                       </tr>

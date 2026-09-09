@@ -1,11 +1,27 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
-import { orders as ORDERS } from '../../data/mockOrders'
+import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
+
+const STATUS_VISUALS: Record<string, { className: string; panelClassName: string }> = {
+  'Chờ xác nhận': { className: 'bg-amber-100 text-amber-800 border-amber-300', panelClassName: 'bg-amber-100 text-amber-800' },
+  'Đã xác nhận': { className: 'bg-sky-100 text-sky-800 border-sky-300', panelClassName: 'bg-sky-100 text-sky-800' },
+  'Đang xử lý': { className: 'bg-indigo-100 text-indigo-800 border-indigo-300', panelClassName: 'bg-indigo-100 text-indigo-800' },
+  'Đang giao': { className: 'bg-blue-100 text-blue-800 border-blue-300', panelClassName: 'bg-blue-100 text-blue-800' },
+  'Hoàn thành': { className: 'bg-emerald-100 text-emerald-800 border-emerald-300', panelClassName: 'bg-emerald-100 text-emerald-800' },
+}
+
+const NEXT_STATUS: Record<string, string> = {
+  'Chờ xác nhận': 'Đã xác nhận',
+  'Đã xác nhận': 'Đang xử lý',
+  'Đang xử lý': 'Đang giao',
+  'Đang giao': 'Hoàn thành',
+}
 
 export default function OrdersPage() {
   usePageHeader({
@@ -14,8 +30,40 @@ export default function OrdersPage() {
     subtitle: 'Theo dõi và xử lý đơn hàng của Cán bộ Thôn #04 - Mekong',
   })
 
-  const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(ORDERS, (o) => o.id)
+  const [orders, setOrders] = useState(INITIAL_ORDERS)
   const itemsTotalLabel = 'Tổng thanh toán'
+
+  const setOrderStatus = (id: string, label: string) => {
+    const visuals = STATUS_VISUALS[label]
+    if (!visuals) return
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === id
+          ? {
+              ...order,
+              statusBadge: { label, className: visuals.className, pulse: false },
+              panelBadge: { label, className: visuals.panelClassName },
+              rowAttentionClassName: undefined,
+              idClassName: 'text-on-surface',
+            }
+          : order,
+      ),
+    )
+  }
+
+  const advanceOrderStatus = (id: string) => {
+    const order = orders.find((o) => o.id === id)
+    const next = order && NEXT_STATUS[order.statusBadge.label]
+    if (next) setOrderStatus(id, next)
+  }
+
+  const handleOrderAction = (id: string, label: string) => {
+    if (label === 'Duyệt đơn') setOrderStatus(id, 'Đã xác nhận')
+    else if (label === 'Xác nhận') setOrderStatus(id, 'Đang giao')
+    else if (label === 'Cập nhật') advanceOrderStatus(id)
+  }
+
+  const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(orders, (o) => o.id)
 
   const {
     search,
@@ -25,7 +73,7 @@ export default function OrdersPage() {
     filtered: filteredOrders,
     clearFilters: handleClearFilters,
   } = useFilteredList(
-    ORDERS,
+    orders,
     STATUS_OPTIONS[0],
     (order, keyword, status) =>
       (!keyword ||
@@ -299,7 +347,13 @@ export default function OrdersPage() {
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">
-                          <RowActionsMenu triggerLabel={`Thao tác đơn #${order.id}`} actions={order.actions} />
+                          <RowActionsMenu
+                            triggerLabel={`Thao tác đơn #${order.id}`}
+                            actions={order.actions.map((action) => ({
+                              ...action,
+                              onClick: () => handleOrderAction(order.id, action.label),
+                            }))}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -414,8 +468,18 @@ export default function OrdersPage() {
                   <span className="material-symbols-outlined text-sm" data-icon="print">print</span>
                   <span>In phiếu giao hàng</span>
                 </button>
-                <button className="flex items-center justify-center gap-1 px-2 py-2 bg-primary-container text-on-primary hover:bg-primary rounded text-xs font-medium transition-colors" type="button">
-                  <span className="material-symbols-outlined text-sm" data-icon="update">update</span><span>Cập nhật trạng thái</span>
+                <button
+                  className="flex items-center justify-center gap-1 px-2 py-2 bg-primary-container text-on-primary hover:bg-primary rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  disabled={!NEXT_STATUS[selectedOrder.statusBadge.label]}
+                  onClick={() => advanceOrderStatus(selectedOrder.id)}
+                >
+                  <span className="material-symbols-outlined text-sm" data-icon="update">update</span>
+                  <span>
+                    {NEXT_STATUS[selectedOrder.statusBadge.label]
+                      ? `Chuyển sang "${NEXT_STATUS[selectedOrder.statusBadge.label]}"`
+                      : 'Đã hoàn thành'}
+                  </span>
                 </button>
               </div>
               <button className="w-full flex items-center justify-center gap-1 px-2 py-1.5 border border-outline-variant hover:bg-surface-container-lowest text-outline hover:text-on-surface rounded text-xs transition-colors" type="button">
