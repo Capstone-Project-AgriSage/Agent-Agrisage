@@ -57,18 +57,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm flex-shrink-0">
               <span className="material-symbols-outlined text-[20px]">eco</span>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
-                  AgriSage
-                </span>
-                <span className="bg-surface-container text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded border border-outline-variant">
-                  OS
-                </span>
-              </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant font-medium">
-                Trung tâm điều hành trạm vật tư
-              </p>
+            <div className="flex-1 min-w-0 flex items-center gap-1.5">
+              <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
+                AgriSage
+              </span>
+              <span className="bg-surface-container text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded border border-outline-variant">
+                OS
+              </span>
             </div>
             <button
               type="button"
@@ -79,14 +74,11 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>
           </div>
-          <div className="mt-space-sm p-space-xs bg-surface-container-low rounded border border-outline-variant flex items-center justify-between hover:bg-surface-container transition-colors cursor-pointer">
-            <div className="flex items-center gap-1.5 overflow-hidden">
-              <span className="w-2 h-2 rounded-full bg-primary flex-shrink-0"></span>
-              <span className="font-label-md text-label-md text-on-surface truncate font-semibold">
-                {user.hub}
-              </span>
-            </div>
-            <span className="material-symbols-outlined text-on-surface-variant text-[16px]">unfold_more</span>
+          <div className="mt-space-sm p-space-xs bg-surface-container-low rounded border border-outline-variant flex items-center gap-1.5 overflow-hidden">
+            <span className="material-symbols-outlined text-primary text-[16px] flex-shrink-0">warehouse</span>
+            <span className="font-label-md text-label-md text-on-surface truncate font-semibold">
+              {user.hub}
+            </span>
           </div>
         </div>
       </div>

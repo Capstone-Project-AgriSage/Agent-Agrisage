@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
@@ -26,11 +28,10 @@ const NEXT_STATUS: Record<string, string> = {
 export default function OrdersPage() {
   usePageHeader({
     title: 'Quản lý đơn hàng',
-    badge: 'Trực tiếp trạm Cần Thơ #04',
-    subtitle: 'Theo dõi và xử lý đơn hàng của Cán bộ Thôn #04 - Mekong',
   })
 
   const [orders, setOrders] = useState(INITIAL_ORDERS)
+  const { showToast } = useToast()
   const itemsTotalLabel = 'Tổng thanh toán'
 
   const setOrderStatus = (id: string, label: string) => {
@@ -49,6 +50,7 @@ export default function OrdersPage() {
           : order,
       ),
     )
+    showToast(`Đã cập nhật đơn #${id} sang "${label}"`)
   }
 
   const advanceOrderStatus = (id: string) => {
@@ -245,10 +247,8 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* MAIN SPLIT WORKSPACE: TABLE (70%) + DETAIL PREVIEW (30%) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-stretch">
-        {/* LEFT / MAIN TABLE */}
-        <div className="lg:col-span-8 h-full bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden flex flex-col">
+      {/* MAIN TABLE */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden flex flex-col">
           <div className="px-space-md py-space-sm border-b border-outline-variant bg-surface-container-low/50 flex items-center justify-between">
             <div className="flex items-center gap-space-xs">
               <span className="font-title-md text-title-md text-on-surface">Danh sách đơn xuất kho trạm #04</span>
@@ -274,13 +274,12 @@ export default function OrdersPage() {
                   <th className="py-2.5 px-3 font-semibold text-right">Tổng tiền</th>
                   <th className="py-2.5 px-3 font-semibold text-center">Thanh toán</th>
                   <th className="py-2.5 px-3 font-semibold text-center">Trạng thái</th>
-                  <th className="py-2.5 px-3 font-semibold">Vận chuyển</th>
                   <th className="py-2.5 px-3 font-semibold text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/60 font-body-sm">
                 {filteredOrders.length === 0 ? (
-                  <EmptyTableRow colSpan={9} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
+                  <EmptyTableRow colSpan={8} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
                 ) : null}
                 {filteredOrders.map((order) => {
                   const isSelected = order.id === selectedId
@@ -331,20 +330,6 @@ export default function OrdersPage() {
                           {order.statusBadge.label}
                         </span>
                       </td>
-                      <td className="py-3 px-3 text-outline text-[11px]">
-                        <div className="flex items-center gap-1">
-                          <span className={`material-symbols-outlined text-xs ${order.shippingIconClassName}`} data-icon={order.shippingIcon}>
-                            {order.shippingIcon}
-                          </span>
-                          {order.shippingLabelTitle ? (
-                            <span className="truncate max-w-[110px]" title={order.shippingLabelTitle}>
-                              {order.shippingLabel}
-                            </span>
-                          ) : (
-                            <span className={order.rowAttentionClassName ? 'italic' : ''}>{order.shippingLabel}</span>
-                          )}
-                        </div>
-                      </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">
                           <RowActionsMenu
@@ -393,9 +378,10 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* RIGHT SIDE PANEL: PREVIEW CHI TIẾT ĐƠN HÀNG */}
-        <div className="lg:col-span-4 space-y-space-md">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden">
+      {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
+      <DetailModal open={selectedOrder !== null} onClose={() => setSelectedId(null)}>
+        {selectedOrder ? (
+          <>
             <div className="p-space-sm bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-1.5">
@@ -406,9 +392,6 @@ export default function OrdersPage() {
                 </div>
                 <div className="text-[11px] text-outline mt-0.5">{selectedOrder.createdAgo}</div>
               </div>
-              <button className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface">
-                <span className="material-symbols-outlined text-base" data-icon="open_in_new">open_in_new</span>
-              </button>
             </div>
             <div className="p-space-sm space-y-space-xs border-b border-outline-variant">
               <div>
@@ -487,48 +470,9 @@ export default function OrdersPage() {
                 <span>Gửi tin nhắn SMS cập nhật cho nông dân</span>
               </button>
             </div>
-          </div>
-          {/* Compact Recent Activity / Nhật ký xử lý trạm */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm">
-            <div className="flex items-center justify-between pb-2 border-b border-outline-variant">
-              <span className="font-label-sm text-[11px] text-outline uppercase tracking-wider font-semibold">Nhật ký xử lý đơn trạm #04</span>
-              <span className="text-[10px] text-emerald-700 font-medium flex items-center gap-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Realtime
-              </span>
-            </div>
-            <div className="mt-space-sm space-y-space-sm text-xs">
-              <div className="flex items-start gap-2">
-                <span className="font-mono text-[11px] text-outline shrink-0 mt-0.5">08:45</span>
-                <div>
-                  <p className="text-on-surface">Tài xế xe lôi <strong className="font-semibold">Nguyễn Văn Tèo</strong> xác nhận nhận hàng <span className="font-mono text-primary font-medium">#DH-2024-1082</span></p>
-                  <p className="text-[11px] text-outline">Đã rời trạm Thới Lai • Tuyến Kênh Xáng</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="font-mono text-[11px] text-outline shrink-0 mt-0.5">08:20</span>
-                <div>
-                  <p className="text-on-surface">Xác nhận thanh toán VietQR <strong className="font-mono text-emerald-700">8.245.000 ₫</strong> từ <strong className="font-semibold">Trần Văn Hải</strong></p>
-                  <p className="text-[11px] text-outline">Ref: MBB-TK-982103 • Khớp hóa đơn</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="font-mono text-[11px] text-outline shrink-0 mt-0.5">07:55</span>
-                <div>
-                  <p className="text-on-surface">Đại lý <strong className="font-semibold">Nguyễn Văn Minh</strong> duyệt đơn <span className="font-mono text-primary font-medium">#DH-2024-1081</span> cho Lê Thị Bảy</p>
-                  <p className="text-[11px] text-outline">Kho B tiếp nhận lệnh bốc hàng</p>
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 pt-2 border-t border-outline-variant text-center">
-              <a className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-0.5" href="#">
-                <span>Xem toàn bộ nhật ký trạm</span>
-                <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
+          </>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

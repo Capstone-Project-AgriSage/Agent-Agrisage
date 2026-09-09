@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
@@ -11,11 +13,10 @@ const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh 
 export default function PaymentsPage() {
   usePageHeader({
     title: 'Quản lý thanh toán',
-    badge: 'Đối soát doanh thu trạm Cần Thơ #04',
-    subtitle: 'Theo dõi và đối soát các khoản thanh toán từ đơn hàng',
   })
 
   const [payments, setPayments] = useState(INITIAL_PAYMENTS)
+  const { showToast } = useToast()
 
   const markPaymentPaid = (id: string) => {
     setPayments((prev) =>
@@ -35,6 +36,7 @@ export default function PaymentsPage() {
           : p,
       ),
     )
+    showToast(`Đã ghi nhận thanh toán #${id}`)
   }
 
   const markPaymentReconciled = (id: string) => {
@@ -45,6 +47,7 @@ export default function PaymentsPage() {
           : p,
       ),
     )
+    showToast(`Đã đối soát giao dịch #${id}`)
   }
 
   const handlePaymentAction = (id: string, label: string) => {
@@ -208,12 +211,8 @@ export default function PaymentsPage() {
         </div>
       </div>
 
-      {/* MAIN 2-COLUMN LAYOUT: 68% Left | 32% Right */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
-        {/* LEFT COLUMN */}
-        <div className="lg:col-span-8 h-full flex flex-col gap-space-lg">
-          {/* Main Payment Table */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+      {/* Main Payment Table */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
             <div className="px-space-md py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="font-title-md text-title-md font-semibold text-on-surface">Danh sách giao dịch thanh toán</span>
@@ -340,83 +339,10 @@ export default function PaymentsPage() {
             </div>
           </div>
 
-          {/* Compact COD Reconciliation Section */}
-          <div className="flex-1 flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
-            <div className="px-space-md py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-indigo-700 text-[20px]">verified_user</span>
-                <span className="font-title-md text-title-md font-semibold text-on-surface">Đối soát COD chờ duyệt (4 chuyến)</span>
-              </div>
-              <span className="text-[12px] text-indigo-800 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full font-medium">
-                Cần ký nhận nộp quỹ kho trạm
-              </span>
-            </div>
-            <div className="flex-1 overflow-y-auto divide-y divide-outline-variant">
-              <div className="p-space-md flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-surface-container-low/40 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 flex-shrink-0">
-                    <span className="material-symbols-outlined text-[20px]">agriculture</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-on-surface font-mono">Đơn #DH-2024-1080</span>
-                      <span className="text-outline text-xs">•</span>
-                      <span className="font-medium text-on-surface">Khách: Nguyễn Hữu Trí</span>
-                      <span className="text-outline text-xs">•</span>
-                      <span className="text-outline text-xs">Tài xế: <strong className="text-on-surface font-medium">Trần Quốc Bảo</strong> (Xe máy kéo)</span>
-                    </div>
-                    <div className="text-[12px] text-outline mt-1 flex items-center gap-3">
-                      <span className="">Thu lúc: <strong className="text-on-surface font-mono">09:12 hôm nay</strong></span>
-                      <span className="">Trạng thái giao: <span className="text-emerald-700 font-medium">Đã giao tận bờ mẫu</span></span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 self-end md:self-center">
-                  <div className="text-right">
-                    <div className="text-[11px] text-outline uppercase font-semibold">Tiền COD</div>
-                    <div className="font-mono font-bold text-indigo-900 text-title-lg">2.160.000 đ</div>
-                  </div>
-                  <button className="px-3.5 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl font-label-md text-label-md font-medium transition-colors shadow-sm whitespace-nowrap">
-                    Xác nhận đối soát
-                  </button>
-                </div>
-              </div>
-              <div className="p-space-md flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-surface-container-low/40 transition-colors">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700 flex-shrink-0">
-                    <span className="material-symbols-outlined text-[20px]">directions_boat</span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-on-surface font-mono">Đơn #DH-2024-1076</span>
-                      <span className="text-outline text-xs">•</span>
-                      <span className="font-medium text-on-surface">Khách: Lâm Minh Trung</span>
-                      <span className="text-outline text-xs">•</span>
-                      <span className="text-outline text-xs">Tài xế: <strong className="text-on-surface font-medium">Huỳnh Minh Sang</strong> (Ghe ba lá)</span>
-                    </div>
-                    <div className="text-[12px] text-outline mt-1 flex items-center gap-3">
-                      <span className="">Thu lúc: <strong className="text-on-surface font-mono">08:40 hôm nay</strong></span>
-                      <span className="">Trạng thái giao: <span className="text-emerald-700 font-medium">Đã giao tại chòi canh</span></span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 self-end md:self-center">
-                  <div className="text-right">
-                    <div className="text-[11px] text-outline uppercase font-semibold">Tiền COD</div>
-                    <div className="font-mono font-bold text-indigo-900 text-title-lg">6.850.000 đ</div>
-                  </div>
-                  <button className="px-3.5 py-1.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl font-label-md text-label-md font-medium transition-colors shadow-sm whitespace-nowrap">
-                    Xác nhận đối soát
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN */}
-        <div className="lg:col-span-4 flex flex-col gap-space-md sticky top-[calc(var(--header-height)+1rem)]">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      {/* DETAIL MODAL: CHI TIẾT GIAO DỊCH */}
+      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
+        {selected ? (
+          <>
             <div className="p-space-md bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-1.5">
@@ -520,10 +446,12 @@ export default function PaymentsPage() {
                 </button>
               </div>
             </div>
-          </div>
+          </>
+        ) : null}
+      </DetailModal>
 
-          {/* Compact Recent Payment Activity */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-space-md">
+      {/* Compact Recent Payment Activity */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-space-md">
             <div className="flex items-center justify-between mb-3">
               <span className="font-title-md text-title-md font-semibold text-on-surface">Nhật ký giao dịch gần đây</span>
               <span className="material-symbols-outlined text-outline text-[18px]">update</span>
@@ -558,8 +486,6 @@ export default function PaymentsPage() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
     </>
   )
 }

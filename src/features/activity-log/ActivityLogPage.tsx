@@ -1,5 +1,6 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
@@ -9,8 +10,6 @@ const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'T
 export default function ActivityLogPage() {
   usePageHeader({
     title: 'Nhật ký thao tác',
-    subtitle: 'Theo dõi lịch sử thao tác và hoạt động nghiệp vụ trong hệ thống',
-    badge: 'Kiểm toán hệ thống',
   })
 
   const { selectedId, setSelectedId, selected } = useSelectableList(LOG_ENTRIES, (entry) => entry.id)
@@ -235,10 +234,8 @@ export default function ActivityLogPage() {
         </div>
       </section>
 
-      {/* ==================== TWO COLUMN LAYOUT (TABLE 65% + DETAIL PANEL 35%) ==================== */}
-      <div className="grid grid-cols-12 gap-space-lg items-stretch">
-        {/* LEFT COLUMN: ACTIVITY LOG TABLE & RECENT EVENTS (~65% -> 8 columns) */}
-        <section className="col-span-12 lg:col-span-8 space-y-space-md">
+      {/* ACTIVITY LOG TABLE & RECENT EVENTS */}
+      <div className="space-y-space-md">
           {/* Table Container */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
@@ -433,9 +430,12 @@ export default function ActivityLogPage() {
               </div>
             </div>
           </div>
-        </section>
-        {/* RIGHT COLUMN: DETAIL PANEL FOR SELECTED ENTRY (~35% -> 4 columns) */}
-        <aside className="col-span-12 lg:col-span-4 h-full flex flex-col bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden sticky top-[5.25rem]">
+      </div>
+
+      {/* DETAIL MODAL: NHẬT KÝ THAO TÁC ĐÃ CHỌN */}
+      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
+        {selected ? (
+          <div className="flex flex-col overflow-hidden">
           {/* Detail Header */}
           <div className="p-space-md bg-surface-container-low border-b border-outline-variant flex items-start justify-between">
             <div>
@@ -451,11 +451,6 @@ export default function ActivityLogPage() {
                 Thao tác: <span className="font-semibold text-primary">{selected.actionTypeLabel}</span>
               </p>
             </div>
-            <button className="text-outline hover:text-on-surface p-1 rounded-md hover:bg-surface-container">
-              <span className="material-symbols-outlined text-[18px]" data-icon="open_in_new">
-                open_in_new
-              </span>
-            </button>
           </div>
           {/* Body Content Zones */}
           <div className="flex-1 min-h-0 p-space-md space-y-space-md text-body-sm font-body-sm overflow-y-auto">
@@ -630,8 +625,9 @@ export default function ActivityLogPage() {
               <span className="">Xem hồ sơ khách hàng</span>
             </button>
           </div>
-        </aside>
-      </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

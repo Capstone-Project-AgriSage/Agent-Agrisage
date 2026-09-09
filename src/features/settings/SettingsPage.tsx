@@ -4,11 +4,8 @@ import { usePageHeader } from '../../context/PageHeaderContext'
 export default function SettingsPage() {
   usePageHeader({
     title: 'Cài đặt',
-    subtitle: 'Quản lý thông tin cá nhân và tùy chọn sử dụng AGRISAGE',
-    badge: 'Tài khoản đại lý',
   })
 
-  const [showSavedBanner, setShowSavedBanner] = useState(true)
   const [activeSection, setActiveSection] = useState<'profile' | 'notifications' | 'display' | 'security'>('profile')
 
   const navItems: {
@@ -36,29 +33,10 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Success alert banner / toast in header/content */}
-      {showSavedBanner ? (
-        <div className="flex items-center justify-between px-space-base py-space-sm bg-primary-fixed-dim/20 border-l-4 border-primary-container rounded-r-lg border-y border-r border-outline-variant">
-          <div className="flex items-center gap-space-sm">
-            <span className="material-symbols-outlined text-primary-container text-[20px] font-bold">check_circle</span>
-            <span className="font-label-md text-label-md font-medium text-on-surface">
-              Đã lưu thay đổi tùy chọn cá nhân thành công{' '}
-              <span className="text-on-surface-variant font-normal">(10:30 hôm nay)</span>
-            </span>
-          </div>
-          <button
-            className="text-outline hover:text-on-surface text-[18px] flex items-center"
-            onClick={() => setShowSavedBanner(false)}
-          >
-            <span className="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        </div>
-      ) : null}
-
       {/* TWO-COLUMN ENTERPRISE SETTINGS LAYOUT */}
       <div className="flex flex-col lg:flex-row items-start gap-space-xl">
         {/* LEFT SUB-NAVIGATION COLUMN (w-64 = 16rem) */}
-        <nav className="w-full lg:w-64 bg-surface-container-lowest border border-outline-variant rounded-lg p-space-sm shadow-sm shrink-0 lg:sticky lg:top-[5rem]">
+        <nav className="w-full lg:w-64 bg-surface-container-lowest border border-outline-variant rounded-lg p-space-sm shadow-sm shrink-0">
           <div className="px-space-sm py-space-xs font-label-sm text-label-sm uppercase text-outline tracking-wider">
             Phân mục cấu hình
           </div>
@@ -471,58 +449,6 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-              {/* Item 2: Mật độ bảng dữ liệu */}
-              <div className="space-y-space-sm pt-space-base border-t border-outline-variant">
-                <label className="block font-title-md text-title-md font-semibold text-on-surface">
-                  Mật độ hiển thị bảng dữ liệu
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-base">
-                  {/* Thoải mái (Selected) */}
-                  <label className="flex items-start gap-3 p-space-md rounded-lg border-2 border-primary-container bg-surface-container-lowest cursor-pointer shadow-sm">
-                    <input defaultChecked className="mt-1 text-primary focus:ring-primary-container" name="table_density" type="radio" />
-                    <div>
-                      <span className="font-title-md text-title-md font-semibold text-on-surface block">
-                        Thoải mái (Tiêu chuẩn)
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">
-                        Chiều cao hàng 40px, giãn cách trực quan, tối ưu quan sát nhanh trên máy tính bảng ngoài trạm.
-                      </span>
-                    </div>
-                  </label>
-                  {/* Gọn gàng */}
-                  <label className="flex items-start gap-3 p-space-md rounded-lg border border-outline-variant bg-surface-container-lowest hover:border-outline cursor-pointer">
-                    <input className="mt-1 text-primary focus:ring-primary-container" name="table_density" type="radio" />
-                    <div>
-                      <span className="font-title-md text-title-md font-semibold text-on-surface block">
-                        Gọn gàng (Tối ưu nhiều dòng)
-                      </span>
-                      <span className="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">
-                        Chiều cao hàng 32px, hiển thị nhiều bản ghi đơn hàng và công nợ trên một màn hình.
-                      </span>
-                    </div>
-                  </label>
-                </div>
-              </div>
-              {/* Item 3: Số dòng mặc định mỗi trang */}
-              <div className="space-y-space-sm pt-space-base border-t border-outline-variant">
-                <label className="block font-title-md text-title-md font-semibold text-on-surface">
-                  Số dòng mặc định mỗi trang danh sách
-                </label>
-                <div className="inline-flex rounded-lg border border-outline-variant p-1 bg-surface-container-low" role="group">
-                  <button className="px-4 py-1.5 text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded" type="button">
-                    10 dòng
-                  </button>
-                  <button
-                    className="px-4 py-1.5 bg-surface-container-lowest text-primary-container font-semibold font-label-md text-label-md rounded shadow-sm border border-outline-variant/60"
-                    type="button"
-                  >
-                    20 dòng
-                  </button>
-                  <button className="px-4 py-1.5 text-on-surface-variant hover:text-on-surface font-label-md text-label-md rounded" type="button">
-                    50 dòng
-                  </button>
-                </div>
-              </div>
             </div>
             {/* Card Actions */}
             <div className="px-space-lg py-space-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end rounded-b-lg">
@@ -610,70 +536,6 @@ export default function SettingsPage() {
                     <span className="material-symbols-outlined text-[18px]">key</span>
                     <span className="">Đổi mật khẩu</span>
                   </button>
-                </div>
-              </div>
-              {/* Khối phiên đăng nhập hiện tại (Current Sessions) */}
-              <div className="pt-space-lg border-t border-outline-variant space-y-space-md">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-title-md text-title-md font-semibold text-on-surface">Phiên đăng nhập đang hoạt động</h3>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant">
-                      Danh sách thiết bị kết nối tài khoản Agent #AGT-8804
-                    </p>
-                  </div>
-                  <button
-                    className="px-3 py-1.5 bg-error-container/40 border border-error/30 text-error font-label-sm text-label-sm font-semibold rounded hover:bg-error-container hover:text-on-error-container transition-colors flex items-center gap-1"
-                    type="button"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">logout</span>
-                    <span className="">Đăng xuất khỏi các thiết bị khác</span>
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {/* Session 1: Current Desktop */}
-                  <div className="p-space-md bg-surface-container-low rounded-lg border border-outline-variant flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-surface-container-lowest border border-outline-variant flex items-center justify-center text-primary">
-                        <span className="material-symbols-outlined text-[24px]">laptop_mac</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-title-md text-title-md font-semibold text-on-surface">
-                            Agent Web Console - Chrome trên macOS
-                          </span>
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-primary-fixed text-on-primary-fixed font-label-sm text-[11px] rounded-full font-medium">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
-                            Đang hoạt động
-                          </span>
-                        </div>
-                        <div className="font-body-sm text-body-sm text-on-surface-variant">
-                          Cần Thơ, Việt Nam • IP: 115.79.214.88 (Phiên làm việc hiện tại)
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[12px] text-outline italic">Thiết bị này</span>
-                  </div>
-                  {/* Session 2: Mobile Field App */}
-                  <div className="p-space-md bg-surface-container-lowest rounded-lg border border-outline-variant flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-surface-container-low border border-outline-variant flex items-center justify-center text-on-surface-variant">
-                        <span className="material-symbols-outlined text-[24px]">smartphone</span>
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-title-md text-title-md font-medium text-on-surface">
-                            AgriSage Mobile Field App - Samsung Galaxy S23
-                          </span>
-                        </div>
-                        <div className="font-body-sm text-body-sm text-on-surface-variant">
-                          Thới Lai, Cần Thơ • Lần cuối: 2 giờ trước qua 4G Viettel
-                        </div>
-                      </div>
-                    </div>
-                    <button className="text-error hover:underline font-label-sm text-label-sm font-medium" type="button">
-                      Thu hồi quyền
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

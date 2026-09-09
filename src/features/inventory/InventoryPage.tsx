@@ -4,7 +4,6 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 export default function InventoryPage() {
   usePageHeader({
     title: 'Quản lý kho hàng',
-    subtitle: 'Theo dõi tồn kho, nhập hàng và tình trạng sản phẩm tại đại lý',
   })
 
   return (
@@ -161,9 +160,6 @@ export default function InventoryPage() {
                 <th className="py-3 px-3 font-semibold" scope="col">SKU</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Danh mục</th>
                 <th className="py-3 px-3 font-semibold text-right" scope="col">Tồn thực tế</th>
-                <th className="py-3 px-3 font-semibold text-right" scope="col">Tối thiểu</th>
-                <th className="py-3 px-3 font-semibold" scope="col">ĐVT</th>
-                <th className="py-3 px-3 font-semibold" scope="col">Vị trí kho</th>
                 <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Cập nhật gần nhất</th>
                 <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
@@ -190,14 +186,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">30</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Bao 50kg</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="shelves">shelves</span>
-                    <span>Kho B - Dãy 02</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
@@ -243,14 +232,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">50</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Gói 100g</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="lock">lock</span>
-                    <span>Kho D - Tủ 03</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
@@ -296,14 +278,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">40</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Bao 25kg</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="ac_unit">ac_unit</span>
-                    <span>Kho C - Gian A</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
@@ -349,14 +324,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">30</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Chai 500ml</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="shelves">shelves</span>
-                    <span>Kho D - Tủ 01</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
@@ -402,14 +370,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">80</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Bao 50kg</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="shelves">shelves</span>
-                    <span>Kho B - Dãy 01</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
@@ -455,14 +416,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">40</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Gói 15g</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="shelves">shelves</span>
-                    <span>Kho D - Tủ 02</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
@@ -508,14 +462,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">20</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Can 5 Lít</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="shelves">shelves</span>
-                    <span>Kho A - Kệ 04</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
@@ -561,14 +508,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-3 text-right font-mono text-outline tabular-nums">50</td>
-                <td className="py-3 px-3 text-on-surface-variant text-body-sm">Gói 50g</td>
-                <td className="py-3 px-3">
-                  <div className="flex items-center gap-1 text-on-surface-variant text-body-sm">
-                    <span className="material-symbols-outlined text-[14px] text-outline" data-icon="ac_unit">ac_unit</span>
-                    <span>Kho C - Kệ mát</span>
-                  </div>
-                </td>
+                
                 <td className="py-3 px-3 text-center">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>

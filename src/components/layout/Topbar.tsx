@@ -17,8 +17,8 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header className="h-header-height px-layout-margin-desktop bg-white border-b border-outline-variant/60 sticky top-0 z-40 flex items-center justify-between shadow-2xs">
-      <div className="flex items-center gap-space-lg min-w-0">
+    <header className="h-header-height px-layout-margin-desktop bg-white border-b border-outline-variant/60 sticky top-0 z-40 relative flex items-center justify-between gap-space-lg shadow-2xs">
+      <div className="flex items-center gap-space-lg min-w-0 shrink">
         <button
           type="button"
           onClick={onMenuClick}
@@ -29,7 +29,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         </button>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <h1 className="font-title-lg text-title-lg text-on-surface font-bold truncate shrink-0 max-w-[280px]">{title}</h1>
+            <h1 className="font-title-lg text-title-lg text-on-surface font-bold truncate min-w-0 max-w-[280px]">{title}</h1>
             {badge ? (
               <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 bg-primary-fixed/50 text-on-primary-fixed-variant font-label-sm text-label-sm rounded border border-primary-fixed-dim/60 font-medium max-w-[110px] lg:max-w-[200px] overflow-hidden min-w-0">
                 <span className="material-symbols-outlined text-[14px] text-primary shrink-0">agriculture</span>
@@ -45,22 +45,14 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
         </div>
       </div>
 
-      <div className="w-96 relative hidden xl:block">
-        <span className="material-symbols-outlined absolute left-3 top-2 text-[18px] text-outline">search</span>
-        <input
-          className="w-full h-8 pl-9 pr-12 text-sm bg-surface-container-low border border-outline-variant/60 rounded focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white text-on-surface transition-all placeholder:text-outline font-body-md"
-          placeholder="Tìm nông dân, đơn hàng, vật tư (NPK, giống, thuốc BVTV)..."
-          type="text"
-        />
-        <kbd className="absolute right-2 top-1.5 px-1.5 py-0.5 text-[10px] font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/60 rounded select-none">
-          ⌘K
-        </kbd>
-      </div>
-
-      <div className="flex items-center gap-space-md">
-        <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-surface-container-low/60 border border-outline-variant/60 rounded text-on-surface font-label-md text-label-md">
-          <span className="material-symbols-outlined text-[18px] text-primary">warehouse</span>
-          <span className="font-medium text-xs">Đại lý vật tư nông nghiệp</span>
+      <div className="flex items-center justify-end gap-space-md shrink-0">
+        <div className="relative hidden lg:block w-72">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
+          <input
+            className="w-full h-8 pl-9 pr-3 text-sm bg-surface-container-low border border-outline-variant/60 rounded focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white text-on-surface transition-all placeholder:text-outline font-body-md"
+            placeholder="Tìm nông dân, đơn hàng, vật tư (NPK, giống, thuốc BVTV)..."
+            type="text"
+          />
         </div>
         <div className="flex items-center gap-1">
           <button

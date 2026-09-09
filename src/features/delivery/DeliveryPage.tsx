@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import type { TripTimelineStep } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
@@ -29,11 +31,10 @@ const STATUS_VISUALS: Record<string, { className: string; dotClassName: string; 
 export default function DeliveryPage() {
   usePageHeader({
     title: 'Quản lý giao hàng',
-    badge: 'Đội vận chuyển trạm Cần Thơ #04',
-    subtitle: 'Theo dõi và điều phối các đơn hàng đang giao đến nông dân',
   })
 
   const [trips, setTrips] = useState(INITIAL_TRIPS)
+  const { showToast } = useToast()
 
   const setTripStatus = (id: string, label: string) => {
     const visuals = STATUS_VISUALS[label]
@@ -49,6 +50,7 @@ export default function DeliveryPage() {
           : t,
       ),
     )
+    showToast(`Đã cập nhật chuyến #${id} sang "${label}"`)
   }
 
   const confirmDelivery = (id: string) => {
@@ -252,10 +254,8 @@ export default function DeliveryPage() {
         </button>
       </div>
 
-      {/* 4. KHUNG NỘI DUNG 2 CỘT: BẢNG DỮ LIỆU (68%) VÀ CHI TIẾT (32%) */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-stretch">
-        {/* BẢNG DỮ LIỆU GIAO HÀNG */}
-        <div className="xl:col-span-8 h-full bg-white rounded-lg border border-[#E2E8F0] shadow-sm overflow-hidden flex flex-col">
+      {/* BẢNG DỮ LIỆU GIAO HÀNG */}
+      <div className="bg-white rounded-lg border border-[#E2E8F0] shadow-sm overflow-hidden flex flex-col">
           <div className="px-4 py-3 border-b border-[#E2E8F0] flex items-center justify-between bg-[#FCFDFE]">
             <div className="flex items-center gap-2">
               <span className="font-title-md text-title-md font-semibold text-[#0F172A]">Danh sách các chuyến giao thực địa</span>
@@ -272,8 +272,6 @@ export default function DeliveryPage() {
                 <tr className="bg-[#F8FAFC] border-b border-[#CBD5E1] text-[#64748B] font-label-sm text-label-sm uppercase tracking-wider">
                   <th className="py-2.5 px-3.5">Mã GH / Đơn</th>
                   <th className="py-2.5 px-3">Khách hàng &amp; Địa chỉ</th>
-                  <th className="py-2.5 px-3">Tài xế &amp; Xe</th>
-                  <th className="py-2.5 px-3">Dự kiến</th>
                   <th className="py-2.5 px-3 text-right">Thu COD</th>
                   <th className="py-2.5 px-3 text-center">Trạng thái</th>
                   <th className="py-2.5 px-3 text-right">Thao tác</th>
@@ -281,7 +279,7 @@ export default function DeliveryPage() {
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {filteredTrips.length === 0 ? (
-                  <EmptyTableRow colSpan={7} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-[#94A3B8]" />
+                  <EmptyTableRow colSpan={5} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-[#94A3B8]" />
                 ) : null}
                 {filteredTrips.map((trip) => {
                   const isSelected = trip.id === selectedId
@@ -304,16 +302,6 @@ export default function DeliveryPage() {
                         <div className="text-[11px] text-[#64748B] truncate max-w-[190px]" title={trip.addressTitle}>
                           {trip.addressShort}
                         </div>
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="text-[#0F172A] font-medium">{trip.driverName}</div>
-                        <div className="text-[11px] text-[#64748B] flex items-center gap-1">
-                          <span className="material-symbols-outlined text-[13px]" data-icon={trip.driverIcon}>{trip.driverIcon}</span>
-                          <span className="">{trip.vehicleLabel}</span>
-                        </div>
-                      </td>
-                      <td className={`py-3 px-3 whitespace-nowrap ${trip.etaClassName}`}>
-                        {trip.etaLabel}
                       </td>
                       <td className="py-3 px-3 text-right">
                         <div className={trip.codAmountClassName}>{trip.codAmountLabel}</div>
@@ -408,8 +396,10 @@ export default function DeliveryPage() {
           </div>
         </div>
 
-        {/* KHUNG CHI TIẾT CHUYẾN GIAO ĐANG CHỌN */}
-        <div className="xl:col-span-4 bg-white rounded-lg border border-[#E2E8F0] shadow-sm flex flex-col divide-y divide-[#E2E8F0]">
+      {/* DETAIL MODAL: CHI TIẾT CHUYẾN GIAO ĐANG CHỌN */}
+      <DetailModal open={selectedTrip !== null} onClose={() => setSelectedId(null)}>
+        {selectedTrip ? (
+          <div className="flex flex-col divide-y divide-[#E2E8F0]">
           <div className="p-4 bg-[#FCFDFE]">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-bold tracking-wider uppercase text-[#64748B]">Chi tiết chuyến giao</span>
@@ -562,8 +552,9 @@ export default function DeliveryPage() {
               <span className="">Báo giao thất bại / Đổi lịch</span>
             </button>
           </div>
-        </div>
-      </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

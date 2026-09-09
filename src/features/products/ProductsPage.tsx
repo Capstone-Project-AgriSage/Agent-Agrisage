@@ -4,7 +4,6 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 export default function ProductsPage() {
   usePageHeader({
     title: 'Quản lý sản phẩm',
-    subtitle: 'Quản lý danh mục sản phẩm, theo dõi tồn kho và tình trạng kinh doanh tại kho Cần Thơ #04',
   })
 
   return (
@@ -155,11 +154,8 @@ export default function ProductsPage() {
                   <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
                 </th>
                 <th className="py-3 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
-                <th className="py-3 px-3 min-w-[120px]">SKU</th>
                 <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
-                <th className="py-3 px-3 min-w-[100px]">Đơn vị tính</th>
                 <th className="py-3 px-3 min-w-[120px] text-right">Giá bán niêm yết</th>
-                <th className="py-3 px-3 min-w-[160px]">Tồn kho thực tế</th>
                 <th className="py-3 px-3 min-w-[170px]">Trạng thái</th>
                 <th className="py-3 pr-4 pl-3 w-28 text-right">Thao tác</th>
               </tr>
@@ -176,23 +172,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Quy cách đóng bao chính hãng Bình Điền</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-NPK-2015</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Phân bón
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Bao 50kg</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">685.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-[#B45309] tabular-nums">18 bao</span>
-                    <span className="text-[11px] text-[#B45309] font-medium">Sắp hết</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-amber-500 h-1.5 rounded-full" style={{ width: '18%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
@@ -229,23 +214,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Hoạt chất Tricyclazole - Trị đạo ôn cổ bông</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-BVTV-0084</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
                     Thuốc BVTV
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Gói 100g</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">42.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-[#B91C1C] tabular-nums">8 gói</span>
-                    <span className="text-[11px] text-[#B91C1C] font-medium">Ngưỡng báo động</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-red-500 h-1.5 rounded-full" style={{ width: '8%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
@@ -282,23 +256,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Giống lúa chuẩn thuần Sóc Trăng - Độ nảy mầm 92%</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-GIONG-ST25</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200">
                     Lúa giống
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Bao 25kg</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">720.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-on-surface tabular-nums">142 bao</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">Tồn tốt</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '71%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
@@ -335,23 +298,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Hoạt chất Pretilachlor + Fenclorim chống cháy lá mầm</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-BVTV-300E</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
                     Thuốc BVTV
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Chai 500ml</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">165.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-on-surface tabular-nums">95 chai</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">Đủ hàng</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '48%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
@@ -388,23 +340,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Đạm 46.3% N tối thiểu, chống thất thoát phân tử khí</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-URE-CM01</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Phân bón
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Bao 50kg</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">540.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-on-surface tabular-nums">310 bao</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">Dồi dào</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '95%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
@@ -441,23 +382,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Chlorantraniliprole + Thiamethoxam - Đặc trị sâu cuốn lá</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-BVTV-40WG</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
                     Thuốc BVTV
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Gói 15g</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">28.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-[#B91C1C] tabular-nums">0 gói</span>
-                    <span className="text-[11px] text-[#B91C1C] font-medium">Hết sạch tồn</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-red-500 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
@@ -494,23 +424,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Dung tích lớn chuyên dụng cho hệ thống tưới nhỏ giọt sầu riêng</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-PBL-RT02</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
                     Phân bón lá
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Can 5 Lít</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">380.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-on-surface tabular-nums">64 can</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">Tồn chuẩn</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '42%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
@@ -547,23 +466,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Kháng bệnh tốt, ăn ngọt mềm không xơ - Thu hoạch 25-30 ngày</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-GR-CH08</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-800 border border-purple-200">
                     Giống rau màu
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-on-surface-variant text-body-sm">Gói 50g</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">18.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-on-surface tabular-nums">210 gói</span>
-                    <span className="text-[11px] text-emerald-700 font-medium">Tồn dồi dào</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-emerald-600 h-1.5 rounded-full" style={{ width: '84%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
@@ -600,23 +508,12 @@ export default function ProductsPage() {
                   </div>
                   <div className="text-body-sm text-outline mt-0.5">Tạm dừng phân phối do nhà máy chuyển giao đổi bao bì mới</div>
                 </td>
-                <td className="py-3.5 px-3 font-mono text-body-sm text-outline tabular-nums">SKU-DHS-GIBB</td>
                 <td className="py-3.5 px-3">
                   <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
                     Kích thích ST
                   </span>
                 </td>
-                <td className="py-3.5 px-3 text-outline text-body-sm">Lọ 10g</td>
                 <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-outline">65.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex items-center justify-between text-body-sm mb-1">
-                    <span className="font-semibold text-outline tabular-nums">0 lọ</span>
-                    <span className="text-[11px] text-outline font-medium">Khóa kho</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-slate-400 h-1.5 rounded-full" style={{ width: '0%' }}></div>
-                  </div>
-                </td>
                 <td className="py-3.5 px-3">
                   <div className="flex flex-col gap-1 items-start">
                     <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]">

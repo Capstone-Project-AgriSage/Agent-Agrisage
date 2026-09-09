@@ -1,5 +1,6 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { farmers as FARMERS } from '../../data/mockFarmers'
@@ -9,7 +10,6 @@ const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có n�
 export default function FarmersPage() {
   usePageHeader({
     title: 'Quản lý nông dân',
-    subtitle: 'Tra cứu thông tin khách hàng, đơn hàng, thanh toán và công nợ',
   })
 
   const { selectedId, setSelectedId, selected: selectedFarmer } = useSelectableList(FARMERS, (f) => f.id)
@@ -196,10 +196,8 @@ export default function FarmersPage() {
         </button>
       </div>
 
-      {/* MAIN SPLIT WORKSPACE: TABLE (LEFT) + DETAIL PANEL (RIGHT) */}
-      <div className="pt-3 flex-1 flex flex-col lg:flex-row gap-4 min-h-0">
-        {/* LEFT COLUMN: MAIN FARMER TABLE */}
-        <div className="flex-1 bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden min-w-0">
+      {/* MAIN FARMER TABLE */}
+      <div className="pt-3 bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden min-w-0">
           <div className="overflow-x-auto flex-1 custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -352,9 +350,12 @@ export default function FarmersPage() {
               </button>
             </div>
           </div>
-        </div>
-        {/* RIGHT COLUMN: FARMER DETAIL PANEL */}
-        <div className="w-full lg:w-[410px] xl:w-[440px] flex-shrink-0 bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden">
+      </div>
+
+      {/* DETAIL MODAL: THÔNG TIN NÔNG DÂN */}
+      <DetailModal open={selectedFarmer !== null} onClose={() => setSelectedId(null)} widthClassName="max-w-lg">
+        {selectedFarmer ? (
+          <div className="flex flex-col overflow-hidden">
           {/* Detail Panel Header */}
           <div className="p-3.5 border-b border-slate-200 bg-slate-50/70 flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -567,8 +568,9 @@ export default function FarmersPage() {
               Lịch sử phân tích AI
             </button>
           </div>
-        </div>
-      </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

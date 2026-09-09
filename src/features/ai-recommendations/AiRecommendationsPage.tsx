@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
@@ -16,10 +18,10 @@ const STATUS_LABELS: Record<string, string> = {
 export default function AiRecommendationsPage() {
   usePageHeader({
     title: 'Quản lý gợi ý AI',
-    subtitle: 'Kiểm tra kết quả nhận diện bệnh và duyệt gợi ý sản phẩm trước khi hiển thị cho nông dân',
   })
 
   const [cases, setCases] = useState(INITIAL_AI_CASES)
+  const { showToast } = useToast()
 
   const approveCase = (id: string) => {
     setCases((prev) =>
@@ -35,6 +37,7 @@ export default function AiRecommendationsPage() {
           : c,
       ),
     )
+    showToast(`Đã phê duyệt gợi ý #${id} - đã gửi đến nông dân`)
   }
 
   const rejectCase = (id: string) => {
@@ -50,6 +53,7 @@ export default function AiRecommendationsPage() {
           : c,
       ),
     )
+    showToast(`Đã từ chối gợi ý #${id}`)
   }
 
   const handleCaseAction = (id: string, label: string) => {
@@ -210,10 +214,8 @@ export default function AiRecommendationsPage() {
         </button>
       </div>
 
-      {/* MAIN SPLIT WORKSPACE (Table + Detailed Review Panel) */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-stretch">
-        {/* LEFT: MAIN EVALUATION TABLE */}
-        <div className="xl:col-span-7 h-full bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+      {/* MAIN EVALUATION TABLE */}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
           <div className="px-space-md py-space-sm border-b border-outline-variant flex items-center justify-between bg-surface-container-low/40">
             <div className="flex items-center gap-2">
               <span className="font-title-md text-title-md text-on-surface font-semibold">Danh sách phân tích bệnh lúa</span>
@@ -340,10 +342,12 @@ export default function AiRecommendationsPage() {
               <button className="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-low">Sau</button>
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* RIGHT: RECOMMENDATION DETAIL PANEL */}
-        <div className="xl:col-span-5 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col divide-y divide-outline-variant">
+      {/* DETAIL MODAL: CHI TIẾT ĐÁNH GIÁ GỢI Ý AI */}
+      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)} widthClassName="max-w-xl">
+        {selected ? (
+          <div className="flex flex-col divide-y divide-outline-variant">
           <div className="p-space-md bg-surface-container-low/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-primary/10 text-primary">#{selected.id}</span>
@@ -545,8 +549,9 @@ export default function AiRecommendationsPage() {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

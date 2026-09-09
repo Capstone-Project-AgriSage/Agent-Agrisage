@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import DetailModal from '../../components/ui/DetailModal'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
@@ -11,13 +13,13 @@ const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường'
 export default function DebtsPage() {
   usePageHeader({
     title: 'Quản lý công nợ',
-    badge: 'Sổ công nợ trạm Cần Thơ #04',
-    subtitle: 'Theo dõi công nợ, hạn thanh toán và lịch sử thu nợ của đại lý',
   })
 
   const [customers, setCustomers] = useState(INITIAL_DEBT_CUSTOMERS)
+  const { showToast } = useToast()
 
   const markDebtPaid = (id: string) => {
+    const customer = customers.find((c) => c.id === id)
     setCustomers((prev) =>
       prev.map((c) =>
         c.id === id
@@ -40,6 +42,7 @@ export default function DebtsPage() {
           : c,
       ),
     )
+    showToast(`Đã ghi nhận thu nợ - ${customer?.name ?? id} đã tất toán`)
   }
 
   const handleDebtAction = (id: string, label: string) => {
@@ -210,11 +213,8 @@ export default function DebtsPage() {
         </button>
       </section>
 
-      {/* BỐ CỤC CHÍNH */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
-        {/* A. BẢNG QUẢN LÝ CÔNG NỢ */}
-        <div className="lg:col-span-7 xl:col-span-8 h-full flex flex-col gap-3">
-          <div className="flex-1 bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
+      {/* BẢNG QUẢN LÝ CÔNG NỢ */}
+      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-slate-500 text-[18px]">group</span>
@@ -316,11 +316,11 @@ export default function DebtsPage() {
               </div>
             </div>
           </div>
-        </div>
 
-        {/* B. BẢNG CHI TIẾT CÔNG NỢ BÊN PHẢI */}
-        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-3">
-          <div className="bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden">
+      {/* DETAIL MODAL: CHI TIẾT CÔNG NỢ KHÁCH HÀNG */}
+      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
+        {selected ? (
+          <>
             <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[#1E5E3A] text-[20px]">person_pin</span>
@@ -442,9 +442,9 @@ export default function DebtsPage() {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </>
+        ) : null}
+      </DetailModal>
 
       {/* KHU VỰC PHỤ PHÍA DƯỚI BẢNG */}
       <section className="grid grid-cols-1 xl:grid-cols-12 gap-space-lg shrink-0 pb-6">

@@ -7,7 +7,7 @@ const DEFAULT_USER: AgentUser = {
   name: 'Nguyễn Văn Minh',
   role: 'Đại lý',
   initials: 'NM',
-  hub: 'Cần Thơ #04 - Mekong',
+  hub: 'Đại lý vật tư nông nghiệp',
 }
 
 interface AuthContextValue {
