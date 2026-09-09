@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
@@ -18,6 +20,7 @@ export default function ProductsPage() {
     title: 'Quản lý sản phẩm',
   })
 
+  const { showToast } = useToast()
   const { selectedId, setSelectedId, selected: selectedProduct } = useSelectableList(INITIAL_PRODUCTS, (p) => p.id)
 
   const [search, setSearch] = useState('')
@@ -42,7 +45,12 @@ export default function ProductsPage() {
     usePagination(filteredProducts, 10)
 
   const handleProductAction = (id: string, label: string) => {
-    if (label === 'Xem chi tiết') setSelectedId(id)
+    if (label === 'Xem chi tiết') {
+      setSelectedId(id)
+      return
+    }
+    const product = INITIAL_PRODUCTS.find((p) => p.id === id)
+    showToast(`Đã thực hiện "${label}" cho sản phẩm ${product?.name ?? id}`)
   }
 
   const totalCount = INITIAL_PRODUCTS.length
@@ -57,17 +65,25 @@ export default function ProductsPage() {
       {/* 1. BREADCRUMBS & PAGE HEADER */}
       <section className="space-y-1">
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-body-sm text-outline">
-          <a className="hover:text-primary transition-colors" href="#">Bảng điều khiển</a>
+          <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
           <span className="text-on-surface font-medium">Quản lý sản phẩm</span>
         </nav>
         <div className="flex justify-end pt-1">
           <div className="flex items-center gap-space-sm self-start md:self-auto">
-            <button className="flex items-center gap-2 h-9 px-space-md bg-surface-container-lowest hover:bg-surface border border-outline-variant rounded-lg text-on-surface font-label-md text-label-md transition-all shadow-sm">
+            <button
+              className="flex items-center gap-2 h-9 px-space-md bg-surface-container-lowest hover:bg-surface border border-outline-variant rounded-lg text-on-surface font-label-md text-label-md transition-all shadow-sm"
+              onClick={() => showToast(`Đã xuất Excel danh sách ${filteredProducts.length} sản phẩm`)}
+              type="button"
+            >
               <span className="material-symbols-outlined text-lg text-outline" data-icon="download">download</span>
               <span>Xuất Excel</span>
             </button>
-            <button className="flex items-center gap-2 h-9 px-space-lg bg-[#1E5E3A] hover:bg-[#17482D] text-on-primary rounded-lg font-label-md text-label-md transition-all shadow-sm">
+            <button
+              className="flex items-center gap-2 h-9 px-space-lg bg-[#1E5E3A] hover:bg-[#17482D] text-on-primary rounded-lg font-label-md text-label-md transition-all shadow-sm"
+              onClick={() => showToast('Chức năng thêm sản phẩm mới đang được phát triển')}
+              type="button"
+            >
               <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Thêm sản phẩm</span>
             </button>
           </div>
@@ -155,22 +171,6 @@ export default function ProductsPage() {
             <span>Đặt lại bộ lọc</span>
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-body-sm text-outline hidden xl:inline">Đã chọn: <strong className="text-on-surface font-semibold">0</strong> sản phẩm</span>
-          <div className="flex items-center border border-outline-variant rounded-lg overflow-hidden bg-surface">
-            <button className="px-3 py-1.5 text-body-sm text-outline hover:text-on-surface hover:bg-surface-container flex items-center gap-1 border-r border-outline-variant disabled:opacity-50" title="Cập nhật giá hàng loạt">
-              <span className="material-symbols-outlined text-base" data-icon="price_change">price_change</span>
-              <span className="font-label-md text-label-md hidden sm:inline">Cập nhật giá</span>
-            </button>
-            <button className="px-3 py-1.5 text-body-sm text-outline hover:text-on-surface hover:bg-surface-container flex items-center gap-1 border-r border-outline-variant" title="In tem mã vạch QR">
-              <span className="material-symbols-outlined text-base" data-icon="print">print</span>
-              <span className="font-label-md text-label-md hidden sm:inline">In tem QR</span>
-            </button>
-            <button className="px-2.5 py-1.5 text-body-sm text-outline hover:text-on-surface hover:bg-surface-container" title="Tùy chọn khác">
-              <span className="material-symbols-outlined text-base" data-icon="more_vert">more_vert</span>
-            </button>
-          </div>
-        </div>
       </section>
 
       {/* 4. ENTERPRISE DATA TABLE CONTAINER */}
@@ -179,14 +179,7 @@ export default function ProductsPage() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
-                <th className="py-3 pl-4 pr-2 w-10 text-center">
-                  <input
-                    className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
-                    type="checkbox"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </th>
-                <th className="py-3 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
+                <th className="py-3 pl-4 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
                 <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
                 <th className="py-3 px-3 min-w-[120px] text-right">Giá bán niêm yết</th>
                 <th className="py-3 px-3 min-w-[170px] text-right">Số lượng</th>
@@ -195,7 +188,7 @@ export default function ProductsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
               {paginated.length === 0 ? (
-                <EmptyTableRow colSpan={6} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
+                <EmptyTableRow colSpan={5} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
               ) : null}
               {paginated.map((product) => {
                 const isSelected = product.id === selectedId
@@ -209,14 +202,7 @@ export default function ProductsPage() {
                         : `hover:bg-surface/70 ${product.rowClassName ?? ''}`
                     }`}
                   >
-                    <td className="py-3.5 pl-4 pr-2 text-center">
-                      <input
-                        className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
-                        type="checkbox"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    </td>
-                    <td className="py-3.5 px-3">
+                    <td className="py-3.5 pl-4 px-3">
                       <div
                         className={`font-title-md text-title-md group-hover:text-primary transition-colors ${
                           product.discontinued ? 'text-outline line-through' : 'text-on-surface'

@@ -1,12 +1,74 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
+
+const DEFAULT_PROFILE = {
+  name: 'Nguyễn Văn Minh',
+  phone: '0918.234.567',
+  email: 'minh.nguyen@agrisage.vn',
+}
+
+const DEFAULT_NOTIFICATIONS = {
+  newOrder: { inApp: true, email: true },
+  pendingPayment: { inApp: true, email: true },
+  debtDue: { inApp: true, email: false },
+  lowStock: { inApp: true, email: true },
+  aiPending: { inApp: true, email: false },
+}
+
+type NotificationKey = keyof typeof DEFAULT_NOTIFICATIONS
 
 export default function SettingsPage() {
   usePageHeader({
     title: 'Cài đặt',
   })
 
+  const { showToast } = useToast()
   const [activeSection, setActiveSection] = useState<'profile' | 'notifications' | 'display' | 'security'>('profile')
+
+  const [profile, setProfile] = useState(DEFAULT_PROFILE)
+  const [profileDraft, setProfileDraft] = useState(DEFAULT_PROFILE)
+
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)
+  const toggleNotification = (key: NotificationKey, channel: 'inApp' | 'email') => {
+    setNotifications((prev) => ({ ...prev, [key]: { ...prev[key], [channel]: !prev[key][channel] } }))
+  }
+
+  const [theme, setTheme] = useState<'light' | 'system'>('light')
+
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+
+  const handleSaveProfile = () => {
+    setProfile(profileDraft)
+    showToast('Đã lưu thay đổi hồ sơ cá nhân')
+  }
+
+  const handleCancelProfile = () => {
+    setProfileDraft(profile)
+  }
+
+  const handleChangePassword = () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showToast('Vui lòng nhập đầy đủ các trường mật khẩu')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      showToast('Mật khẩu mới và xác nhận không khớp')
+      return
+    }
+    if (newPassword.length < 8) {
+      showToast('Mật khẩu mới cần tối thiểu 8 ký tự')
+      return
+    }
+    showToast('Đã đổi mật khẩu thành công')
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+  }
 
   const navItems: {
     key: 'profile' | 'notifications' | 'display' | 'security'
@@ -116,7 +178,7 @@ export default function SettingsPage() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-title-lg text-title-lg font-bold text-on-surface">Nguyễn Văn Minh</span>
+                      <span className="font-title-lg text-title-lg font-bold text-on-surface">{profile.name}</span>
                       <span className="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm rounded-full font-medium border border-primary-fixed-dim">
                         Đại lý
                       </span>
@@ -131,6 +193,7 @@ export default function SettingsPage() {
                   <button
                     className="px-3.5 py-1.5 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors flex items-center gap-1.5 shadow-sm"
                     type="button"
+                    onClick={() => showToast('Chức năng đổi ảnh đại diện đang được phát triển')}
                   >
                     <span className="material-symbols-outlined text-[16px]">upload</span>
                     <span className="">Đổi ảnh đại diện</span>
@@ -148,7 +211,8 @@ export default function SettingsPage() {
                     <input
                       className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
                       type="text"
-                      defaultValue="Nguyễn Văn Minh"
+                      value={profileDraft.name}
+                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, name: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -161,7 +225,8 @@ export default function SettingsPage() {
                     <input
                       className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
                       type="text"
-                      defaultValue="0918.234.567"
+                      value={profileDraft.phone}
+                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, phone: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -174,7 +239,8 @@ export default function SettingsPage() {
                     <input
                       className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
                       type="email"
-                      defaultValue="minh.nguyen@agrisage.vn"
+                      value={profileDraft.email}
+                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, email: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -224,12 +290,14 @@ export default function SettingsPage() {
                 <button
                   className="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container transition-colors"
                   type="button"
+                  onClick={handleCancelProfile}
                 >
                   Hủy
                 </button>
                 <button
                   className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] active:bg-[#113622] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
                   type="button"
+                  onClick={handleSaveProfile}
                 >
                   <span className="material-symbols-outlined text-[18px]">save</span>
                   <span className="">Lưu thay đổi</span>
@@ -277,13 +345,23 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.newOrder.inApp}
+                            onChange={() => toggleNotification('newOrder', 'inApp')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.newOrder.email}
+                            onChange={() => toggleNotification('newOrder', 'email')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
@@ -298,13 +376,23 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.pendingPayment.inApp}
+                            onChange={() => toggleNotification('pendingPayment', 'inApp')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.pendingPayment.email}
+                            onChange={() => toggleNotification('pendingPayment', 'email')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
@@ -317,13 +405,23 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.debtDue.inApp}
+                            onChange={() => toggleNotification('debtDue', 'inApp')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.debtDue.email}
+                            onChange={() => toggleNotification('debtDue', 'email')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
@@ -336,13 +434,23 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.lowStock.inApp}
+                            onChange={() => toggleNotification('lowStock', 'inApp')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.lowStock.email}
+                            onChange={() => toggleNotification('lowStock', 'email')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
@@ -357,13 +465,23 @@ export default function SettingsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input defaultChecked readOnly className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.aiPending.inApp}
+                            onChange={() => toggleNotification('aiPending', 'inApp')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <label className="inline-flex items-center cursor-pointer">
-                          <input className="sr-only peer" type="checkbox" />
+                          <input
+                            checked={notifications.aiPending.email}
+                            onChange={() => toggleNotification('aiPending', 'email')}
+                            className="sr-only peer"
+                            type="checkbox"
+                          />
                           <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
                         </label>
                       </td>
@@ -377,6 +495,7 @@ export default function SettingsPage() {
               <button
                 className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
                 type="button"
+                onClick={() => showToast('Đã cập nhật tùy chọn thông báo')}
               >
                 <span className="material-symbols-outlined text-[18px]">check</span>
                 <span className="">Cập nhật thông báo</span>
@@ -405,13 +524,22 @@ export default function SettingsPage() {
               <div className="space-y-space-sm">
                 <label className="block font-title-md text-title-md font-semibold text-on-surface">Chủ đề giao diện</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-base">
-                  {/* Option 1: Sáng (Selected) */}
-                  <div className="relative p-space-md rounded-lg border-2 border-primary-container bg-surface-container-lowest shadow-sm flex flex-col justify-between cursor-pointer">
+                  {/* Option 1: Sáng */}
+                  <div
+                    className={`relative p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex flex-col justify-between cursor-pointer ${
+                      theme === 'light' ? 'border-2 border-primary-container' : 'border border-outline-variant hover:border-outline'
+                    }`}
+                    onClick={() => setTheme('light')}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-label-md text-label-md font-semibold text-on-surface">Giao diện sáng</span>
-                      <span className="material-symbols-outlined text-primary-container text-[20px] material-symbols-filled">
-                        check_circle
-                      </span>
+                      {theme === 'light' ? (
+                        <span className="material-symbols-outlined text-primary-container text-[20px] material-symbols-filled">
+                          check_circle
+                        </span>
+                      ) : (
+                        <span className="w-4 h-4 rounded-full border border-outline-variant"></span>
+                      )}
                     </div>
                     <div className="h-16 rounded bg-slate-100 border border-outline-variant/60 p-2 flex flex-col gap-1">
                       <div className="h-2 w-1/3 bg-primary-container rounded"></div>
@@ -421,7 +549,10 @@ export default function SettingsPage() {
                     <div className="mt-2 text-[11px] text-primary-container font-semibold">(Mặc định tối ưu ngoài trời)</div>
                   </div>
                   {/* Option 2: Tối (Sắp ra mắt) */}
-                  <div className="relative p-space-md rounded-lg border border-outline-variant bg-surface-container-low opacity-75 cursor-not-allowed flex flex-col justify-between">
+                  <div
+                    className="relative p-space-md rounded-lg border border-outline-variant bg-surface-container-low opacity-75 cursor-not-allowed flex flex-col justify-between"
+                    onClick={() => showToast('Giao diện tối sắp ra mắt')}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-label-md text-label-md font-medium text-on-surface">Giao diện tối</span>
                       <span className="px-1.5 py-0.5 bg-surface-container text-on-surface-variant font-label-sm text-[10px] rounded">
@@ -436,10 +567,21 @@ export default function SettingsPage() {
                     <div className="mt-2 text-[11px] text-outline">Chế độ làm việc ban đêm</div>
                   </div>
                   {/* Option 3: Theo hệ thống */}
-                  <div className="relative p-space-md rounded-lg border border-outline-variant bg-surface-container-lowest hover:border-outline cursor-pointer flex flex-col justify-between">
+                  <div
+                    className={`relative p-space-md rounded-lg bg-surface-container-lowest cursor-pointer flex flex-col justify-between ${
+                      theme === 'system' ? 'border-2 border-primary-container' : 'border border-outline-variant hover:border-outline'
+                    }`}
+                    onClick={() => setTheme('system')}
+                  >
                     <div className="flex items-center justify-between mb-3">
                       <span className="font-label-md text-label-md font-medium text-on-surface">Theo hệ thống</span>
-                      <span className="w-4 h-4 rounded-full border border-outline-variant"></span>
+                      {theme === 'system' ? (
+                        <span className="material-symbols-outlined text-primary-container text-[20px] material-symbols-filled">
+                          check_circle
+                        </span>
+                      ) : (
+                        <span className="w-4 h-4 rounded-full border border-outline-variant"></span>
+                      )}
                     </div>
                     <div className="h-16 rounded bg-gradient-to-r from-slate-100 to-slate-800 border border-outline-variant/60 p-2 flex flex-col gap-1">
                       <div className="h-2 w-1/3 bg-primary-container rounded"></div>
@@ -455,6 +597,7 @@ export default function SettingsPage() {
               <button
                 className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
                 type="button"
+                onClick={() => showToast(`Đã áp dụng giao diện: ${theme === 'light' ? 'Sáng' : 'Theo hệ thống'}`)}
               >
                 <span className="material-symbols-outlined text-[18px]">tune</span>
                 <span className="">Áp dụng hiển thị</span>
@@ -492,11 +635,17 @@ export default function SettingsPage() {
                   <div className="relative">
                     <input
                       className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      type="password"
-                      defaultValue="secretpassword123"
+                      type={showCurrentPassword ? 'text' : 'password'}
+                      placeholder="Nhập mật khẩu hiện tại..."
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                     />
-                    <button className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button">
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
+                    <button
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                      type="button"
+                      onClick={() => setShowCurrentPassword((prev) => !prev)}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">{showCurrentPassword ? 'visibility_off' : 'visibility'}</span>
                     </button>
                   </div>
                 </div>
@@ -507,10 +656,16 @@ export default function SettingsPage() {
                     <input
                       className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
                       placeholder="Nhập mật khẩu mới..."
-                      type="password"
+                      type={showNewPassword ? 'text' : 'password'}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                     />
-                    <button className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface" type="button">
-                      <span className="material-symbols-outlined text-[18px]">visibility_off</span>
+                    <button
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
+                      type="button"
+                      onClick={() => setShowNewPassword((prev) => !prev)}
+                    >
+                      <span className="material-symbols-outlined text-[18px]">{showNewPassword ? 'visibility' : 'visibility_off'}</span>
                     </button>
                   </div>
                   <p className="font-body-sm text-body-sm text-outline">
@@ -525,6 +680,8 @@ export default function SettingsPage() {
                       className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
                       placeholder="Nhập lại mật khẩu mới..."
                       type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                     />
                   </div>
                 </div>
@@ -532,6 +689,7 @@ export default function SettingsPage() {
                   <button
                     className="px-4 py-2 bg-surface-container-lowest border-2 border-primary-container text-primary-container font-label-md text-label-md rounded hover:bg-primary-container hover:text-on-primary transition-all font-semibold flex items-center gap-1.5 shadow-sm"
                     type="button"
+                    onClick={handleChangePassword}
                   >
                     <span className="material-symbols-outlined text-[18px]">key</span>
                     <span className="">Đổi mật khẩu</span>

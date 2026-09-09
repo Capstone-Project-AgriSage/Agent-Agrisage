@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -11,6 +12,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
+import { parseVnd, formatVnd } from '../../utils/money'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 const REGION_OPTIONS = [
@@ -56,6 +58,10 @@ export default function DebtsPage() {
   const handleDebtAction = (id: string, label: string) => {
     if (label === 'Ghi nhận thu nợ') markDebtPaid(id)
     else if (label === 'Xem chi tiết') setSelectedId(id)
+    else {
+      const customer = customers.find((c) => c.id === id)
+      showToast(`Đã thực hiện "${label}" cho khách hàng ${customer?.name ?? id}`)
+    }
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
@@ -89,25 +95,46 @@ export default function DebtsPage() {
   const { page, totalPages, paginated: paginatedCustomers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredCustomers, 10)
 
+  const totalDebtAmount = customers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const dueTodayCustomers = customers.filter((c) => c.statusBadge.label === 'Đến hạn')
+  const dueTodayAmount = dueTodayCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const upcomingCustomers = customers.filter((c) => c.statusBadge.label === 'Sắp đến hạn')
+  const upcomingAmount = upcomingCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const overdueCustomers = customers.filter((c) => c.statusBadge.label === 'Quá hạn')
+  const overdueAmount = overdueCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const totalCollected = customers.reduce((sum, c) => sum + parseVnd(c.paidAmount), 0)
+
   return (
     <>
       {/* PAGE HEADER */}
       <section className="flex flex-col md:flex-row md:items-center justify-between gap-space-md shrink-0">
         <div className="flex items-center gap-2 text-slate-500 font-label-sm text-label-sm">
-          <a className="hover:text-slate-800" href="#">Bảng điều khiển</a>
+          <Link className="hover:text-slate-800" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span className="text-slate-800 font-semibold">Quản lý công nợ</span>
         </div>
         <div className="flex items-center gap-2.5 self-start md:self-auto">
-          <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs" type="button">
+          <button
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            type="button"
+            onClick={() => showToast(`Đã xuất báo cáo công nợ ${filteredCustomers.length} khách hàng`)}
+          >
             <span className="material-symbols-outlined text-[18px]">file_download</span>
             <span className="">Xuất báo cáo</span>
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs" type="button">
+          <button
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            type="button"
+            onClick={() => showToast('Đã in sổ nợ')}
+          >
             <span className="material-symbols-outlined text-[18px]">print</span>
             <span className="">In sổ nợ</span>
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-lg transition-colors shadow-sm" type="button">
+          <button
+            className="flex items-center gap-2 px-4 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-lg transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast('Chức năng ghi nhận thu nợ mới đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span className="">Ghi nhận thu nợ</span>
           </button>
@@ -122,11 +149,10 @@ export default function DebtsPage() {
             <span className="material-symbols-outlined text-slate-400 text-[19px]">account_balance</span>
           </div>
           <div className="font-metric-num text-metric-num text-slate-900 tracking-tight font-bold my-1">
-            412.800.000 <span className="text-sm font-normal text-slate-500">đ</span>
+            {formatVnd(totalDebtAmount)}
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-            <span className="">Tổng nợ 28 nông hộ</span>
-            <span className="text-emerald-700 font-medium">+5.4% so vụ trước</span>
+            <span className="">Tổng nợ {customers.length} nông hộ</span>
           </div>
         </div>
         <div className="bg-white border border-amber-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between relative overflow-hidden">
@@ -136,10 +162,10 @@ export default function DebtsPage() {
             <span className="material-symbols-outlined text-amber-600 text-[19px]">alarm</span>
           </div>
           <div className="font-metric-num text-metric-num text-amber-900 tracking-tight font-bold my-1">
-            18.500.000 <span className="text-sm font-normal text-amber-700">đ</span>
+            {formatVnd(dueTodayAmount)}
           </div>
           <div className="text-[11px] text-amber-700 font-medium pt-1 border-t border-amber-100">
-            03 khách hàng cần thu trong ngày
+            {dueTodayCustomers.length} khách hàng cần thu trong ngày
           </div>
         </div>
         <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
@@ -148,10 +174,10 @@ export default function DebtsPage() {
             <span className="material-symbols-outlined text-amber-500 text-[19px]">calendar_clock</span>
           </div>
           <div className="font-metric-num text-metric-num text-slate-900 tracking-tight font-bold my-1">
-            64.200.000 <span className="text-sm font-normal text-slate-500">đ</span>
+            {formatVnd(upcomingAmount)}
           </div>
           <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
-            <span className="text-slate-500">07 khách hàng (7 ngày tới)</span>
+            <span className="text-slate-500">{upcomingCustomers.length} khách hàng</span>
             <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-semibold text-[10px]">Cần lưu ý</span>
           </div>
         </div>
@@ -162,23 +188,23 @@ export default function DebtsPage() {
             <span className="material-symbols-outlined text-rose-600 text-[19px]">warning</span>
           </div>
           <div className="font-metric-num text-metric-num text-rose-700 tracking-tight font-bold my-1">
-            42.850.000 <span className="text-sm font-normal text-rose-600">đ</span>
+            {formatVnd(overdueAmount)}
           </div>
           <div className="flex items-center justify-between text-[11px] pt-1 border-t border-rose-100">
-            <span className="text-rose-700">04 khách hàng quá hạn &gt;15 ngày</span>
+            <span className="text-rose-700">{overdueCustomers.length} khách hàng quá hạn</span>
             <span className="px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">Cảnh báo</span>
           </div>
         </div>
         <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="font-label-md text-label-md font-medium">Đã thu tháng này</span>
+            <span className="font-label-md text-label-md font-medium">Đã thu</span>
             <span className="material-symbols-outlined text-emerald-600 text-[19px]">task_alt</span>
           </div>
           <div className="font-metric-num text-metric-num text-emerald-800 tracking-tight font-bold my-1">
-            128.600.000 <span className="text-sm font-normal text-slate-500">đ</span>
+            {formatVnd(totalCollected)}
           </div>
           <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-            <span className="">Đạt 75.6% kế hoạch</span>
+            <span className="">Trên tổng {formatVnd(totalCollected + totalDebtAmount)} đã bán</span>
             <span className="inline-flex items-center text-emerald-600 font-medium gap-0.5">
               <span className="material-symbols-outlined text-[13px]">trending_up</span> Tiến độ tốt
             </span>
@@ -420,11 +446,19 @@ export default function DebtsPage() {
                 <span className="">{selected.statusBadge.label === 'Đã thanh toán' ? 'Đã tất toán' : 'Ghi nhận thu nợ'}</span>
               </button>
               <div className="grid grid-cols-2 gap-2">
-                <button className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors" type="button">
+                <button
+                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors"
+                  type="button"
+                  onClick={() => showToast(`Đã gửi VietQR/SMS nhắc nợ cho ${selected.name}`)}
+                >
                   <span className="material-symbols-outlined text-[16px] text-slate-500">sms</span>
                   <span className="">Gửi VietQR/SMS</span>
                 </button>
-                <button className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors" type="button">
+                <button
+                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors"
+                  type="button"
+                  onClick={() => showToast(`Xem đơn hàng gốc của ${selected.name} đang được phát triển`)}
+                >
                   <span className="material-symbols-outlined text-[16px] text-slate-500">description</span>
                   <span className="">Xem đơn hàng gốc</span>
                 </button>
@@ -441,64 +475,39 @@ export default function DebtsPage() {
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-rose-600 text-[20px]">warning</span>
               <h3 className="font-title-md text-title-md text-slate-900 font-bold">Công nợ quá hạn cần xử lý</h3>
-              <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">3 ca ưu tiên</span>
+              <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">{overdueCustomers.length} ca ưu tiên</span>
             </div>
           </div>
           <div className="space-y-2.5">
-            <div className="p-3 bg-rose-50/40 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 text-sm">Phan Văn Thắng</span>
-                  <span className="text-xs font-mono text-slate-500">0903.112.890</span>
-                  <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[10px]">Quá hạn 12 ngày</span>
+            {overdueCustomers.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-4">Không có khách hàng quá hạn nào.</p>
+            ) : (
+              overdueCustomers.slice(0, 3).map((customer) => (
+                <div key={customer.id} className="p-3 bg-rose-50/40 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-slate-900 text-sm">{customer.name}</span>
+                      <span className="text-xs font-mono text-slate-500">{customer.phone}</span>
+                      <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[10px]">Quá hạn {customer.overdueDays}</span>
+                    </div>
+                    <div className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
+                      <span className="">Nợ: <strong className="font-mono text-rose-700">{customer.remaining}</strong></span>
+                      {customer.relatedOrders[0] ? (
+                        <span className="">Đơn cũ nhất: <span className="font-mono text-slate-700 font-medium">{customer.relatedOrders[0].id}</span></span>
+                      ) : null}
+                    </div>
+                  </div>
+                  <button
+                    className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 font-label-md text-label-md rounded-md transition-colors shadow-2xs self-start sm:self-auto"
+                    type="button"
+                    onClick={() => showToast(`Đã gửi nhắc nợ tới ${customer.name}`)}
+                  >
+                    <span className="material-symbols-outlined text-[16px]">send</span>
+                    <span className="">Gửi nhắc nợ</span>
+                  </button>
                 </div>
-                <div className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
-                  <span className="">Nợ: <strong className="font-mono text-rose-700">14.500.000 đ</strong></span>
-                  <span className="">Đơn cũ nhất: <span className="font-mono text-slate-700 font-medium">DH-2024-1079</span></span>
-                  <span className="text-slate-500">Nhắc nợ: Đã gửi SMS Zalo 2 ngày trước</span>
-                </div>
-              </div>
-              <button className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 font-label-md text-label-md rounded-md transition-colors shadow-2xs self-start sm:self-auto" type="button">
-                <span className="material-symbols-outlined text-[16px]">send</span>
-                <span className="">Gửi nhắc nợ</span>
-              </button>
-            </div>
-            <div className="p-3 bg-rose-50/40 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 text-sm">Võ Thị Hạnh</span>
-                  <span className="text-xs font-mono text-slate-500">0912.345.678</span>
-                  <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[10px]">Quá hạn 25 ngày</span>
-                </div>
-                <div className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
-                  <span className="">Nợ: <strong className="font-mono text-rose-700">7.300.000 đ</strong></span>
-                  <span className="">Đơn cũ nhất: <span className="font-mono text-slate-700 font-medium">DH-2024-0988</span></span>
-                  <span className="text-amber-700 font-medium">Nhắc nợ: Chưa gửi lần 2</span>
-                </div>
-              </div>
-              <button className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 font-label-md text-label-md rounded-md transition-colors shadow-2xs self-start sm:self-auto" type="button">
-                <span className="material-symbols-outlined text-[16px]">send</span>
-                <span className="">Gửi nhắc nợ</span>
-              </button>
-            </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-slate-900 text-sm">Nguyễn Văn Đực</span>
-                  <span className="text-xs font-mono text-slate-500">0988.334.221</span>
-                  <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-900 font-bold text-[10px]">Quá hạn 18 ngày</span>
-                </div>
-                <div className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
-                  <span className="">Nợ: <strong className="font-mono text-slate-900">11.200.000 đ</strong></span>
-                  <span className="">Đơn cũ nhất: <span className="font-mono text-slate-700 font-medium">DH-2024-1012</span></span>
-                  <span className="text-slate-600">Nhắc nợ: Hẹn sau thu hoạch</span>
-                </div>
-              </div>
-              <button className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 font-label-md text-label-md rounded-md transition-colors shadow-2xs self-start sm:self-auto" type="button">
-                <span className="material-symbols-outlined text-[16px]">send</span>
-                <span className="">Gửi nhắc nợ</span>
-              </button>
-            </div>
+              ))
+            )}
           </div>
         </div>
         <div className="xl:col-span-5 bg-white border border-slate-200 rounded-lg p-4 shadow-2xs flex flex-col gap-3">

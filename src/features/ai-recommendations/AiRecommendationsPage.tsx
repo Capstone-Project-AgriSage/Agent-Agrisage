@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -17,6 +17,13 @@ const STATUS_LABELS: Record<string, string> = {
   'da-duyet': 'Đã phê duyệt',
   'da-tu-choi': 'Đã từ chối',
   'chua-chac-chan': 'Chưa đủ chắc chắn',
+}
+
+const REJECT_REASON_LABELS: Record<string, string> = {
+  mo: 'Ảnh mờ / Cháy sáng',
+  nham: 'Nhận diện nhầm bệnh',
+  'sai-giai-doan': 'Sai giai đoạn phát triển',
+  'khang-thuoc': 'Khu vực đã kháng hoạt chất này',
 }
 
 const DISEASE_KEYWORDS: Record<string, string> = {
@@ -62,8 +69,11 @@ export default function AiRecommendationsPage() {
 
   const [cases, setCases] = useState(INITIAL_AI_CASES)
   const { showToast } = useToast()
+  const agentNoteRef = useRef<HTMLTextAreaElement>(null)
+  const rejectReasonRef = useRef<HTMLSelectElement>(null)
 
   const approveCase = (id: string) => {
+    const note = agentNoteRef.current?.value.trim()
     setCases((prev) =>
       prev.map((c) =>
         c.id === id
@@ -73,14 +83,17 @@ export default function AiRecommendationsPage() {
               panelBadge: { label: 'Đã gửi đến nông dân', className: 'bg-emerald-100 text-emerald-800', dotClassName: 'bg-emerald-600' },
               actionsMode: 'sent' as const,
               rowClassName: undefined,
+              agentNote: note || c.agentNote,
             }
           : c,
       ),
     )
-    showToast(`Đã phê duyệt gợi ý #${id} - đã gửi đến nông dân`)
+    showToast(`Đã phê duyệt gợi ý #${id} - đã gửi đến nông dân${note ? ` kèm ghi chú` : ''}`)
   }
 
   const rejectCase = (id: string) => {
+    const reasonValue = rejectReasonRef.current?.value
+    const reasonLabel = reasonValue ? REJECT_REASON_LABELS[reasonValue] : undefined
     setCases((prev) =>
       prev.map((c) =>
         c.id === id
@@ -89,11 +102,16 @@ export default function AiRecommendationsPage() {
               statusBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700 border border-slate-300', dotClassName: 'bg-slate-500' },
               panelBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700', dotClassName: 'bg-slate-500' },
               rowClassName: undefined,
+              rejectReasonLabel: reasonLabel,
             }
           : c,
       ),
     )
-    showToast(`Đã từ chối gợi ý #${id}`)
+    showToast(`Đã từ chối gợi ý #${id}${reasonLabel ? ` - Lý do: ${reasonLabel}` : ''}`)
+  }
+
+  const requestFieldSurvey = (id: string, farmerName: string) => {
+    showToast(`Đã gửi yêu cầu khảo sát thực địa cho ${farmerName} (#${id})`)
   }
 
   const handleCaseAction = (id: string, label: string) => {
@@ -145,12 +163,21 @@ export default function AiRecommendationsPage() {
     setPage,
   } = usePagination(filteredCases, 10)
 
+  const totalCasesToday = cases.length
+  const pendingCount = cases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
+  const approvedCount = cases.filter((c) => c.statusBadge.label === 'Đã phê duyệt').length
+  const rejectedCount = cases.filter((c) => c.statusBadge.label === 'Đã từ chối').length
+  const uncertainCount = cases.filter((c) => c.statusBadge.label === 'Chưa đủ chắc chắn').length
+
   return (
     <>
       {/* UTILITY ACTIONS */}
       <div className="flex items-center justify-end gap-space-md">
         <div className="flex items-center gap-space-sm">
-          <button className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md shadow-sm transition-colors">
+          <button
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md shadow-sm transition-colors"
+            onClick={() => showToast(`Đã xuất báo cáo ${filteredCases.length} kết quả phân tích`)}
+          >
             <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
             <span className="">Xuất báo cáo</span>
           </button>
@@ -165,10 +192,10 @@ export default function AiRecommendationsPage() {
             <span className="p-1 rounded bg-amber-50 text-amber-700 material-symbols-outlined text-[18px]">hourglass_top</span>
           </div>
           <div className="mt-space-sm">
-            <div className="font-metric-num text-metric-num text-on-surface font-semibold">14 <span className="text-sm font-normal text-outline">yêu cầu</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface font-semibold">{pendingCount} <span className="text-sm font-normal text-outline">yêu cầu</span></div>
             <div className="font-body-sm text-body-sm text-amber-700 font-medium mt-1 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-              <span className="">08 ca ưu tiên trong ngày</span>
+              <span className="">Cần xử lý sớm</span>
             </div>
           </div>
         </div>
@@ -178,7 +205,7 @@ export default function AiRecommendationsPage() {
             <span className="p-1 rounded bg-emerald-50 text-emerald-700 material-symbols-outlined text-[18px]">check_circle</span>
           </div>
           <div className="mt-space-sm">
-            <div className="font-metric-num text-metric-num text-primary font-semibold">42 <span className="text-sm font-normal text-outline">kết quả</span></div>
+            <div className="font-metric-num text-metric-num text-primary font-semibold">{approvedCount} <span className="text-sm font-normal text-outline">kết quả</span></div>
             <div className="font-body-sm text-body-sm text-emerald-700 font-medium mt-1">Đã gửi gợi ý đến app nông dân</div>
           </div>
         </div>
@@ -188,7 +215,7 @@ export default function AiRecommendationsPage() {
             <span className="p-1 rounded bg-slate-100 text-slate-700 material-symbols-outlined text-[18px]">cancel</span>
           </div>
           <div className="mt-space-sm">
-            <div className="font-metric-num text-metric-num text-on-surface font-semibold">06 <span className="text-sm font-normal text-outline">yêu cầu</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface font-semibold">{rejectedCount} <span className="text-sm font-normal text-outline">yêu cầu</span></div>
             <div className="font-body-sm text-body-sm text-slate-600 mt-1">Ảnh mờ hoặc không đúng bệnh</div>
           </div>
         </div>
@@ -198,7 +225,7 @@ export default function AiRecommendationsPage() {
             <span className="p-1 rounded bg-orange-50 text-orange-700 material-symbols-outlined text-[18px]">warning</span>
           </div>
           <div className="mt-space-sm">
-            <div className="font-metric-num text-metric-num text-orange-700 font-semibold">05 <span className="text-sm font-normal text-outline">ca (&lt;70%)</span></div>
+            <div className="font-metric-num text-metric-num text-orange-700 font-semibold">{uncertainCount} <span className="text-sm font-normal text-outline">ca (&lt;70%)</span></div>
             <div className="font-body-sm text-body-sm text-orange-700 mt-1">Cần kỹ sư kiểm tra thực địa</div>
           </div>
         </div>
@@ -208,10 +235,10 @@ export default function AiRecommendationsPage() {
             <span className="p-1 rounded bg-blue-50 text-blue-700 material-symbols-outlined text-[18px]">analytics</span>
           </div>
           <div className="mt-space-sm">
-            <div className="font-metric-num text-metric-num text-on-surface font-semibold">67 <span className="text-sm font-normal text-outline">lượt</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface font-semibold">{totalCasesToday} <span className="text-sm font-normal text-outline">lượt</span></div>
             <div className="font-body-sm text-body-sm text-emerald-700 font-medium mt-1 flex items-center gap-0.5">
-              <span className="material-symbols-outlined text-[15px]">trending_up</span>
-              <span className="">Tăng +18.4% so với hôm qua</span>
+              <span className="material-symbols-outlined text-[15px]">analytics</span>
+              <span className="">Tự động cập nhật qua AI Vision</span>
             </div>
           </div>
         </div>
@@ -346,7 +373,10 @@ export default function AiRecommendationsPage() {
                         ) : (
                           <button
                             className="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface text-[11px] font-medium"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              requestFieldSurvey(item.id, item.farmerName)
+                            }}
                           >
                             Khảo sát
                           </button>
@@ -380,10 +410,15 @@ export default function AiRecommendationsPage() {
               <span className="px-2 py-0.5 rounded font-mono font-bold text-xs bg-primary/10 text-primary">#{selected.id}</span>
               <span className="font-title-md text-title-md text-on-surface font-semibold">Chi tiết đánh giá gợi ý AI</span>
             </div>
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selected.panelBadge.className}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${selected.panelBadge.dotClassName} mr-1.5`}></span>
-              {selected.panelBadge.label}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selected.panelBadge.className}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${selected.panelBadge.dotClassName} mr-1.5`}></span>
+                {selected.panelBadge.label}
+              </span>
+              {selected.rejectReasonLabel ? (
+                <span className="text-[11px] text-outline">Lý do: {selected.rejectReasonLabel}</span>
+              ) : null}
+            </div>
           </div>
           {/* 1. THÔNG TIN NÔNG DÂN */}
           <div className="p-space-md flex flex-col gap-space-xs">
@@ -514,15 +549,21 @@ export default function AiRecommendationsPage() {
               <label className="block font-label-md text-label-md text-on-surface mb-1">Ghi chú của đại lý (hiển thị kèm gợi ý trên app nông dân):</label>
               <textarea
                 key={selected.id}
+                ref={agentNoteRef}
                 className="w-full p-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-outline"
                 placeholder="Ví dụ: Vết bệnh mới chớm, phun vào sáng sớm khi ráo sương. Giữ mực nước ruộng 3-5cm..."
                 rows={2}
-                defaultValue={selected.defaultAgentNote}
+                defaultValue={selected.agentNote ?? selected.defaultAgentNote}
               />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-outline">Lý do nếu từ chối:</span>
-              <select className="py-1 px-2 text-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface-variant">
+              <select
+                key={selected.id}
+                ref={rejectReasonRef}
+                className="py-1 px-2 text-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface-variant"
+                defaultValue=""
+              >
                 <option value="">-- Chọn lý do từ chối nếu có --</option>
                 <option value="mo">Ảnh mờ / Cháy sáng</option>
                 <option value="nham">Nhận diện nhầm bệnh</option>
@@ -556,24 +597,33 @@ export default function AiRecommendationsPage() {
               <span className="material-symbols-outlined text-[16px]">history</span>
             </div>
             <div className="flex flex-col gap-2 text-xs">
-              <div className="p-2 rounded bg-surface-container-low/60 border border-outline-variant/40 flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-600 mt-1 shrink-0"></span>
-                <div className="flex-1">
-                  <div className="text-on-surface font-medium">
-                    Kỹ sư Nguyễn Văn Minh — <span className="text-emerald-700 font-semibold">Đã phê duyệt #AI-2398</span>
-                  </div>
-                  <div className="text-outline text-[11px]">Bệnh khô vằn / Validacin 5SL — 08:42 hôm nay</div>
-                </div>
-              </div>
-              <div className="p-2 rounded bg-surface-container-low/60 border border-outline-variant/40 flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-slate-500 mt-1 shrink-0"></span>
-                <div className="flex-1">
-                  <div className="text-on-surface font-medium">
-                    Kỹ sư Nguyễn Văn Minh — <span className="text-slate-700 font-semibold">Từ chối #AI-2395</span>
-                  </div>
-                  <div className="text-outline text-[11px]">Lý do: Ảnh không rõ lá bệnh (cháy sáng) — 08:15 hôm nay</div>
-                </div>
-              </div>
+              {(() => {
+                const recentDecided = cases
+                  .filter((c) => c.id !== selected.id && (c.statusBadge.label === 'Đã phê duyệt' || c.statusBadge.label === 'Đã từ chối'))
+                  .slice(0, 2)
+                if (recentDecided.length === 0) {
+                  return <p className="text-outline text-center py-2">Chưa có thẩm định nào khác gần đây.</p>
+                }
+                return recentDecided.map((c) => {
+                  const isApproved = c.statusBadge.label === 'Đã phê duyệt'
+                  return (
+                    <div key={c.id} className="p-2 rounded bg-surface-container-low/60 border border-outline-variant/40 flex items-start gap-2">
+                      <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${isApproved ? 'bg-emerald-600' : 'bg-slate-500'}`}></span>
+                      <div className="flex-1">
+                        <div className="text-on-surface font-medium">
+                          <span className={isApproved ? 'text-emerald-700 font-semibold' : 'text-slate-700 font-semibold'}>
+                            {c.statusBadge.label} #{c.id}
+                          </span>
+                        </div>
+                        <div className="text-outline text-[11px]">
+                          {c.diseaseFullLabel}
+                          {c.product ? ` / ${c.product.name}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              })()}
             </div>
           </div>
           </div>

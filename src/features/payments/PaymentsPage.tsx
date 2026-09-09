@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -11,6 +12,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
+import { parseVnd, formatVnd } from '../../utils/money'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
 const METHOD_OPTIONS = ['Tất cả phương thức', ...new Set(INITIAL_PAYMENTS.map((p) => p.methodLabel))]
@@ -59,6 +61,7 @@ export default function PaymentsPage() {
     if (label === 'Thu tiếp' || label === 'Ghi nhận TT') markPaymentPaid(id)
     else if (label === 'Đối soát') markPaymentReconciled(id)
     else if (label === 'Xem') setSelectedId(id)
+    else showToast(`Đã thực hiện "${label}" cho giao dịch #${id}`)
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
@@ -92,25 +95,46 @@ export default function PaymentsPage() {
   const { page, totalPages, paginated: paginatedPayments, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredPayments, 10)
 
+  const totalCollectedToday = payments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const cashCollected = payments.filter((p) => p.methodLabel.includes('Tiền mặt')).reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const vietqrCollected = payments.filter((p) => p.methodLabel.includes('VietQR')).reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const unpaidPayments = payments.filter((p) => p.statusBadge.label === 'Chưa thanh toán')
+  const unpaidAmount = unpaidPayments.reduce((sum, p) => sum + parseVnd(p.totalAmount), 0)
+  const partialPayments = payments.filter((p) => p.statusBadge.label === 'Thanh toán 1 phần')
+  const partialPaidAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const partialRemainingAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.remainingAmount), 0)
+  const paidCount = payments.filter((p) => p.statusBadge.label === 'Đã thanh toán').length
+  const codPendingPayments = payments.filter((p) => p.statusBadge.label === 'Chờ đối soát')
+  const codPendingAmount = codPendingPayments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+
   return (
     <>
       {/* PAGE HEADER & BREADCRUMBS & TOP ACTIONS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex items-center gap-1 text-outline font-label-sm text-label-sm">
-          <span className="">Bảng điều khiển</span>
+          <Link className="hover:text-on-surface transition-colors" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-[14px]">chevron_right</span>
           <span className="text-primary font-medium">Quản lý thanh toán</span>
         </div>
         <div className="flex items-center gap-space-sm flex-wrap">
-          <button className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm">
+          <button
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
+            onClick={() => showToast(`Đã xuất báo cáo ${filteredPayments.length} giao dịch`)}
+          >
             <span className="material-symbols-outlined text-[18px] text-outline">download</span>
             <span className="">Xuất báo cáo</span>
           </button>
-          <button className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm">
+          <button
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
+            onClick={() => showToast('Đã in sổ thu chi')}
+          >
             <span className="material-symbols-outlined text-[18px] text-outline">print</span>
             <span className="">In sổ thu chi</span>
           </button>
-          <button className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-surface-container-lowest rounded-xl font-title-md text-title-md transition-colors shadow-sm focus:ring-2 focus:ring-primary-container focus:outline-none">
+          <button
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-surface-container-lowest rounded-xl font-title-md text-title-md transition-colors shadow-sm focus:ring-2 focus:ring-primary-container focus:outline-none"
+            onClick={() => showToast('Chức năng ghi nhận thanh toán mới đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span className="">Ghi nhận thanh toán</span>
           </button>
@@ -122,14 +146,11 @@ export default function PaymentsPage() {
         <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
           <div className="flex items-center justify-between">
             <span className="font-label-md text-label-md text-outline font-medium">Thu hôm nay</span>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
-              +14.2% so hôm qua
-            </span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">58.420.000 <span className="text-title-md font-normal text-outline">đ</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{formatVnd(totalCollectedToday)}</div>
             <div className="text-[12px] text-outline mt-1 truncate">
-              Tiền mặt 22.150.000đ • VietQR 36.270.000đ
+              Tiền mặt {formatVnd(cashCollected)} • VietQR {formatVnd(vietqrCollected)}
             </div>
           </div>
         </div>
@@ -139,9 +160,9 @@ export default function PaymentsPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"></span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">09 <span className="text-title-md font-normal text-outline">giao dịch</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{unpaidPayments.length} <span className="text-title-md font-normal text-outline">giao dịch</span></div>
             <div className="text-[12px] text-amber-700 font-medium mt-1 truncate">
-              Tổng tiền chờ: 42.180.000 đ
+              Tổng tiền chờ: {formatVnd(unpaidAmount)}
             </div>
           </div>
         </div>
@@ -151,9 +172,9 @@ export default function PaymentsPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 ring-4 ring-yellow-100"></span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">06 <span className="text-title-md font-normal text-outline">đơn</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{partialPayments.length} <span className="text-title-md font-normal text-outline">đơn</span></div>
             <div className="text-[12px] text-outline mt-1 truncate">
-              Đã thu 38.500.000đ / Còn thiếu 24.300.000đ
+              Đã thu {formatVnd(partialPaidAmount)} / Còn thiếu {formatVnd(partialRemainingAmount)}
             </div>
           </div>
         </div>
@@ -163,9 +184,9 @@ export default function PaymentsPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">34 <span className="text-title-md font-normal text-outline">giao dịch</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{paidCount} <span className="text-title-md font-normal text-outline">giao dịch</span></div>
             <div className="text-[12px] text-emerald-700 font-medium mt-1 truncate">
-              Hoàn tất 100% doanh thu
+              Hoàn tất
             </div>
           </div>
         </div>
@@ -175,9 +196,9 @@ export default function PaymentsPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 ring-4 ring-indigo-100"></span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-indigo-900 tracking-tight font-bold">18.650.000 <span className="text-title-md font-normal text-outline">đ</span></div>
+            <div className="font-metric-num text-metric-num text-indigo-900 tracking-tight font-bold">{formatVnd(codPendingAmount)}</div>
             <div className="text-[12px] text-indigo-700 font-medium mt-1 truncate">
-              04 chuyến giao đã thu COD cần nộp quỹ
+              {codPendingPayments.length} giao dịch COD cần nộp quỹ
             </div>
           </div>
         </div>
@@ -406,15 +427,24 @@ export default function PaymentsPage() {
                 </div>
               </div>
               <div className="flex flex-col gap-2 pt-2">
-                <button className="w-full py-2 bg-primary-container hover:bg-primary text-white font-title-md text-title-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                <button
+                  className="w-full py-2 bg-primary-container hover:bg-primary text-white font-title-md text-title-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
+                  onClick={() => markPaymentPaid(selected.id)}
+                >
                   <span className="material-symbols-outlined text-[18px]">payments</span>
                   <span className="">Ghi nhận thu tiền tiếp</span>
                 </button>
-                <button className="w-full py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5">
+                <button
+                  className="w-full py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
+                  onClick={() => showToast(`Đã in phiếu thu VietQR / biên nhận cho giao dịch #${selected.id}`)}
+                >
                   <span className="material-symbols-outlined text-[18px] text-outline">print</span>
                   <span className="">In phiếu thu VietQR / Biên nhận</span>
                 </button>
-                <button className="w-full py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5">
+                <button
+                  className="w-full py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5"
+                  onClick={() => showToast(`Đã gửi nhắc nợ Zalo/SMS cho ${selected.customerName}`)}
+                >
                   <span className="material-symbols-outlined text-[18px] text-blue-600">chat</span>
                   <span className="">Gửi nhắc nợ Zalo / SMS</span>
                 </button>
@@ -431,33 +461,23 @@ export default function PaymentsPage() {
               <span className="material-symbols-outlined text-outline text-[18px]">update</span>
             </div>
             <div className="space-y-3 font-body-sm text-body-sm">
-              <div className="flex items-start gap-2.5 pb-2.5 border-b border-outline-variant/60">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
-                <div className="flex-1">
-                  <div className="text-on-surface">
-                    <strong className="font-mono text-primary">TT-9042:</strong> Nhận <span className="font-semibold text-emerald-700 font-mono">5.000.000đ</span> qua VietQR từ Trần Văn Hải
+              {payments.length === 0 ? (
+                <p className="text-outline text-center py-4">Không có giao dịch nào gần đây.</p>
+              ) : (
+                payments.slice(0, 3).map((payment) => (
+                  <div key={payment.id} className="flex items-start gap-2.5 pb-2.5 border-b border-outline-variant/60 last:border-0 last:pb-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
+                    <div className="flex-1">
+                      <div className="text-on-surface">
+                        <strong className="font-mono text-primary">{payment.id}:</strong> Thu{' '}
+                        <span className="font-semibold text-emerald-700 font-mono">{payment.paidAmount}</span> qua {payment.methodLabel} từ{' '}
+                        {payment.customerName}
+                      </div>
+                      <div className="text-[11px] text-outline mt-0.5">{payment.time} • Bởi {payment.recordedBy}</div>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-outline mt-0.5">08:45 • Bởi Đại lý</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5 pb-2.5 border-b border-outline-variant/60">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
-                <div className="flex-1">
-                  <div className="text-on-surface">
-                    <strong className="font-mono text-primary">TT-9041:</strong> Thanh toán đủ <span className="font-semibold text-emerald-700 font-mono">4.800.000đ</span> VietQR từ Lê Thị Bảy
-                  </div>
-                  <div className="text-[11px] text-outline mt-0.5">09:45 • Tự động khớp lệnh Webhook</div>
-                </div>
-              </div>
-              <div className="flex items-start gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-indigo-500 mt-1.5 flex-shrink-0"></span>
-                <div className="flex-1">
-                  <div className="text-on-surface">
-                    <strong className="font-mono text-indigo-800">COD-8819:</strong> Thu tiền mặt <span className="font-semibold font-mono text-on-surface">2.160.000đ</span> từ tài xế Bảo
-                  </div>
-                  <div className="text-[11px] text-outline mt-0.5">09:15 • Chờ duyệt đối soát thủ quỹ</div>
-                </div>
-              </div>
+                ))
+              )}
             </div>
           </div>
     </>

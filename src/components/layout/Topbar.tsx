@@ -1,6 +1,11 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePageHeaderValue } from '../../context/PageHeaderContext'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
+import { farmers } from '../../data/mockFarmers'
+import { orders } from '../../data/mockOrders'
+import { products } from '../../data/mockProducts'
 
 interface TopbarProps {
   onMenuClick: () => void
@@ -9,11 +14,48 @@ interface TopbarProps {
 export default function Topbar({ onMenuClick }: TopbarProps) {
   const { title, subtitle, badge } = usePageHeaderValue()
   const { logout } = useAuth()
+  const { showToast } = useToast()
   const navigate = useNavigate()
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true)
 
   const handleLogout = () => {
     logout()
     navigate('/login')
+  }
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return
+
+    const orderMatch = orders.find((o) => o.id.toLowerCase().includes(q) || o.customerName.toLowerCase().includes(q))
+    const farmerMatch = farmers.find((f) => f.name.toLowerCase().includes(q) || f.phone.includes(q))
+    const productMatch = products.find((p) => p.name.toLowerCase().includes(q))
+
+    if (orderMatch) {
+      navigate('/orders')
+      showToast(`Tìm thấy đơn hàng #${orderMatch.id} (${orderMatch.customerName})`)
+    } else if (farmerMatch) {
+      navigate('/farmers')
+      showToast(`Tìm thấy nông dân: ${farmerMatch.name}`)
+    } else if (productMatch) {
+      navigate('/products')
+      showToast(`Tìm thấy sản phẩm: ${productMatch.name}`)
+    } else {
+      showToast(`Không tìm thấy kết quả cho "${searchQuery}"`)
+    }
+    setSearchQuery('')
+  }
+
+  const handleNotificationsClick = () => {
+    if (hasUnreadNotifications) {
+      setHasUnreadNotifications(false)
+      showToast('Đã xem thông báo hệ thống')
+    } else {
+      showToast('Không có thông báo mới')
+    }
   }
 
   return (
@@ -46,19 +88,22 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
       </div>
 
       <div className="flex items-center justify-end gap-space-md shrink-0">
-        <div className="relative hidden lg:block w-72">
+        <form className="relative hidden lg:block w-72" onSubmit={handleSearchSubmit}>
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
           <input
             className="w-full h-8 pl-9 pr-3 text-sm bg-surface-container-low border border-outline-variant/60 rounded focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white text-on-surface transition-all placeholder:text-outline font-body-md"
             placeholder="Tìm nông dân, đơn hàng, vật tư (NPK, giống, thuốc BVTV)..."
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
-        </div>
+        </form>
         <div className="flex items-center gap-1">
           <button
             className="w-8 h-8 flex items-center justify-center rounded border border-transparent hover:border-outline-variant/60 hover:bg-surface-container-low text-on-surface-variant transition-colors"
             title="VietQR Quick Scanner"
             type="button"
+            onClick={() => showToast('Chức năng quét mã VietQR đang được phát triển')}
           >
             <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
           </button>
@@ -66,9 +111,12 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             className="w-8 h-8 flex items-center justify-center rounded border border-transparent hover:border-outline-variant/60 hover:bg-surface-container-low text-on-surface-variant relative transition-colors"
             title="Thông báo hệ thống"
             type="button"
+            onClick={handleNotificationsClick}
           >
             <span className="material-symbols-outlined text-[18px]">notifications</span>
-            <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-error ring-2 ring-white"></span>
+            {hasUnreadNotifications ? (
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-error ring-2 ring-white"></span>
+            ) : null}
           </button>
           <button
             className="w-8 h-8 flex items-center justify-center rounded border border-transparent hover:border-outline-variant/60 hover:bg-surface-container-low text-on-surface-variant transition-colors"

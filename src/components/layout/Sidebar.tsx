@@ -1,20 +1,14 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import type { NavItem } from '../../types'
-
-const NAV_ITEMS: NavItem[] = [
-  { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
-  { label: 'Sản phẩm', to: '/products', icon: 'category', badge: '312' },
-  { label: 'Kho hàng', to: '/inventory', icon: 'inventory_2', badge: '6', badgeTone: 'error' },
-  { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: '48', badgeTone: 'primary' },
-  { label: 'Giao hàng', to: '/delivery', icon: 'local_shipping', badge: '12' },
-  { label: 'Thanh toán', to: '/payments', icon: 'payments', badge: '9 chờ', badgeTone: 'primary' },
-  { label: 'Công nợ', to: '/debts', icon: 'pending_actions', badge: '412.8M', badgeTone: 'warning' },
-  { label: 'Gợi ý AI', to: '/ai-recommendations', icon: 'psychology', badge: '5', badgeTone: 'error', iconTone: 'primary' },
-  { label: 'Nông dân', to: '/farmers', icon: 'groups' },
-  { label: 'Nhật ký thao tác', to: '/activity-log', icon: 'history_toggle_off' },
-  { label: 'Cài đặt', to: '/settings', icon: 'settings' },
-]
+import { products } from '../../data/mockProducts'
+import { inventoryItems } from '../../data/mockInventory'
+import { orders } from '../../data/mockOrders'
+import { trips } from '../../data/mockDeliveries'
+import { payments } from '../../data/mockPayments'
+import { debtCustomers } from '../../data/mockDebts'
+import { aiCases } from '../../data/mockAiRecommendations'
+import { parseVnd, formatVndShort } from '../../utils/money'
 
 function badgeClasses(tone: NavItem['badgeTone']) {
   switch (tone) {
@@ -36,6 +30,26 @@ interface SidebarProps {
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const { user } = useAuth()
+
+  const inventoryAlertCount = inventoryItems.filter((i) => i.stockLabel !== 'Tồn kho tốt').length
+  const activeDeliveryCount = trips.filter((t) => t.statusBadge.label !== 'Giao thành công').length
+  const unpaidPaymentCount = payments.filter((p) => p.statusBadge.label !== 'Đã thanh toán').length
+  const totalDebtRemaining = debtCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const pendingAiCount = aiCases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
+
+  const navItems: NavItem[] = [
+    { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
+    { label: 'Sản phẩm', to: '/products', icon: 'category', badge: String(products.length) },
+    { label: 'Kho hàng', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
+    { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: String(orders.length), badgeTone: 'primary' },
+    { label: 'Giao hàng', to: '/delivery', icon: 'local_shipping', badge: String(activeDeliveryCount) },
+    { label: 'Thanh toán', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
+    { label: 'Công nợ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
+    { label: 'Gợi ý AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
+    { label: 'Nông dân', to: '/farmers', icon: 'groups' },
+    { label: 'Nhật ký thao tác', to: '/activity-log', icon: 'history_toggle_off' },
+    { label: 'Cài đặt', to: '/settings', icon: 'settings' },
+  ]
 
   return (
     <>
@@ -84,7 +98,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       <nav aria-label="Main Operations Navigation" className="flex-1 min-h-0 overflow-y-auto space-y-0.5 px-space-xs">
-          {NAV_ITEMS.map((item) => (
+          {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

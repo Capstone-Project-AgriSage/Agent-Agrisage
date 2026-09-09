@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -12,6 +13,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { trips as INITIAL_TRIPS } from '../../data/mockDeliveries'
+import { parseVnd, formatVnd } from '../../utils/money'
 
 const STATUS_OPTIONS = [
   'Tất cả trạng thái (Chờ, Đang giao, Thành công...)',
@@ -73,6 +75,7 @@ export default function DeliveryPage() {
     if (label === 'Phân công tài xế') setTripStatus(id, 'Đã phân công')
     else if (label === 'Xử lý lại chuyến giao') setTripStatus(id, 'Đang giao')
     else if (label === 'Xem chi tiết' || label === 'Xem ghi chú') setSelectedId(id)
+    else showToast(`Đã thực hiện "${label}" cho chuyến #${id}`)
   }
 
   const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(trips, (t) => t.id)
@@ -109,6 +112,16 @@ export default function DeliveryPage() {
   const { page, totalPages, paginated: paginatedTrips, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredTrips, 10)
 
+  const waitingTrips = trips.filter((t) => t.statusBadge.label === 'Chờ phân công').length
+  const deliveringTrips = trips.filter((t) => t.statusBadge.label === 'Đang giao').length
+  const succeededTrips = trips.filter((t) => t.statusBadge.label === 'Giao thành công').length
+  const failedTrips = trips.filter((t) => t.statusBadge.label === 'Giao thất bại').length
+  const successRate = trips.length ? Math.round((succeededTrips / trips.length) * 1000) / 10 : 0
+  const totalCodAmount = trips.reduce((sum, t) => sum + parseVnd(t.codAmountLabel), 0)
+  const reconciledCodAmount = trips
+    .filter((t) => t.codBadge.label === 'Đã thu COD')
+    .reduce((sum, t) => sum + parseVnd(t.codAmountLabel), 0)
+
   const timelineCircleClassName = (state: TripTimelineStep['state']) => {
     switch (state) {
       case 'done':
@@ -134,20 +147,32 @@ export default function DeliveryPage() {
       {/* 1. BREADCRUMB & PAGE HEADER WITH ONLY ONE MAIN CTA */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm border-b border-[#E2E8F0] pb-space-md">
         <div className="flex items-center gap-1.5 text-[12px] text-[#64748B] font-body-sm">
-          <span className="">Bảng điều khiển</span>
+          <Link className="hover:text-[#0F172A] transition-colors" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
           <span className="text-[#0F172A] font-medium">Quản lý giao hàng</span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors" type="button">
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors"
+            type="button"
+            onClick={() => showToast(`Đã xuất danh sách ${filteredTrips.length} chuyến giao`)}
+          >
             <span className="material-symbols-outlined text-[17px] text-[#64748B]" data-icon="download">download</span>
             <span className="">Xuất danh sách</span>
           </button>
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors" type="button">
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors"
+            type="button"
+            onClick={() => showToast(`Đã in phiếu giao cho ${filteredTrips.length} chuyến`)}
+          >
             <span className="material-symbols-outlined text-[17px] text-[#64748B]" data-icon="print">print</span>
             <span className="">In phiếu giao loạt</span>
           </button>
-          <button className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-lg font-label-md text-label-md shadow-sm font-semibold transition-colors focus:ring-2 focus:ring-[#1E5E3A] focus:outline-none" type="button">
+          <button
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-lg font-label-md text-label-md shadow-sm font-semibold transition-colors focus:ring-2 focus:ring-[#1E5E3A] focus:outline-none"
+            type="button"
+            onClick={() => showToast('Chức năng tạo chuyến giao mới đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
             <span className="">Tạo chuyến giao</span>
           </button>
@@ -162,7 +187,7 @@ export default function DeliveryPage() {
             <span className="w-2 h-2 rounded-full bg-[#F59E0B]"></span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-metric-num text-metric-num text-[#0F172A] font-bold tabular-nums">05</span>
+            <span className="font-metric-num text-metric-num text-[#0F172A] font-bold tabular-nums">{waitingTrips}</span>
             <span className="font-body-sm text-body-sm text-[#64748B]">chuyến</span>
           </div>
           <p className="font-body-sm text-[12px] text-[#D97706] mt-1 font-medium truncate flex items-center gap-1">
@@ -176,11 +201,11 @@ export default function DeliveryPage() {
             <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse"></span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-metric-num text-metric-num text-[#0F172A] font-bold tabular-nums">12</span>
+            <span className="font-metric-num text-metric-num text-[#0F172A] font-bold tabular-nums">{deliveringTrips}</span>
             <span className="font-body-sm text-body-sm text-[#64748B]">chuyến</span>
           </div>
           <p className="font-body-sm text-[12px] text-[#475569] mt-1 truncate">
-            8 ghe xuồng + 4 xe máy/lôi
+            Đang vận chuyển ghe xuồng &amp; xe lôi
           </p>
         </div>
         <div className="bg-white rounded-lg border border-[#E2E8F0] p-3.5 shadow-sm">
@@ -189,11 +214,11 @@ export default function DeliveryPage() {
             <span className="w-2 h-2 rounded-full bg-[#16A34A]"></span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-metric-num text-metric-num text-[#15803D] font-bold tabular-nums">28</span>
+            <span className="font-metric-num text-metric-num text-[#15803D] font-bold tabular-nums">{succeededTrips}</span>
             <span className="font-body-sm text-body-sm text-[#64748B]">chuyến</span>
           </div>
           <p className="font-body-sm text-[12px] text-[#15803D] mt-1 font-medium truncate">
-            Hôm nay, đạt 93.3%
+            Đạt {successRate}%
           </p>
         </div>
         <div className="bg-white rounded-lg border border-[#E2E8F0] p-3.5 shadow-sm">
@@ -202,7 +227,7 @@ export default function DeliveryPage() {
             <span className="w-2 h-2 rounded-full bg-[#DC2626]"></span>
           </div>
           <div className="flex items-baseline gap-1.5">
-            <span className="font-metric-num text-metric-num text-[#DC2626] font-bold tabular-nums">02</span>
+            <span className="font-metric-num text-metric-num text-[#DC2626] font-bold tabular-nums">{failedTrips}</span>
             <span className="font-body-sm text-body-sm text-[#64748B]">chuyến</span>
           </div>
           <p className="font-body-sm text-[12px] text-[#DC2626] mt-1 font-medium truncate">
@@ -215,11 +240,10 @@ export default function DeliveryPage() {
             <span className="material-symbols-outlined text-[#64748B] text-[16px]" data-icon="payments">payments</span>
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-[20px] leading-tight text-[#0F172A] font-bold tabular-nums">46.850.000</span>
-            <span className="font-body-sm text-[11px] text-[#64748B]">đ</span>
+            <span className="text-[20px] leading-tight text-[#0F172A] font-bold tabular-nums">{formatVnd(totalCodAmount)}</span>
           </div>
           <p className="font-body-sm text-[12px] text-[#475569] mt-1 truncate">
-            Đã đối soát <span className="font-semibold text-[#15803D]">38.200.000 đ</span>
+            Đã đối soát <span className="font-semibold text-[#15803D]">{formatVnd(reconciledCodAmount)}</span>
           </p>
         </div>
       </div>
@@ -521,16 +545,27 @@ export default function DeliveryPage() {
               </span>
             </button>
             <div className="grid grid-cols-2 gap-2">
-              <button className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors" type="button">
+              <a
+                className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+                href={`tel:${selectedTrip.driverPhone.replace(/\./g, '')}`}
+              >
                 <span className="material-symbols-outlined text-[16px] text-[#1E5E3A]" data-icon="call">call</span>
                 <span className="">Gọi tài xế</span>
-              </button>
-              <button className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors" type="button">
+              </a>
+              <button
+                className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+                type="button"
+                onClick={() => showToast(`Đã in phiếu giao cho chuyến #${selectedTrip.id}`)}
+              >
                 <span className="material-symbols-outlined text-[16px] text-[#64748B]" data-icon="print">print</span>
                 <span className="">In phiếu giao</span>
               </button>
             </div>
-            <button className="w-full py-1.5 px-3 bg-white border border-[#FCA5A5] text-[#DC2626] hover:bg-[#FEE2E2] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors" type="button">
+            <button
+              className="w-full py-1.5 px-3 bg-white border border-[#FCA5A5] text-[#DC2626] hover:bg-[#FEE2E2] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
+              type="button"
+              onClick={() => showToast(`Đã ghi nhận báo giao thất bại / đổi lịch cho chuyến #${selectedTrip.id}`)}
+            >
               <span className="material-symbols-outlined text-[16px]" data-icon="report_problem">report_problem</span>
               <span className="">Báo giao thất bại / Đổi lịch</span>
             </button>

@@ -240,6 +240,8 @@ export interface AiCase {
   product?: ProductSuggestion
   noProductNote?: string
   defaultAgentNote: string
+  agentNote?: string
+  rejectReasonLabel?: string
 }
 
 export interface RelatedObjectField {

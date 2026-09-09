@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
@@ -19,6 +20,7 @@ export default function ActivityLogPage() {
     title: 'Nhật ký thao tác',
   })
 
+  const { showToast } = useToast()
   const { selectedId, setSelectedId, selected } = useSelectableList(LOG_ENTRIES, (entry) => entry.id)
 
   const [actionFilter, setActionFilter] = useState(ACTION_OPTIONS[0])
@@ -63,6 +65,13 @@ export default function ActivityLogPage() {
     setPage,
   } = usePagination(filteredEntries, 10)
 
+  const totalActionsToday = LOG_ENTRIES.length
+  const orderActionsCount = LOG_ENTRIES.filter((e) => e.moduleLabel === 'Đơn hàng').length
+  const paymentActionsCount = LOG_ENTRIES.filter((e) => e.moduleLabel === 'Thanh toán').length
+  const aiActions = LOG_ENTRIES.filter((e) => e.moduleLabel === 'Gợi ý AI')
+  const aiApprovedCount = aiActions.filter((e) => e.actionLabel === 'Phê duyệt').length
+  const aiRejectedCount = aiActions.filter((e) => e.actionLabel === 'Từ chối').length
+
   return (
     <>
       {/* Trailing Action: Export Data */}
@@ -70,6 +79,7 @@ export default function ActivityLogPage() {
         <button
           className="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface rounded-lg font-label-md text-label-md font-semibold shadow-sm hover:bg-surface-container-low active:bg-surface-container-high transition"
           type="button"
+          onClick={() => showToast(`Đã xuất dữ liệu nhật ký (${filteredEntries.length} bản ghi)`)}
         >
           <span className="material-symbols-outlined text-outline" data-icon="download">
             download
@@ -91,17 +101,11 @@ export default function ActivityLogPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">328</span>
+            <span className="font-metric-num text-metric-num text-on-surface font-bold">{totalActionsToday}</span>
             <span className="font-body-sm text-body-sm text-outline">lượt</span>
           </div>
           <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
-            <span className="inline-flex items-center text-emerald-700 font-label-sm text-label-sm font-semibold">
-              <span className="material-symbols-outlined text-[16px]" data-icon="trending_up">
-                trending_up
-              </span>{' '}
-              +14.2%
-            </span>
-            <span className="font-body-sm text-[11px] text-outline">so với hôm qua</span>
+            <span className="font-body-sm text-[11px] text-outline">Ghi nhận qua các kênh nghiệp vụ</span>
           </div>
         </div>
         {/* KPI 2 */}
@@ -115,7 +119,7 @@ export default function ActivityLogPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">54</span>
+            <span className="font-metric-num text-metric-num text-on-surface font-bold">{orderActionsCount}</span>
             <span className="font-body-sm text-body-sm text-outline">lượt</span>
           </div>
           <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
@@ -134,7 +138,7 @@ export default function ActivityLogPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">29</span>
+            <span className="font-metric-num text-metric-num text-on-surface font-bold">{paymentActionsCount}</span>
             <span className="font-body-sm text-body-sm text-outline">lượt</span>
           </div>
           <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
@@ -153,13 +157,13 @@ export default function ActivityLogPage() {
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">18</span>
+            <span className="font-metric-num text-metric-num text-on-surface font-bold">{aiActions.length}</span>
             <span className="font-body-sm text-body-sm text-outline">lượt</span>
           </div>
           <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-2">
-            <span className="inline-flex items-center text-primary-container font-semibold text-[11px]">15 phê duyệt</span>
+            <span className="inline-flex items-center text-primary-container font-semibold text-[11px]">{aiApprovedCount} phê duyệt</span>
             <span className="text-outline">•</span>
-            <span className="inline-flex items-center text-error font-semibold text-[11px]">3 từ chối</span>
+            <span className="inline-flex items-center text-error font-semibold text-[11px]">{aiRejectedCount} từ chối</span>
           </div>
         </div>
       </section>
@@ -301,63 +305,24 @@ export default function ActivityLogPage() {
               <span className="font-label-sm text-label-sm text-outline">Ghi nhận qua kênh nghiệp vụ chính thức</span>
             </div>
             <div className="space-y-2.5">
-              {/* Event 1 */}
-              <div className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-primary-container border border-emerald-300 mt-0.5 whitespace-nowrap">
-                  Gợi ý AI
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">
-                    Phê duyệt thành công gợi ý sản phẩm cho hộ <span className="font-bold text-primary">Trần Văn Hải</span>
-                  </p>
-                  <p className="font-body-sm text-[11px] text-outline">Mã phân tích #AI-2401 • Thuốc Fuji-One 40WP</p>
-                </div>
-                <span className="font-mono text-outline text-[11px] whitespace-nowrap">10:45</span>
-              </div>
-              {/* Event 2 */}
-              <div className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-300 mt-0.5 whitespace-nowrap">
-                  Thanh toán
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">
-                    Đối soát tự động VietQR thành công khoản cọc{' '}
-                    <span className="font-bold text-on-surface font-mono">14.200.000 đ</span>
-                  </p>
-                  <p className="font-body-sm text-[11px] text-outline">
-                    Khách hàng: Nguyễn Văn Thắng • BIDV khớp lệnh ngay lập tức
-                  </p>
-                </div>
-                <span className="font-mono text-outline text-[11px] whitespace-nowrap">10:32</span>
-              </div>
-              {/* Event 3 */}
-              <div className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300 mt-0.5 whitespace-nowrap">
-                  Đơn hàng
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">
-                    Đơn hàng giá trị cao <span className="font-mono font-bold">#DH-2024-1082</span> (
-                    <span className="font-mono font-bold text-on-surface">48.500.000 đ</span>) vừa tạo thành công
-                  </p>
-                  <p className="font-body-sm text-[11px] text-outline">Hợp đồng bao tiêu phân bón NPK Cà Mau Vụ Thu Đông</p>
-                </div>
-                <span className="font-mono text-outline text-[11px] whitespace-nowrap">09:58</span>
-              </div>
-              {/* Event 4 */}
-              <div className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300 mt-0.5 whitespace-nowrap">
-                  Công nợ
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">
-                    Đã gửi thông báo nhắc lịch thanh toán gối đầu đến{' '}
-                    <span className="font-bold text-on-surface">12 hộ nông dân</span> Thới Lai
-                  </p>
-                  <p className="font-body-sm text-[11px] text-outline">Tỷ lệ mở tin nhắn kiểm tra: 75% sau 45 phút phát hành</p>
-                </div>
-                <span className="font-mono text-outline text-[11px] whitespace-nowrap">08:40</span>
-              </div>
+              {LOG_ENTRIES.length === 0 ? (
+                <p className="text-body-sm text-outline text-center py-4">Không có sự kiện nào gần đây.</p>
+              ) : (
+                LOG_ENTRIES.slice(0, 4).map((entry) => (
+                  <div key={entry.id} className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold border mt-0.5 whitespace-nowrap ${entry.moduleClassName}`}
+                    >
+                      {entry.moduleLabel}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">{entry.description}</p>
+                      <p className="font-body-sm text-[11px] text-outline">{entry.descriptionNote}</p>
+                    </div>
+                    <span className="font-mono text-outline text-[11px] whitespace-nowrap">{entry.time}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
       </div>
@@ -539,6 +504,7 @@ export default function ActivityLogPage() {
             <button
               className="w-full py-2 px-3 bg-primary-container hover:bg-primary text-white font-label-md text-label-md font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.99]"
               type="button"
+              onClick={() => showToast(`Xem phân tích AI gốc cho ${selected.objectId} đang được phát triển`)}
             >
               <span className="material-symbols-outlined text-[18px]" data-icon="psychology">
                 psychology
@@ -548,6 +514,7 @@ export default function ActivityLogPage() {
             <button
               className="w-full py-2 px-3 bg-white border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-lg flex items-center justify-center gap-2 transition"
               type="button"
+              onClick={() => showToast(`Xem hồ sơ khách hàng của ${selected.actorName} đang được phát triển`)}
             >
               <span className="material-symbols-outlined text-[18px] text-outline" data-icon="contact_page">
                 contact_page

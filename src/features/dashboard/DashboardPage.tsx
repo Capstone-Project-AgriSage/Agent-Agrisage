@@ -2,26 +2,53 @@ import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
+import { usePagination } from '../../hooks/usePagination'
+import { useToast } from '../../context/ToastContext'
+import { orders as ALL_ORDERS } from '../../data/mockOrders'
+import { debtCustomers as ALL_DEBT_CUSTOMERS } from '../../data/mockDebts'
+import { inventoryItems as ALL_INVENTORY } from '../../data/mockInventory'
+import { payments as ALL_PAYMENTS } from '../../data/mockPayments'
+import { parseVnd, formatVnd } from '../../utils/money'
+import type { Order } from '../../types'
 
-interface RecentOrderDetail {
-  id: string
-  time: string
-  customerName: string
-  location: string
-  productLine: string
-  productNote?: string
-  total: string
-  statusLabel: string
-  statusClassName: string
-  statusDotClassName: string
-}
+const TAB_OPTIONS = ['Tất cả', 'Chờ xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành']
 
 export default function DashboardPage() {
   usePageHeader({
     title: 'Operations Dashboard',
   })
 
-  const [selectedOrder, setSelectedOrder] = useState<RecentOrderDetail | null>(null)
+  const { showToast } = useToast()
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [statusTab, setStatusTab] = useState(TAB_OPTIONS[0])
+
+  const filteredOrders = statusTab === TAB_OPTIONS[0] ? ALL_ORDERS : ALL_ORDERS.filter((o) => o.statusBadge.label === statusTab)
+  const tabCounts = TAB_OPTIONS.map((tab) => (tab === TAB_OPTIONS[0] ? ALL_ORDERS.length : ALL_ORDERS.filter((o) => o.statusBadge.label === tab).length))
+
+  const { page, totalPages, paginated, startIndex, endIndex, totalCount, goPrev, goNext, setPage } = usePagination(filteredOrders, 5)
+
+  const totalRevenue = ALL_ORDERS.reduce((sum, o) => sum + parseVnd(o.total), 0)
+  const cashRevenue = ALL_ORDERS.filter((o) => o.paymentBadge.label === 'Tiền mặt tại kho').reduce((sum, o) => sum + parseVnd(o.total), 0)
+  const debtRevenue = ALL_ORDERS.filter((o) => o.paymentBadge.label === 'Gối nợ vụ mùa').reduce((sum, o) => sum + parseVnd(o.total), 0)
+
+  const pendingReconciliation = ALL_PAYMENTS.filter((p) => p.statusBadge.label === 'Chờ đối soát')
+  const pendingReconciliationAmount = pendingReconciliation.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+
+  const debtHouseholds = ALL_DEBT_CUSTOMERS.filter((c) => parseVnd(c.remaining) > 0)
+  const totalDebtRemaining = debtHouseholds.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const dueTodayHouseholds = ALL_DEBT_CUSTOMERS.filter((c) => c.statusBadge.label === 'Đến hạn').length
+
+  const lowStockItems = ALL_INVENTORY.filter((i) => i.stockLabel === 'Sắp hết')
+  const lowStockNames = lowStockItems.slice(0, 2).map((i) => i.name).join(' & ')
+
+  const handleOrderAction = (order: Order, label: string) => {
+    if (label === 'Xem' || label === 'Xem chi tiết') {
+      setSelectedOrder(order)
+    } else {
+      showToast(`Đã thực hiện "${label}" cho đơn #${order.id}`)
+    }
+  }
 
   return (
     <>
@@ -37,15 +64,12 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">48</span>
+              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{ALL_ORDERS.length}</span>
               <span className="text-xs text-on-surface-variant font-medium">đơn</span>
-              <span className="text-[10px] text-[#15803D] font-semibold flex items-center ml-auto bg-[#DCFCE7] border border-[#86EFAC] px-1.5 py-0.5 rounded">
-                <span className="material-symbols-outlined text-[10px] mr-0.5" data-icon="trending_up">trending_up</span>+12.5%
-              </span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex items-center justify-between">
-              <span className="font-medium text-on-surface">36 đã giao</span>
-              <span className="text-outline tabular-nums">12 đang xử lý</span>
+              <span className="font-medium text-on-surface">{tabCounts[4]} hoàn thành</span>
+              <span className="text-outline tabular-nums">{tabCounts[2]} đang xử lý</span>
             </div>
           </div>
         </div>
@@ -60,33 +84,30 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2">
             <div className="flex items-baseline">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">184.65M</span>
-              <span className="text-xs text-on-surface-variant ml-1 font-medium">₫</span>
+              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{formatVnd(totalRevenue)}</span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between gap-1">
-              <span>Tiền mặt: <strong className="text-[#15803D] font-semibold tabular-nums">142.5M</strong></span>
-              <span>Gối nợ: <strong className="text-secondary font-semibold tabular-nums">42.15M</strong></span>
+              <span>Tiền mặt: <strong className="text-[#15803D] font-semibold tabular-nums">{formatVnd(cashRevenue)}</strong></span>
+              <span>Gối nợ: <strong className="text-secondary font-semibold tabular-nums">{formatVnd(debtRevenue)}</strong></span>
             </div>
           </div>
         </div>
 
-        {/* KPI 3: Chờ xác nhận thu */}
+        {/* KPI 3: Chờ đối soát */}
         <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Chờ Xác Nhận Thu</span>
+            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Chờ Đối Soát</span>
             <span className="w-7 h-7 rounded-lg bg-secondary-fixed/50 flex items-center justify-center text-secondary flex-shrink-0">
               <span className="material-symbols-outlined text-[16px]" data-icon="qr_code_2">qr_code_2</span>
             </span>
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">9</span>
+              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{pendingReconciliation.length}</span>
               <span className="text-xs text-on-surface-variant font-medium">giao dịch</span>
-              <span className="text-[10px] text-secondary font-semibold ml-auto bg-[#FEF3C7] border border-[#FDE68A] px-1.5 py-0.5 rounded">Chờ QR</span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between items-center">
-              <span>Giá trị: <strong className="text-on-surface font-semibold tabular-nums">28.4M ₫</strong></span>
-              <span className="text-[10px] text-outline">Tự động</span>
+              <span>Giá trị: <strong className="text-on-surface font-semibold tabular-nums">{formatVnd(pendingReconciliationAmount)}</strong></span>
             </div>
           </div>
         </div>
@@ -101,12 +122,11 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2">
             <div className="flex items-baseline">
-              <span className="text-[22px] font-bold text-secondary tabular-nums tracking-tight leading-none">412.8M</span>
-              <span className="text-xs text-on-surface-variant ml-1 font-medium">₫</span>
+              <span className="text-[22px] font-bold text-secondary tabular-nums tracking-tight leading-none">{formatVnd(totalDebtRemaining)}</span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between">
-              <span>28 hộ nông dân</span>
-              <span className="text-error font-medium">18 hộ đến hạn</span>
+              <span>{debtHouseholds.length} hộ nông dân</span>
+              <span className="text-error font-medium">{dueTodayHouseholds} hộ đến hạn</span>
             </div>
           </div>
         </div>
@@ -121,12 +141,17 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-error tabular-nums tracking-tight leading-none">6</span>
+              <span className="text-[22px] font-bold text-error tabular-nums tracking-tight leading-none">{lowStockItems.length}</span>
               <span className="text-xs text-on-surface-variant font-medium">mặt hàng</span>
-              <span className="text-[10px] text-error font-bold ml-auto bg-error-container border border-error/30 px-1.5 py-0.5 rounded">Khẩn</span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-error/20 text-[11px] text-on-surface-variant truncate">
-              <span className="text-error font-semibold">Báo động:</span> NPK &amp; Beam 75WP
+              {lowStockItems.length > 0 ? (
+                <>
+                  <span className="text-error font-semibold">Báo động:</span> {lowStockNames}
+                </>
+              ) : (
+                'Không có mặt hàng nào sắp hết'
+              )}
             </div>
           </div>
         </div>
@@ -138,15 +163,24 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h2 className="font-title-md text-[14px] text-on-surface font-bold">Đơn Hàng Gần Đây</h2>
-                  <span className="bg-surface-container text-primary font-semibold px-1.5 py-0.5 rounded text-[11px] tabular-nums">48 giao dịch hôm nay</span>
+                  <span className="bg-surface-container text-primary font-semibold px-1.5 py-0.5 rounded text-[11px] tabular-nums">{ALL_ORDERS.length} giao dịch hôm nay</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 bg-surface-container-low p-0.5 rounded-lg border border-outline-variant/60 text-xs">
-                <button className="px-2 py-0.5 rounded bg-white text-primary font-semibold shadow-2xs border border-outline-variant/40 text-[11px]">Tất cả (48)</button>
-                <button className="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]">Chờ xuất (8)</button>
-                <button className="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]">Đang giao (12)</button>
-                <button className="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]">Chờ VietQR (5)</button>
-                <button className="px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]">Hoàn tất (23)</button>
+                {TAB_OPTIONS.map((tab, i) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setStatusTab(tab)}
+                    className={
+                      tab === statusTab
+                        ? 'px-2 py-0.5 rounded bg-white text-primary font-semibold shadow-2xs border border-outline-variant/40 text-[11px]'
+                        : 'px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]'
+                    }
+                  >
+                    {tab} ({tabCounts[i]})
+                  </button>
+                ))}
               </div>
             </div>
             <div className="overflow-x-auto">
@@ -162,247 +196,67 @@ export default function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/40 text-[12px]">
-                  {/* Order Row 1 */}
-                  <tr
-                    className={`transition-colors cursor-pointer ${
-                      selectedOrder?.id === '#DH-2410-089'
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : 'hover:bg-surface-container-low/40'
-                    }`}
-                    onClick={() =>
-                      setSelectedOrder({
-                        id: '#DH-2410-089',
-                        time: '10:42 AM',
-                        customerName: 'Trần Văn Hai',
-                        location: 'Thới Thạnh, Thốt Nốt (3.2 ha lúa)',
-                        productLine: '25 bao NPK Cà Mau 16-16-8 + 10 chai Tilt Super',
-                        productNote: 'Theo toa AI #DX-891',
-                        total: '32.500.000 ₫',
-                        statusLabel: 'VietQR Đã Khớp',
-                        statusClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
-                        statusDotClassName: 'bg-[#16A34A]',
-                      })
-                    }
-                  >
-                    <td className="py-2 px-3">
-                      <span className="font-semibold text-primary tabular-nums block">#DH-2410-089</span>
-                      <span className="text-[10px] text-outline">10:42 AM</span>
-                    </td>
-                    <td className="py-2 px-3 min-w-0">
-                      <div className="font-semibold text-on-surface text-[13px]">Trần Văn Hai</div>
-                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1 whitespace-nowrap">
-                        <span className="material-symbols-outlined text-[12px] text-outline" data-icon="location_on">location_on</span>
-                        Thới Thạnh, Thốt Nốt (3.2 ha lúa)
-                      </div>
-                    </td>
-                    <td className="py-2 px-3">
-                      <div className="font-medium text-on-surface text-[12px] whitespace-nowrap">25 bao NPK Cà Mau 16-16-8 + 10 chai Tilt Super</div>
-                      <div className="text-[10px] text-primary flex items-center gap-1 mt-0.5">
-                        <span className="material-symbols-outlined text-[11px]" data-icon="smart_toy">smart_toy</span>
-                        Theo toa AI #DX-891
-                      </div>
-                    </td>
-                    <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">32.500.000 ₫</td>
-                    <td className="py-2 px-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                        VietQR Đã Khớp
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 text-right">
-                      <div className="flex items-center justify-end">
-                        <RowActionsMenu
-                          triggerLabel="Thao tác đơn #DH-2410-089"
-                          actions={[
-                            {
-                              label: 'Xem chi tiết',
-                              icon: 'visibility',
-                              tone: 'primary',
-                              onClick: () =>
-                                setSelectedOrder({
-                                  id: '#DH-2410-089',
-                                  time: '10:42 AM',
-                                  customerName: 'Trần Văn Hai',
-                                  location: 'Thới Thạnh, Thốt Nốt (3.2 ha lúa)',
-                                  productLine: '25 bao NPK Cà Mau 16-16-8 + 10 chai Tilt Super',
-                                  productNote: 'Theo toa AI #DX-891',
-                                  total: '32.500.000 ₫',
-                                  statusLabel: 'VietQR Đã Khớp',
-                                  statusClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
-                                  statusDotClassName: 'bg-[#16A34A]',
-                                }),
-                            },
-                            { label: 'In phiếu xuất', icon: 'print' },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                  {/* Order Row 2 */}
-                  <tr
-                    className={`transition-colors cursor-pointer ${
-                      selectedOrder?.id === '#DH-2410-088'
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : 'hover:bg-surface-container-low/40'
-                    }`}
-                    onClick={() =>
-                      setSelectedOrder({
-                        id: '#DH-2410-088',
-                        time: '10:15 AM',
-                        customerName: 'Lê Thị Bảy',
-                        location: 'Tân Hưng, Ô Môn (4.8 ha lúa)',
-                        productLine: '50 bao Phân Urê Phú Mỹ hạt trong',
-                        productNote: 'Giao thẳng tại bến xuồng kênh Cây Dừa',
-                        total: '46.200.000 ₫',
-                        statusLabel: 'Gối nợ 60 ngày',
-                        statusClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
-                        statusDotClassName: 'bg-[#D97706]',
-                      })
-                    }
-                  >
-                    <td className="py-2 px-3">
-                      <span className="font-semibold text-primary tabular-nums block">#DH-2410-088</span>
-                      <span className="text-[10px] text-outline">10:15 AM</span>
-                    </td>
-                    <td className="py-2 px-3 min-w-0">
-                      <div className="font-semibold text-on-surface text-[13px]">Lê Thị Bảy</div>
-                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1 whitespace-nowrap">
-                        <span className="material-symbols-outlined text-[12px] text-outline" data-icon="location_on">location_on</span>
-                        Tân Hưng, Ô Môn (4.8 ha lúa)
-                      </div>
-                    </td>
-                    <td className="py-2 px-3">
-                      <div className="font-medium text-on-surface text-[12px] whitespace-nowrap">50 bao Phân Urê Phú Mỹ hạt trong</div>
-                      <div className="text-[10px] text-outline mt-0.5 whitespace-nowrap">Giao thẳng tại bến xuồng kênh Cây Dừa</div>
-                    </td>
-                    <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">46.200.000 ₫</td>
-                    <td className="py-2 px-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                        Gối nợ 60 ngày
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 text-right">
-                      <div className="flex items-center justify-end">
-                        <RowActionsMenu
-                          triggerLabel="Thao tác đơn #DH-2410-088"
-                          actions={[
-                            {
-                              label: 'Xem chi tiết',
-                              icon: 'visibility',
-                              tone: 'primary',
-                              onClick: () =>
-                                setSelectedOrder({
-                                  id: '#DH-2410-088',
-                                  time: '10:15 AM',
-                                  customerName: 'Lê Thị Bảy',
-                                  location: 'Tân Hưng, Ô Môn (4.8 ha lúa)',
-                                  productLine: '50 bao Phân Urê Phú Mỹ hạt trong',
-                                  productNote: 'Giao thẳng tại bến xuồng kênh Cây Dừa',
-                                  total: '46.200.000 ₫',
-                                  statusLabel: 'Gối nợ 60 ngày',
-                                  statusClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
-                                  statusDotClassName: 'bg-[#D97706]',
-                                }),
-                            },
-                            { label: 'In phiếu xuất', icon: 'print' },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                  {/* Order Row 3 */}
-                  <tr
-                    className={`transition-colors cursor-pointer ${
-                      selectedOrder?.id === '#DH-2410-087'
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : 'hover:bg-surface-container-low/40'
-                    }`}
-                    onClick={() =>
-                      setSelectedOrder({
-                        id: '#DH-2410-087',
-                        time: '09:50 AM',
-                        customerName: 'Nguyễn Hữu Trí',
-                        location: 'Nhơn Ái, Phong Điền (1.5 ha sầu riêng)',
-                        productLine: '20kg Lúa ST25 cấp xác nhận + 5 can Chess 50WG',
-                        productNote: 'Đã cấp bao bì chuyên dụng bảo hộ',
-                        total: '14.800.000 ₫',
-                        statusLabel: 'Tiền mặt tại trạm',
-                        statusClassName: 'bg-surface-container text-on-surface-variant border-outline-variant/60',
-                        statusDotClassName: 'bg-outline',
-                      })
-                    }
-                  >
-                    <td className="py-2 px-3">
-                      <span className="font-semibold text-primary tabular-nums block">#DH-2410-087</span>
-                      <span className="text-[10px] text-outline">09:50 AM</span>
-                    </td>
-                    <td className="py-2 px-3 min-w-0">
-                      <div className="font-semibold text-on-surface text-[13px]">Nguyễn Hữu Trí</div>
-                      <div className="text-[11px] text-on-surface-variant flex items-center gap-1 whitespace-nowrap">
-                        <span className="material-symbols-outlined text-[12px] text-outline" data-icon="location_on">location_on</span>
-                        Nhơn Ái, Phong Điền (1.5 ha sầu riêng)
-                      </div>
-                    </td>
-                    <td className="py-2 px-3">
-                      <div className="font-medium text-on-surface text-[12px] whitespace-nowrap">20kg Lúa ST25 cấp xác nhận + 5 can Chess 50WG</div>
-                      <div className="text-[10px] text-outline mt-0.5 whitespace-nowrap">Đã cấp bao bì chuyên dụng bảo hộ</div>
-                    </td>
-                    <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">14.800.000 ₫</td>
-                    <td className="py-2 px-3 text-center">
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-surface-container text-on-surface-variant border border-outline-variant/60">
-                        <span className="w-1.5 h-1.5 rounded-full bg-outline"></span>
-                        Tiền mặt tại trạm
-                      </span>
-                    </td>
-                    <td className="py-2 px-3 text-right">
-                      <div className="flex items-center justify-end">
-                        <RowActionsMenu
-                          triggerLabel="Thao tác đơn #DH-2410-087"
-                          actions={[
-                            {
-                              label: 'Xem chi tiết',
-                              icon: 'visibility',
-                              tone: 'primary',
-                              onClick: () =>
-                                setSelectedOrder({
-                                  id: '#DH-2410-087',
-                                  time: '09:50 AM',
-                                  customerName: 'Nguyễn Hữu Trí',
-                                  location: 'Nhơn Ái, Phong Điền (1.5 ha sầu riêng)',
-                                  productLine: '20kg Lúa ST25 cấp xác nhận + 5 can Chess 50WG',
-                                  productNote: 'Đã cấp bao bì chuyên dụng bảo hộ',
-                                  total: '14.800.000 ₫',
-                                  statusLabel: 'Tiền mặt tại trạm',
-                                  statusClassName: 'bg-surface-container text-on-surface-variant border-outline-variant/60',
-                                  statusDotClassName: 'bg-outline',
-                                }),
-                            },
-                            { label: 'In phiếu xuất', icon: 'print' },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
+                  {paginated.map((order) => {
+                    const isSelected = selectedOrder?.id === order.id
+                    return (
+                      <tr
+                        key={order.id}
+                        className={`transition-colors cursor-pointer ${
+                          isSelected ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-surface-container-low/40'
+                        }`}
+                        onClick={() => setSelectedOrder(order)}
+                      >
+                        <td className="py-2 px-3">
+                          <span className="font-semibold text-primary tabular-nums block">#{order.id}</span>
+                          <span className="text-[10px] text-outline">{order.timeBold} {order.timeRest}</span>
+                        </td>
+                        <td className="py-2 px-3 min-w-0">
+                          <div className="font-semibold text-on-surface text-[13px]">{order.customerName}</div>
+                          <div className="text-[11px] text-on-surface-variant flex items-center gap-1 whitespace-nowrap">
+                            <span className="material-symbols-outlined text-[12px] text-outline" data-icon="location_on">location_on</span>
+                            {order.wardAddress}
+                          </div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <div className="font-medium text-on-surface text-[12px] whitespace-nowrap">{order.productTitle}</div>
+                          {order.productNote ? (
+                            <div className="text-[10px] text-outline mt-0.5 whitespace-nowrap">{order.productNote}</div>
+                          ) : null}
+                        </td>
+                        <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">{order.total}</td>
+                        <td className="py-2 px-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold border ${order.statusBadge.className}`}>
+                            {order.statusBadge.label}
+                          </span>
+                        </td>
+                        <td className="py-2 px-3 text-right">
+                          <div className="flex items-center justify-end">
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác đơn #${order.id}`}
+                              actions={order.actions.map((action) => ({
+                                ...action,
+                                onClick: () => handleOrderAction(order, action.label),
+                              }))}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
-            <div className="px-3 py-1.5 bg-white border-t border-outline-variant/60 flex items-center justify-between text-[11px] text-on-surface-variant">
-              <span>Hiển thị <strong className="text-on-surface font-semibold">1 - 3</strong> trong số <strong className="text-on-surface font-semibold">48</strong> đơn hàng</span>
-              <div className="flex items-center gap-1">
-                <button className="p-1 rounded border border-outline-variant hover:bg-surface-container disabled:opacity-40" disabled>
-                  <span className="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
-                </button>
-                <span className="px-2 py-0.5 rounded bg-primary text-on-primary font-semibold">1</span>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">2</button>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">3</button>
-                <span className="text-outline">...</span>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">16</button>
-                <button className="p-1 rounded border border-outline-variant hover:bg-surface-container">
-                  <span className="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalCount={totalCount}
+              unitLabel="đơn hàng"
+              goPrev={goPrev}
+              goNext={goNext}
+              setPage={setPage}
+            />
           </div>
 
       {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
@@ -411,27 +265,24 @@ export default function DashboardPage() {
           <div className="p-space-md space-y-3">
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-mono font-bold text-primary">{selectedOrder.id}</span>
-                <span className="text-[11px] text-outline">{selectedOrder.time}</span>
+                <span className="font-mono font-bold text-primary">#{selectedOrder.id}</span>
+                <span className="text-[11px] text-outline">{selectedOrder.timeBold} {selectedOrder.timeRest}</span>
               </div>
               <h3 className="font-title-md text-title-md text-on-surface font-bold mt-0.5">{selectedOrder.customerName}</h3>
               <div className="text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
                 <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
-                {selectedOrder.location}
+                {selectedOrder.wardAddress}
               </div>
             </div>
             <div className="p-2.5 bg-surface-container-low rounded border border-outline-variant">
-              <div className="font-medium text-on-surface text-body-sm">{selectedOrder.productLine}</div>
+              <div className="font-medium text-on-surface text-body-sm">{selectedOrder.productTitle}</div>
               {selectedOrder.productNote ? (
                 <div className="text-[11px] text-outline mt-0.5">{selectedOrder.productNote}</div>
               ) : null}
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
-              <span
-                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${selectedOrder.statusClassName}`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${selectedOrder.statusDotClassName}`}></span>
-                {selectedOrder.statusLabel}
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${selectedOrder.statusBadge.className}`}>
+                {selectedOrder.statusBadge.label}
               </span>
               <span className="font-bold text-on-surface tabular-nums">{selectedOrder.total}</span>
             </div>

@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
@@ -23,6 +25,7 @@ export default function InventoryPage() {
     title: 'Quản lý kho hàng',
   })
 
+  const { showToast } = useToast()
   const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(INITIAL_INVENTORY, (item) => item.id)
 
   const [search, setSearch] = useState('')
@@ -50,7 +53,12 @@ export default function InventoryPage() {
     usePagination(filteredInventory, 10)
 
   const handleInventoryAction = (id: string, label: string) => {
-    if (label === 'Xem chi tiết') setSelectedId(id)
+    if (label === 'Xem chi tiết') {
+      setSelectedId(id)
+      return
+    }
+    const item = INITIAL_INVENTORY.find((i) => i.id === id)
+    showToast(`Đã thực hiện "${label}" cho ${item?.name ?? id}`)
   }
 
   const totalCount = INITIAL_INVENTORY.length
@@ -63,7 +71,7 @@ export default function InventoryPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <div className="flex flex-wrap items-center gap-3">
           <nav className="flex items-center gap-2 text-body-sm font-body-sm text-outline">
-            <a className="hover:text-primary transition-colors" href="#">Bảng điều khiển</a>
+            <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
             <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
             <span className="text-on-surface font-medium">Quản lý kho hàng</span>
           </nav>
@@ -74,15 +82,27 @@ export default function InventoryPage() {
         </div>
         {/* Major Operational Action Buttons */}
         <div className="flex items-center gap-2.5">
-          <button className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm" type="button">
+          <button
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast(`Đã xuất biên bản kiểm kê ${filteredInventory.length} mặt hàng`)}
+          >
             <span className="material-symbols-outlined text-[18px] text-outline" data-icon="file_download">file_download</span>
             <span>Xuất biên bản kiểm kê</span>
           </button>
-          <button className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm" type="button">
+          <button
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast('Chức năng xuất kho hàng loạt đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-[18px] text-primary" data-icon="unarchive">unarchive</span>
             <span>Xuất kho</span>
           </button>
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-[#17482D] active:bg-[#113622] text-on-primary font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary" type="button">
+          <button
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-[#17482D] active:bg-[#113622] text-on-primary font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            type="button"
+            onClick={() => showToast('Chức năng nhập kho đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
             <span>Nhập kho</span>
           </button>
@@ -294,7 +314,11 @@ export default function InventoryPage() {
                   </div>
                 </div>
               </div>
-              <button className="shrink-0 px-3 py-1.5 rounded-lg bg-error hover:bg-[#b91c1c] text-on-error text-body-sm font-semibold transition-colors flex items-center gap-1 shadow-sm" type="button">
+              <button
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-error hover:bg-[#b91c1c] text-on-error text-body-sm font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                type="button"
+                onClick={() => showToast('Đã tạo đề nghị nhập khẩn: Thuốc Trừ Sâu Virtako 40WG')}
+              >
                 <span className="material-symbols-outlined text-[16px]" data-icon="add_shopping_cart">add_shopping_cart</span>
                 <span>Tạo đề nghị nhập khẩn</span>
               </button>
@@ -314,7 +338,11 @@ export default function InventoryPage() {
                   </div>
                 </div>
               </div>
-              <button className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1" type="button">
+              <button
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
+                type="button"
+                onClick={() => showToast('Đã tạo đề nghị nhập: Thuốc Trừ Bệnh Beam 75WP')}
+              >
                 <span>Tạo đề nghị nhập</span>
               </button>
             </div>
@@ -333,7 +361,11 @@ export default function InventoryPage() {
                   </div>
                 </div>
               </div>
-              <button className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1" type="button">
+              <button
+                className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
+                type="button"
+                onClick={() => showToast('Đã tạo đề nghị nhập: Phân NPK Đầu Trâu 20-20-15+TE')}
+              >
                 <span>Tạo đề nghị nhập</span>
               </button>
             </div>
@@ -399,7 +431,7 @@ export default function InventoryPage() {
               <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="verified">verified</span>
               Thẻ kho điện tử mã hóa an toàn theo tiêu chuẩn AgriSage
             </span>
-            <button className="text-primary font-semibold hover:underline" type="button">In sổ kho</button>
+            <button className="text-primary font-semibold hover:underline" type="button" onClick={() => showToast('Đã in sổ kho')}>In sổ kho</button>
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
+import { useToast } from '../../context/ToastContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
@@ -9,6 +10,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { farmers as FARMERS } from '../../data/mockFarmers'
+import { parseVnd, formatVnd } from '../../utils/money'
 
 const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
 const REGION_OPTIONS = ['Tất cả khu vực', ...new Set(FARMERS.map((f) => f.areaShort.split(',').pop()?.trim() ?? '').filter(Boolean))]
@@ -19,6 +21,7 @@ export default function FarmersPage() {
     title: 'Quản lý nông dân',
   })
 
+  const { showToast } = useToast()
   const { selectedId, setSelectedId, selected: selectedFarmer } = useSelectableList(FARMERS, (f) => f.id)
 
   const [regionFilter, setRegionFilter] = useState(REGION_OPTIONS[0])
@@ -56,12 +59,23 @@ export default function FarmersPage() {
   const { page, totalPages, paginated: paginatedFarmers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredFarmers, 10)
 
+  const totalFarmers = FARMERS.length
+  const totalOrders = FARMERS.reduce((sum, f) => sum + (Number.parseInt(f.totalOrdersCount, 10) || 0), 0)
+  const activeFarmerCount = FARMERS.filter((f) => f.statusBadge.label === 'Đang hoạt động').length
+  const activePercent = totalFarmers ? Math.round((activeFarmerCount / totalFarmers) * 1000) / 10 : 0
+  const inDebtFarmers = FARMERS.filter((f) => f.hasDebt)
+  const totalDebtAmount = inDebtFarmers.reduce((sum, f) => sum + parseVnd(f.debtLabel), 0)
+  const aiLogCount = FARMERS.reduce((sum, f) => sum + f.aiLogs.length, 0)
+
   return (
     <>
       {/* Utility Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4 pb-4">
         <div className="flex items-center gap-2.5">
-          <button className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-label-md text-label-md shadow-sm transition-colors">
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-label-md text-label-md shadow-sm transition-colors"
+            onClick={() => showToast(`Đã xuất danh sách ${filteredFarmers.length} nông dân`)}
+          >
             <span className="material-symbols-outlined text-base" data-icon="file_download">
               file_download
             </span>
@@ -83,7 +97,7 @@ export default function FarmersPage() {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">248</span>
+            <span className="font-metric-num text-metric-num text-slate-900">{totalFarmers}</span>
             <span className="text-xs text-slate-500 font-medium">nông dân</span>
           </div>
           <div className="font-body-sm text-body-sm text-slate-500 mt-1">Mạng lưới phụ trách của Trạm #04</div>
@@ -91,7 +105,7 @@ export default function FarmersPage() {
         {/* KPI 2 */}
         <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider">Đơn hàng trong tháng</span>
+            <span className="font-label-sm text-label-sm uppercase tracking-wider">Tổng đơn hàng</span>
             <span className="w-7 h-7 rounded bg-blue-50 text-blue-700 flex items-center justify-center">
               <span className="material-symbols-outlined text-lg" data-icon="receipt_long">
                 receipt_long
@@ -99,8 +113,8 @@ export default function FarmersPage() {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">162</span>
-            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">65.3%</span>
+            <span className="font-metric-num text-metric-num text-slate-900">{totalOrders}</span>
+            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">{activePercent}% đang hoạt động</span>
           </div>
           <div className="font-body-sm text-body-sm text-slate-500 mt-1">Tỉ lệ hoạt động giao dịch cao</div>
         </div>
@@ -115,11 +129,11 @@ export default function FarmersPage() {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-red-700">45</span>
+            <span className="font-metric-num text-metric-num text-red-700">{inDebtFarmers.length}</span>
             <span className="text-xs text-slate-500 font-medium">người</span>
           </div>
           <div className="font-body-sm text-body-sm text-slate-500 mt-1">
-            Tổng nợ: <span className="font-semibold text-slate-700">412.800.000 đ</span>
+            Tổng nợ: <span className="font-semibold text-slate-700">{formatVnd(totalDebtAmount)}</span>
           </div>
         </div>
         {/* KPI 4 */}
@@ -133,7 +147,7 @@ export default function FarmersPage() {
             </span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">38</span>
+            <span className="font-metric-num text-metric-num text-slate-900">{aiLogCount}</span>
             <span className="text-xs text-slate-500 font-medium">lượt</span>
           </div>
           <div className="font-body-sm text-body-sm text-slate-500 mt-1">Ghi nhận trong 14 ngày qua</div>
@@ -502,13 +516,22 @@ export default function FarmersPage() {
           </div>
           {/* DETAIL PANEL FOOTER - CONTEXTUAL ACTIONS ONLY (NO DELETE/NO ROLE CHANGE) */}
           <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-3 gap-2">
-            <button className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm">
+            <button
+              className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm"
+              onClick={() => showToast(`Xem tất cả đơn hàng của ${selectedFarmer.name} đang được phát triển`)}
+            >
               Xem tất cả đơn hàng
             </button>
-            <button className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm">
+            <button
+              className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm"
+              onClick={() => showToast(`Xem chi tiết công nợ của ${selectedFarmer.name} đang được phát triển`)}
+            >
               Chi tiết công nợ
             </button>
-            <button className="px-2 py-2 bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 rounded text-center font-semibold text-[11px] transition-colors leading-tight shadow-sm">
+            <button
+              className="px-2 py-2 bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 rounded text-center font-semibold text-[11px] transition-colors leading-tight shadow-sm"
+              onClick={() => showToast(`Xem lịch sử phân tích AI của ${selectedFarmer.name} đang được phát triển`)}
+            >
               Lịch sử phân tích AI
             </button>
           </div>

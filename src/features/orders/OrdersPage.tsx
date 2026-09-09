@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -11,6 +12,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
+import { parseVnd, formatVnd } from '../../utils/money'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
 const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt tại kho', 'Cọc 50%', 'Gối nợ vụ mùa']
@@ -69,6 +71,7 @@ export default function OrdersPage() {
     else if (label === 'Xác nhận') setOrderStatus(id, 'Đang giao')
     else if (label === 'Cập nhật') advanceOrderStatus(id)
     else if (label === 'Xem') setSelectedId(id)
+    else showToast(`Đã thực hiện "${label}" cho đơn #${id}`)
   }
 
   const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(orders, (o) => o.id)
@@ -102,25 +105,44 @@ export default function OrdersPage() {
   const { page, totalPages, paginated: paginatedOrders, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredOrders, 10)
 
+  const totalOrdersToday = orders.length
+  const totalOrderValue = orders.reduce((sum, o) => sum + parseVnd(o.total), 0)
+  const waitingCount = orders.filter((o) => o.statusBadge.label === 'Chờ xác nhận').length
+  const processingCount = orders.filter((o) => o.statusBadge.label === 'Đang xử lý').length
+  const deliveringCount = orders.filter((o) => o.statusBadge.label === 'Đang giao').length
+  const completedCount = orders.filter((o) => o.statusBadge.label === 'Hoàn thành').length
+
   return (
     <>
       {/* PAGE TITLE & ACTIONS ZONE */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
         <nav className="flex items-center gap-1 text-[12px] text-outline" aria-label="Breadcrumb">
-          <a className="hover:text-on-surface" href="#">Bảng điều khiển</a>
+          <Link className="hover:text-on-surface" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
           <span className="text-on-surface font-medium">Quản lý đơn hàng</span>
         </nav>
         <div className="flex items-center gap-space-xs flex-wrap">
-          <button className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm" type="button">
+          <button
+            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast(`Đã xuất Excel ${filteredOrders.length} đơn hàng`)}
+          >
             <span className="material-symbols-outlined text-base text-outline" data-icon="table_view">table_view</span>
             <span>Xuất Excel</span>
           </button>
-          <button className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm" type="button">
+          <button
+            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast(`Đã in phiếu xuất hàng loạt cho ${filteredOrders.length} đơn hàng`)}
+          >
             <span className="material-symbols-outlined text-base text-outline" data-icon="print">print</span>
             <span>In phiếu xuất hàng loạt</span>
           </button>
-          <button className="inline-flex items-center gap-1 px-space-md py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors shadow-sm" type="button">
+          <button
+            className="inline-flex items-center gap-1 px-space-md py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors shadow-sm"
+            type="button"
+            onClick={() => showToast('Chức năng tạo đơn hàng mới đang được phát triển')}
+          >
             <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Tạo đơn hàng</span>
           </button>
         </div>
@@ -136,12 +158,12 @@ export default function OrdersPage() {
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">48</span>
-              <span className="text-xs font-medium text-emerald-600">↑ 12% so với hôm qua</span>
+              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{totalOrdersToday}</span>
+              <span className="text-xs font-medium text-outline">đơn</span>
             </div>
           </div>
           <div className="text-[12px] font-mono text-outline border-t border-outline-variant/60 pt-1">
-            Tổng giá trị: <span className="font-semibold text-on-surface">184.650.000 ₫</span>
+            Tổng giá trị: <span className="font-semibold text-on-surface">{formatVnd(totalOrderValue)}</span>
           </div>
         </div>
         {/* KPI 2: Chờ xác nhận */}
@@ -152,13 +174,13 @@ export default function OrdersPage() {
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-amber-700 font-semibold">08</span>
+              <span className="font-metric-num text-metric-num text-amber-700 font-semibold">{waitingCount}</span>
               <span className="text-xs text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">Ưu tiên cao</span>
             </div>
           </div>
           <div className="text-[12px] text-amber-700 border-t border-outline-variant/60 pt-1 flex items-center gap-1">
             <span className="material-symbols-outlined text-xs" data-icon="schedule">schedule</span>
-            <span>Cần duyệt gấp trước 11:30</span>
+            <span>Cần duyệt sớm</span>
           </div>
         </div>
         {/* KPI 3: Đang xử lý */}
@@ -169,7 +191,7 @@ export default function OrdersPage() {
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">14</span>
+              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{processingCount}</span>
               <span className="text-xs text-outline">đang bốc hàng</span>
             </div>
           </div>
@@ -185,8 +207,8 @@ export default function OrdersPage() {
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">12</span>
-              <span className="text-xs text-blue-600 font-medium">8 ghe + 4 xe</span>
+              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{deliveringCount}</span>
+              <span className="text-xs text-blue-600 font-medium">đơn</span>
             </div>
           </div>
           <div className="text-[12px] text-outline border-t border-outline-variant/60 pt-1 truncate">
@@ -201,8 +223,8 @@ export default function OrdersPage() {
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-emerald-700 font-semibold">14</span>
-              <span className="text-xs text-emerald-600 font-medium">100% đối soát</span>
+              <span className="font-metric-num text-metric-num text-emerald-700 font-semibold">{completedCount}</span>
+              <span className="text-xs text-emerald-600 font-medium">đơn</span>
             </div>
           </div>
           <div className="text-[12px] text-outline border-t border-outline-variant/60 pt-1 truncate">
@@ -243,10 +265,18 @@ export default function OrdersPage() {
               <span className="text-xs font-mono bg-surface-container text-outline px-1.5 py-0.5 rounded">{filteredOrders.length} bản ghi</span>
             </div>
             <div className="flex items-center gap-space-xs">
-              <button className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface" title="Làm mới bảng">
+              <button
+                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                title="Làm mới bảng"
+                onClick={() => showToast('Đã làm mới danh sách đơn hàng')}
+              >
                 <span className="material-symbols-outlined text-base" data-icon="refresh">refresh</span>
               </button>
-              <button className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface" title="Tùy biến cột">
+              <button
+                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                title="Tùy biến cột"
+                onClick={() => showToast('Chức năng tùy biến cột đang được phát triển')}
+              >
                 <span className="material-symbols-outlined text-base" data-icon="view_column">view_column</span>
               </button>
             </div>
@@ -417,7 +447,11 @@ export default function OrdersPage() {
             </div>
             <div className="p-space-sm bg-surface-container-low space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <button className="flex items-center justify-center gap-1 px-2 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface rounded text-xs font-medium transition-colors" type="button">
+                <button
+                  className="flex items-center justify-center gap-1 px-2 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface rounded text-xs font-medium transition-colors"
+                  type="button"
+                  onClick={() => showToast(`Đã in phiếu giao hàng cho đơn #${selectedOrder.id}`)}
+                >
                   <span className="material-symbols-outlined text-sm" data-icon="print">print</span>
                   <span>In phiếu giao hàng</span>
                 </button>
@@ -435,7 +469,11 @@ export default function OrdersPage() {
                   </span>
                 </button>
               </div>
-              <button className="w-full flex items-center justify-center gap-1 px-2 py-1.5 border border-outline-variant hover:bg-surface-container-lowest text-outline hover:text-on-surface rounded text-xs transition-colors" type="button">
+              <button
+                className="w-full flex items-center justify-center gap-1 px-2 py-1.5 border border-outline-variant hover:bg-surface-container-lowest text-outline hover:text-on-surface rounded text-xs transition-colors"
+                type="button"
+                onClick={() => showToast(`Đã gửi SMS cập nhật cho ${selectedOrder.customerName}`)}
+              >
                 <span className="material-symbols-outlined text-sm" data-icon="sms">sms</span>
                 <span>Gửi tin nhắn SMS cập nhật cho nông dân</span>
               </button>
