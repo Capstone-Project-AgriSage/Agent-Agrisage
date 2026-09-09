@@ -4,8 +4,10 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
@@ -53,6 +55,7 @@ export default function PaymentsPage() {
   const handlePaymentAction = (id: string, label: string) => {
     if (label === 'Thu tiếp' || label === 'Ghi nhận TT') markPaymentPaid(id)
     else if (label === 'Đối soát') markPaymentReconciled(id)
+    else if (label === 'Xem') setSelectedId(id)
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
@@ -74,6 +77,9 @@ export default function PaymentsPage() {
         payment.customerName.toLowerCase().includes(keyword)) &&
       (status === STATUS_OPTIONS[0] || payment.statusBadge.label === status),
   )
+
+  const { page, totalPages, paginated: paginatedPayments, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
+    usePagination(filteredPayments, 10)
 
   return (
     <>
@@ -242,7 +248,7 @@ export default function PaymentsPage() {
                   {filteredPayments.length === 0 ? (
                     <EmptyTableRow colSpan={9} message="Không tìm thấy giao dịch phù hợp với bộ lọc." />
                   ) : null}
-                  {filteredPayments.map((payment) => {
+                  {paginatedPayments.map((payment) => {
                     const isSelected = payment.id === selectedId
                     return (
                       <tr
@@ -307,36 +313,17 @@ export default function PaymentsPage() {
                 </tbody>
               </table>
             </div>
-            <div className="px-space-md py-3 bg-surface-container-low border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-2">
-              <div className="text-label-md text-outline font-label-md">
-                Hiển thị <span className="font-semibold text-on-surface">1 - 5</span> trong số <span className="font-semibold text-on-surface">52</span> giao dịch
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-label-md text-outline">
-                  <span className="">Số dòng:</span>
-                  <select className="py-0.5 px-2 text-label-md bg-surface-container-lowest border border-outline-variant rounded font-medium text-on-surface">
-                    <option>10/trang</option>
-                    <option>25/trang</option>
-                    <option>50/trang</option>
-                  </select>
-                </div>
-                <div className="flex items-center gap-1">
-                  <button className="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-white font-medium text-xs">
-                    1
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container text-xs font-medium">
-                    2
-                  </button>
-                  <button className="w-8 h-8 flex items-center justify-center rounded bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container text-xs font-medium">
-                    3
-                  </button>
-                  <span className="text-outline px-1">...</span>
-                  <button className="px-2.5 h-8 flex items-center justify-center rounded bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container text-xs font-medium">
-                    Trang sau
-                  </button>
-                </div>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalCount={totalCount}
+              unitLabel="giao dịch"
+              goPrev={goPrev}
+              goNext={goNext}
+              setPage={setPage}
+            />
           </div>
 
       {/* DETAIL MODAL: CHI TIẾT GIAO DỊCH */}

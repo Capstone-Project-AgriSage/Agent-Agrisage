@@ -4,8 +4,10 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -81,6 +83,18 @@ export default function AiRecommendationsPage() {
       (!status || item.statusBadge.label === STATUS_LABELS[status]),
     '',
   )
+
+  const {
+    page,
+    totalPages,
+    paginated: paginatedCases,
+    startIndex,
+    endIndex,
+    totalCount,
+    goPrev,
+    goNext,
+    setPage,
+  } = usePagination(filteredCases, 10)
 
   return (
     <>
@@ -245,7 +259,7 @@ export default function AiRecommendationsPage() {
                 {filteredCases.length === 0 ? (
                   <EmptyTableRow colSpan={9} message="Không tìm thấy kết quả phù hợp với bộ lọc." />
                 ) : null}
-                {filteredCases.map((item) => {
+                {paginatedCases.map((item) => {
                   const isSelected = item.id === selectedId
                   return (
                     <tr
@@ -333,15 +347,17 @@ export default function AiRecommendationsPage() {
               </tbody>
             </table>
           </div>
-          <div className="p-space-sm border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest text-outline font-label-sm text-label-sm">
-            <div className="">Hiển thị 1 - 5 của 14 yêu cầu cần xử lý hôm nay</div>
-            <div className="flex items-center gap-1">
-              <button className="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-low disabled:opacity-40" disabled>Trước</button>
-              <button className="px-2.5 py-1 rounded bg-primary text-white font-semibold">1</button>
-              <button className="px-2.5 py-1 rounded border border-outline-variant hover:bg-surface-container-low">2</button>
-              <button className="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-low">Sau</button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalCount={totalCount}
+            unitLabel="yêu cầu cần xử lý hôm nay"
+            goPrev={goPrev}
+            goNext={goNext}
+            setPage={setPage}
+          />
       </div>
 
       {/* DETAIL MODAL: CHI TIẾT ĐÁNH GIÁ GỢI Ý AI */}

@@ -1,8 +1,10 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
 
 const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
@@ -32,6 +34,18 @@ export default function ActivityLogPage() {
         entry.objectId.toLowerCase().includes(keyword)) &&
       (moduleFilter === MODULE_OPTIONS[0] || entry.moduleLabel === moduleFilter),
   )
+
+  const {
+    page,
+    totalPages,
+    paginated: paginatedEntries,
+    startIndex,
+    endIndex,
+    totalCount,
+    goPrev,
+    goNext,
+    setPage,
+  } = usePagination(filteredEntries, 10)
 
   return (
     <>
@@ -256,7 +270,7 @@ export default function ActivityLogPage() {
                   {filteredEntries.length === 0 ? (
                     <EmptyTableRow colSpan={8} message="Không tìm thấy nhật ký phù hợp với bộ lọc." />
                   ) : null}
-                  {filteredEntries.map((entry) => {
+                  {paginatedEntries.map((entry) => {
                     const isSelected = entry.id === selectedId
                     return (
                       <tr
@@ -323,41 +337,17 @@ export default function ActivityLogPage() {
                 </tbody>
               </table>
             </div>
-            {/* Table Pagination */}
-            <div className="py-3 px-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between">
-              <div className="font-body-sm text-body-sm text-outline">
-                Hiển thị <span className="font-semibold text-on-surface">1 - 6</span> trong số{' '}
-                <span className="font-semibold text-on-surface">328</span> bản ghi
-              </div>
-              <div className="flex items-center gap-1">
-                <button
-                  className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-outline hover:bg-surface-container-low disabled:opacity-40"
-                  disabled
-                >
-                  <span className="material-symbols-outlined text-[16px]" data-icon="chevron_left">
-                    chevron_left
-                  </span>
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded bg-primary-container text-white font-semibold text-label-sm">
-                  1
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-sm">
-                  2
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-sm">
-                  3
-                </button>
-                <span className="px-1 text-outline">...</span>
-                <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-low text-label-sm">
-                  55
-                </button>
-                <button className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container-low">
-                  <span className="material-symbols-outlined text-[16px]" data-icon="chevron_right">
-                    chevron_right
-                  </span>
-                </button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalCount={totalCount}
+              unitLabel="bản ghi"
+              goPrev={goPrev}
+              goNext={goNext}
+              setPage={setPage}
+            />
           </div>
           {/* COMPACT SECTION: SỰ KIỆN QUAN TRỌNG GẦN ĐÂY */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm">

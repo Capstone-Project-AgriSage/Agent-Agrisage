@@ -4,9 +4,11 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import type { TripTimelineStep } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { trips as INITIAL_TRIPS } from '../../data/mockDeliveries'
 
 const STATUS_OPTIONS = [
@@ -65,6 +67,7 @@ export default function DeliveryPage() {
   const handleTripAction = (id: string, label: string) => {
     if (label === 'Phân công tài xế') setTripStatus(id, 'Đã phân công')
     else if (label === 'Xử lý lại chuyến giao') setTripStatus(id, 'Đang giao')
+    else if (label === 'Xem chi tiết' || label === 'Xem ghi chú') setSelectedId(id)
   }
 
   const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(trips, (t) => t.id)
@@ -86,6 +89,9 @@ export default function DeliveryPage() {
         trip.customerName.toLowerCase().includes(keyword)) &&
       (status === STATUS_OPTIONS[0] || trip.statusBadge.label === status),
   )
+
+  const { page, totalPages, paginated: paginatedTrips, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
+    usePagination(filteredTrips, 10)
 
   const timelineCircleClassName = (state: TripTimelineStep['state']) => {
     switch (state) {
@@ -281,7 +287,7 @@ export default function DeliveryPage() {
                 {filteredTrips.length === 0 ? (
                   <EmptyTableRow colSpan={5} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-[#94A3B8]" />
                 ) : null}
-                {filteredTrips.map((trip) => {
+                {paginatedTrips.map((trip) => {
                   const isSelected = trip.id === selectedId
                   return (
                     <tr
@@ -335,31 +341,17 @@ export default function DeliveryPage() {
               </tbody>
             </table>
           </div>
-          <div className="px-4 py-3 border-t border-[#E2E8F0] bg-[#F8FAFC] flex flex-wrap items-center justify-between gap-3 text-body-sm text-[#64748B]">
-            <div className="flex items-center gap-2">
-              <span className="">Hiển thị <strong className="text-[#0F172A] font-semibold">1 - 5</strong> trong số <strong className="text-[#0F172A] font-semibold">12</strong> chuyến giao</span>
-              <span className="text-[#CBD5E1]">|</span>
-              <label className="flex items-center gap-1">
-                <span className="">Số dòng:</span>
-                <select className="py-0.5 px-2 bg-white border border-[#CBD5E1] rounded text-body-sm text-[#0F172A] focus:outline-none">
-                  <option>10</option>
-                  <option>20</option>
-                  <option>50</option>
-                </select>
-              </label>
-            </div>
-            <div className="inline-flex items-center gap-1">
-              <button className="p-1 rounded border border-[#CBD5E1] bg-white text-[#64748B] hover:bg-[#F1F5F9] disabled:opacity-40" disabled>
-                <span className="material-symbols-outlined text-[16px]" data-icon="chevron_left">chevron_left</span>
-              </button>
-              <button className="px-2.5 py-1 rounded text-xs font-semibold bg-[#1E5E3A] text-white">1</button>
-              <button className="px-2.5 py-1 rounded text-xs font-semibold bg-white border border-[#CBD5E1] text-[#334155] hover:bg-[#F1F5F9]">2</button>
-              <button className="px-2.5 py-1 rounded text-xs font-semibold bg-white border border-[#CBD5E1] text-[#334155] hover:bg-[#F1F5F9]">3</button>
-              <button className="p-1 rounded border border-[#CBD5E1] bg-white text-[#64748B] hover:bg-[#F1F5F9]">
-                <span className="material-symbols-outlined text-[16px]" data-icon="chevron_right">chevron_right</span>
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalCount={totalCount}
+            unitLabel="chuyến giao"
+            goPrev={goPrev}
+            goNext={goNext}
+            setPage={setPage}
+          />
           <div className="p-3.5 border-t border-[#E2E8F0] bg-[#FCFDFE]">
             <div className="flex items-center justify-between mb-2">
               <span className="font-label-sm text-label-sm uppercase tracking-wider text-[#64748B] font-semibold flex items-center gap-1.5">

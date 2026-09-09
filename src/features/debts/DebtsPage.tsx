@@ -4,8 +4,10 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
@@ -47,6 +49,7 @@ export default function DebtsPage() {
 
   const handleDebtAction = (id: string, label: string) => {
     if (label === 'Ghi nhận thu nợ') markDebtPaid(id)
+    else if (label === 'Xem chi tiết') setSelectedId(id)
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
@@ -68,6 +71,9 @@ export default function DebtsPage() {
         customer.addressShort.toLowerCase().includes(keyword)) &&
       (status === STATUS_OPTIONS[0] || customer.statusBadge.label === status),
   )
+
+  const { page, totalPages, paginated: paginatedCustomers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
+    usePagination(filteredCustomers, 10)
 
   return (
     <>
@@ -241,7 +247,7 @@ export default function DebtsPage() {
                   {filteredCustomers.length === 0 ? (
                     <EmptyTableRow colSpan={8} message="Không tìm thấy khách hàng phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
-                  {filteredCustomers.map((customer) => {
+                  {paginatedCustomers.map((customer) => {
                     const isSelected = customer.id === selectedId
                     return (
                       <tr
@@ -297,24 +303,17 @@ export default function DebtsPage() {
                 </tbody>
               </table>
             </div>
-            <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-2">
-              <div className="flex items-center gap-2">
-                <span className="">Hiển thị</span>
-                <select className="py-1 px-2 bg-white border border-slate-300 rounded text-xs focus:outline-none">
-                  <option>10</option>
-                  <option>20</option>
-                  <option>50</option>
-                </select>
-                <span className="">dòng / trang. Hiển thị 1 - 5 trong số 28 khách hàng</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <button className="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-500 hover:bg-slate-100 disabled:opacity-50" disabled>Trước</button>
-                <button className="px-2.5 py-1 rounded bg-[#1E5E3A] text-white font-bold">1</button>
-                <button className="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">2</button>
-                <button className="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">3</button>
-                <button className="px-2.5 py-1 rounded bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">Trang sau</button>
-              </div>
-            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalCount={totalCount}
+              unitLabel="khách hàng"
+              goPrev={goPrev}
+              goNext={goNext}
+              setPage={setPage}
+            />
           </div>
 
       {/* DETAIL MODAL: CHI TIẾT CÔNG NỢ KHÁCH HÀNG */}
@@ -455,9 +454,6 @@ export default function DebtsPage() {
               <h3 className="font-title-md text-title-md text-slate-900 font-bold">Công nợ quá hạn cần xử lý</h3>
               <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">3 ca ưu tiên</span>
             </div>
-            <a className="text-xs text-primary font-medium hover:underline flex items-center gap-0.5" href="#">
-              Xem tất cả quá hạn <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-            </a>
           </div>
           <div className="space-y-2.5">
             <div className="p-3 bg-rose-50/40 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">

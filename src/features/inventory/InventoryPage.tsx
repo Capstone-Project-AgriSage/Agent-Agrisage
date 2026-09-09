@@ -1,10 +1,27 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { usePagination } from '../../hooks/usePagination'
+import { inventoryItems as INITIAL_INVENTORY } from '../../data/mockInventory'
 
 export default function InventoryPage() {
   usePageHeader({
     title: 'Quản lý kho hàng',
   })
+
+  const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(INITIAL_INVENTORY, (item) => item.id)
+  const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
+    usePagination(INITIAL_INVENTORY, 10)
+
+  const handleInventoryAction = (id: string, label: string) => {
+    if (label === 'Xem chi tiết') setSelectedId(id)
+  }
+
+  const totalCount = INITIAL_INVENTORY.length
+  const lowStockCount = INITIAL_INVENTORY.filter((item) => item.stockLabel === 'Sắp hết').length
+  const outOfStockCount = INITIAL_INVENTORY.filter((item) => item.stockLabel === 'Hết hàng').length
 
   return (
     <div className="max-w-[1600px] mx-auto flex flex-col gap-space-lg">
@@ -49,7 +66,7 @@ export default function InventoryPage() {
             </div>
           </div>
           <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-on-surface">184 <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+            <div className="font-metric-num text-metric-num text-on-surface">{totalCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
             <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
               <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="check_circle">check_circle</span>
               <span>1.420 đơn vị bao/chai/gói đang lưu trữ</span>
@@ -65,7 +82,7 @@ export default function InventoryPage() {
             </div>
           </div>
           <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-[#B45309]">12 <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+            <div className="font-metric-num text-metric-num text-[#B45309]">{lowStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
             <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-[#B45309]">
               <span className="material-symbols-outlined text-[16px]" data-icon="trending_down">trending_down</span>
               <span>Dưới ngưỡng an toàn, cần nhập sớm</span>
@@ -81,7 +98,7 @@ export default function InventoryPage() {
             </div>
           </div>
           <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-error">04 <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+            <div className="font-metric-num text-metric-num text-error">{outOfStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
             <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-error">
               <span className="material-symbols-outlined text-[16px]" data-icon="error">error</span>
               <span>Tồn kho 0, ngừng cung ứng cho nông dân</span>
@@ -166,404 +183,78 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md">
-              {/* ROW 1: Phân NPK Đầu Trâu (Amber) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Phân NPK Đầu Trâu 20-20-15+TE</span>
-                    <span className="font-body-sm text-[12px] text-outline">Đạm 20% - Lân 20% - Kali 15% + Vi lượng TE</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-NPK-2015</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Phân bón</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">18</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-amber-500 rounded-full" style={{ width: '36%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                    Sắp hết
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">15 phút trước</span>
-                    <span className="text-outline">NV. Khang</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân NPK Đầu Trâu 20-20-15+TE"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 2: Thuốc Beam 75WP (Amber/Critical) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Thuốc Trừ Bệnh Beam 75WP</span>
-                    <span className="font-body-sm text-[12px] text-outline">Tricyclazole 75% w/w - Đặc trị đạo ôn lúa</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-BVTV-0084</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Thuốc BVTV</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-amber-700 tabular-nums">08</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-red-500 rounded-full" style={{ width: '16%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                    Sắp hết
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">1 giờ trước</span>
-                    <span className="text-outline">KS. Minh</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Bệnh Beam 75WP"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 3: Lúa Giống ST25 (Green) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Lúa Giống Xác Nhận ST25</span>
-                    <span className="font-body-sm text-[12px] text-outline">Giống nguyên chủng Cua Đỏ Sóc Trăng - Vụ TĐ 2024</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-GIONG-ST25</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Lúa giống</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">142</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '85%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                    Tồn kho tốt
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">2 giờ trước</span>
-                    <span className="text-outline">KS. Minh</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Lúa Giống Xác Nhận ST25"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 4: Thuốc Trừ Cỏ Sofit 300EC (Green) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Thuốc Trừ Cỏ Sofit 300EC</span>
-                    <span className="font-body-sm text-[12px] text-outline">Pretilachlor 300g/L + Chất an toàn Fenclorim - Syngenta</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-BVTV-300E</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Thuốc BVTV</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">95</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '78%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                    Tồn kho tốt
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">Hôm qua</span>
-                    <span className="text-outline">TK. Nam</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Cỏ Sofit 300EC"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 5: Phân Urê Hạt Đục Cà Mau (Green) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Phân Urê Hạt Đục Cà Mau</span>
-                    <span className="font-body-sm text-[12px] text-outline">Đạm 46.3% N tối thiểu - Tan chậm hạn chế thất thoát</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-URE-CM01</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Phân bón</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">310</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '95%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                    Tồn kho tốt
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">3 giờ trước</span>
-                    <span className="text-outline">NV. Khang</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân Urê Hạt Đục Cà Mau"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 6: Thuốc Trừ Sâu Virtako 40WG (RED - Out of stock) */}
-              <tr className="hover:bg-surface-container-low transition-colors group bg-red-50/20">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-error font-semibold group-hover:underline">Thuốc Trừ Sâu Virtako 40WG</span>
-                    <span className="font-body-sm text-[12px] text-outline">Chlorantraniliprole 20% + Thiamethoxam 20%</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-BVTV-40WG</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Thuốc BVTV</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-bold text-error tabular-nums">00</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-red-600 rounded-full" style={{ width: '0%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-                    Hết hàng
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">10 phút trước</span>
-                    <span className="text-outline">KS. Minh</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Sâu Virtako 40WG"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Tạo đề nghị nhập khẩn', icon: 'notification_important', tone: 'danger' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 7: Phân Bón Lá Siêu Ra Rễ Roots 2 (Green) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Phân Bón Lá Siêu Ra Rễ Roots 2</span>
-                    <span className="font-body-sm text-[12px] text-outline">Axit Humic + Rong biển hữu cơ cô đặc kích rễ cực mạnh</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-PBL-RT02</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Phân bón lá</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">64</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '75%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                    Tồn kho tốt
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">Hôm qua</span>
-                    <span className="text-outline">TK. Nam</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân Bón Lá Siêu Ra Rễ Roots 2"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 8: Hạt Giống Rau Cải Ngọt Sen Hồng (Green) */}
-              <tr className="hover:bg-surface-container-low transition-colors group">
-                <td className="py-3 px-4">
-                  <div className="flex flex-col">
-                    <span className="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary">Hạt Giống Rau Cải Ngọt Sen Hồng</span>
-                    <span className="font-body-sm text-[12px] text-outline">Độ nảy mầm &gt; 85%, thời gian thu hoạch 28-32 ngày</span>
-                  </div>
-                </td>
-                <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">SKU-GR-CH08</td>
-                <td className="py-3 px-3">
-                  <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">Giống rau</span>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex flex-col items-end">
-                    <span className="font-semibold text-on-surface tabular-nums">210</span>
-                    <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                      <div className="h-full bg-emerald-600 rounded-full" style={{ width: '88%' }}></div>
-                    </div>
-                  </div>
-                </td>
-                
-                <td className="py-3 px-3 text-center">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                    Tồn kho tốt
-                  </span>
-                </td>
-                <td className="py-3 px-3">
-                  <div className="flex flex-col text-[11px]">
-                    <span className="text-on-surface">4 giờ trước</span>
-                    <span className="text-outline">KS. Minh</span>
-                  </div>
-                </td>
-                <td className="py-3 px-4 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Hạt Giống Rau Cải Ngọt Sen Hồng"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Điều chỉnh tồn kho', icon: 'tune' },
-                        { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
+              {paginated.map((item) => {
+                const isSelected = item.id === selectedId
+                return (
+                  <tr
+                    key={item.id}
+                    onClick={() => setSelectedId(item.id)}
+                    className={`transition-colors cursor-pointer group ${
+                      isSelected
+                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                        : `hover:bg-surface-container-low ${item.rowClassName ?? ''}`
+                    }`}
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex flex-col">
+                        <span className={`font-title-md text-title-md font-semibold group-hover:text-primary ${item.nameClassName ?? 'text-on-surface'}`}>
+                          {item.name}
+                        </span>
+                        <span className="font-body-sm text-[12px] text-outline">{item.description}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">{item.sku}</td>
+                    <td className="py-3 px-3">
+                      <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{item.categoryLabel}</span>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <div className="flex flex-col items-end">
+                        <span className={`font-semibold tabular-nums ${item.stockQuantityClassName ?? 'text-on-surface'}`}>{item.stockQuantity}</span>
+                        <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
+                          <div className={`h-full rounded-full ${item.stockBarClassName}`} style={{ width: item.stockBarWidth }}></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${item.stockDotClassName}`}></span>
+                        {item.stockLabel}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="flex flex-col text-[11px]">
+                        <span className="text-on-surface">{item.updatedAgo}</span>
+                        <span className="text-outline">{item.updatedBy}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end">
+                        <RowActionsMenu
+                          triggerLabel={`Thao tác ${item.name}`}
+                          actions={item.actions.map((action) => ({
+                            ...action,
+                            onClick: () => handleInventoryAction(item.id, action.label),
+                          }))}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
-        {/* PAGINATION & SUMMARY FOOTER */}
-        <div className="px-space-md py-space-sm bg-surface-container-low border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-space-sm select-none">
-          <div className="flex items-center gap-4 text-body-sm text-outline font-body-sm">
-            <span>Hiển thị <strong className="text-on-surface font-semibold">1 - 8</strong> trong số <strong className="text-on-surface font-semibold">184</strong> sản phẩm</span>
-            <div className="hidden md:flex items-center gap-1 text-xs">
-              <span>Số dòng:</span>
-              <select className="py-0.5 px-2 bg-surface-container-lowest border border-outline-variant rounded text-on-surface text-xs focus:outline-none">
-                <option>10 sản phẩm / trang</option>
-                <option>20 sản phẩm / trang</option>
-                <option>50 sản phẩm / trang</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button className="px-2.5 py-1 rounded bg-surface-container-lowest border border-outline-variant text-outline hover:text-on-surface text-body-sm disabled:opacity-40" disabled type="button">
-              Trước
-            </button>
-            <button className="w-8 h-8 rounded bg-primary text-on-primary font-semibold text-xs flex items-center justify-center" type="button">1</button>
-            <button className="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface-variant font-medium text-xs flex items-center justify-center" type="button">2</button>
-            <button className="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface-variant font-medium text-xs flex items-center justify-center" type="button">3</button>
-            <span className="px-1 text-outline">...</span>
-            <button className="w-8 h-8 rounded hover:bg-surface-container-high text-on-surface-variant font-medium text-xs flex items-center justify-center" type="button">19</button>
-            <button className="px-2.5 py-1 rounded bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container text-body-sm font-medium" type="button">
-              Sau
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={pageTotalCount}
+          unitLabel="sản phẩm"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
       </div>
 
       {/* 2-COLUMN AUXILIARY LOWER SECTION */}
@@ -637,19 +328,15 @@ export default function InventoryPage() {
               </button>
             </div>
           </div>
-          <div className="p-space-sm bg-surface-container-low border-t border-outline-variant flex items-center justify-between text-body-sm text-outline">
+          <div className="p-space-sm bg-surface-container-low border-t border-outline-variant text-body-sm text-outline">
             <span>Dữ liệu kích hoạt tự động theo hạn ngạch vụ mùa ĐBSCL</span>
-            <a className="text-primary font-semibold hover:underline" href="#">Xem quy tắc cảnh báo →</a>
           </div>
         </div>
         {/* COLUMN 2: NHẬT KÝ XUẤT NHẬP KHO GẦN ĐÂY */}
         <div className="lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col justify-between">
-          <div className="p-space-base border-b border-outline-variant flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary text-[22px]" data-icon="receipt">receipt</span>
-              <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Nhật ký xuất nhập kho gần đây</h2>
-            </div>
-            <a className="text-body-sm text-primary font-semibold hover:underline" href="#">Xem tất cả thẻ kho</a>
+          <div className="p-space-base border-b border-outline-variant flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[22px]" data-icon="receipt">receipt</span>
+            <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Nhật ký xuất nhập kho gần đây</h2>
           </div>
           <div className="p-space-base divide-y divide-outline-variant">
             {/* Activity 1 */}
@@ -706,6 +393,38 @@ export default function InventoryPage() {
           </div>
         </div>
       </div>
+
+      {/* DETAIL MODAL: CHI TIẾT THẺ KHO */}
+      <DetailModal open={selectedItem !== null} onClose={() => setSelectedId(null)}>
+        {selectedItem ? (
+          <div className="p-space-md space-y-3">
+            <div>
+              <h3 className="font-title-md text-title-md text-on-surface font-bold">{selectedItem.name}</h3>
+              <p className="text-body-sm text-outline mt-0.5">{selectedItem.description}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[12px] text-on-surface-variant font-medium px-2 py-0.5 bg-surface-container-low rounded">{selectedItem.sku}</span>
+              <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{selectedItem.categoryLabel}</span>
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${selectedItem.stockClassName}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedItem.stockDotClassName}`}></span>
+                {selectedItem.stockLabel}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-outline-variant">
+              <div className="flex items-center justify-between text-body-sm text-outline mb-1">
+                <span>Tồn thực tế</span>
+                <span className="font-semibold text-on-surface tabular-nums">{selectedItem.stockQuantity}</span>
+              </div>
+              <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">
+                <div className={`h-full rounded-full ${selectedItem.stockBarClassName}`} style={{ width: selectedItem.stockBarWidth }}></div>
+              </div>
+            </div>
+            <div className="text-body-sm text-on-surface-variant">
+              Cập nhật gần nhất: <strong className="text-on-surface">{selectedItem.updatedAgo}</strong> bởi {selectedItem.updatedBy}
+            </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </div>
   )
 }

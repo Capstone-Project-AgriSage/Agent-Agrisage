@@ -1,10 +1,27 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import DetailModal from '../../components/ui/DetailModal'
+
+interface RecentOrderDetail {
+  id: string
+  time: string
+  customerName: string
+  location: string
+  productLine: string
+  productNote?: string
+  total: string
+  statusLabel: string
+  statusClassName: string
+  statusDotClassName: string
+}
 
 export default function DashboardPage() {
   usePageHeader({
     title: 'Operations Dashboard',
   })
+
+  const [selectedOrder, setSelectedOrder] = useState<RecentOrderDetail | null>(null)
 
   return (
     <>
@@ -146,7 +163,27 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant/40 text-[12px]">
                   {/* Order Row 1 */}
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
+                  <tr
+                    className={`transition-colors cursor-pointer ${
+                      selectedOrder?.id === '#DH-2410-089'
+                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                        : 'hover:bg-surface-container-low/40'
+                    }`}
+                    onClick={() =>
+                      setSelectedOrder({
+                        id: '#DH-2410-089',
+                        time: '10:42 AM',
+                        customerName: 'Trần Văn Hai',
+                        location: 'Thới Thạnh, Thốt Nốt (3.2 ha lúa)',
+                        productLine: '25 bao NPK Cà Mau 16-16-8 + 10 chai Tilt Super',
+                        productNote: 'Theo toa AI #DX-891',
+                        total: '32.500.000 ₫',
+                        statusLabel: 'VietQR Đã Khớp',
+                        statusClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
+                        statusDotClassName: 'bg-[#16A34A]',
+                      })
+                    }
+                  >
                     <td className="py-2 px-3">
                       <span className="font-semibold text-primary tabular-nums block">#DH-2410-089</span>
                       <span className="text-[10px] text-outline">10:42 AM</span>
@@ -177,7 +214,24 @@ export default function DashboardPage() {
                         <RowActionsMenu
                           triggerLabel="Thao tác đơn #DH-2410-089"
                           actions={[
-                            { label: 'Xem chi tiết', icon: 'visibility', tone: 'primary' },
+                            {
+                              label: 'Xem chi tiết',
+                              icon: 'visibility',
+                              tone: 'primary',
+                              onClick: () =>
+                                setSelectedOrder({
+                                  id: '#DH-2410-089',
+                                  time: '10:42 AM',
+                                  customerName: 'Trần Văn Hai',
+                                  location: 'Thới Thạnh, Thốt Nốt (3.2 ha lúa)',
+                                  productLine: '25 bao NPK Cà Mau 16-16-8 + 10 chai Tilt Super',
+                                  productNote: 'Theo toa AI #DX-891',
+                                  total: '32.500.000 ₫',
+                                  statusLabel: 'VietQR Đã Khớp',
+                                  statusClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
+                                  statusDotClassName: 'bg-[#16A34A]',
+                                }),
+                            },
                             { label: 'In phiếu xuất', icon: 'print' },
                           ]}
                         />
@@ -185,7 +239,27 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                   {/* Order Row 2 */}
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
+                  <tr
+                    className={`transition-colors cursor-pointer ${
+                      selectedOrder?.id === '#DH-2410-088'
+                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                        : 'hover:bg-surface-container-low/40'
+                    }`}
+                    onClick={() =>
+                      setSelectedOrder({
+                        id: '#DH-2410-088',
+                        time: '10:15 AM',
+                        customerName: 'Lê Thị Bảy',
+                        location: 'Tân Hưng, Ô Môn (4.8 ha lúa)',
+                        productLine: '50 bao Phân Urê Phú Mỹ hạt trong',
+                        productNote: 'Giao thẳng tại bến xuồng kênh Cây Dừa',
+                        total: '46.200.000 ₫',
+                        statusLabel: 'Gối nợ 60 ngày',
+                        statusClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+                        statusDotClassName: 'bg-[#D97706]',
+                      })
+                    }
+                  >
                     <td className="py-2 px-3">
                       <span className="font-semibold text-primary tabular-nums block">#DH-2410-088</span>
                       <span className="text-[10px] text-outline">10:15 AM</span>
@@ -213,7 +287,24 @@ export default function DashboardPage() {
                         <RowActionsMenu
                           triggerLabel="Thao tác đơn #DH-2410-088"
                           actions={[
-                            { label: 'Xem chi tiết', icon: 'visibility', tone: 'primary' },
+                            {
+                              label: 'Xem chi tiết',
+                              icon: 'visibility',
+                              tone: 'primary',
+                              onClick: () =>
+                                setSelectedOrder({
+                                  id: '#DH-2410-088',
+                                  time: '10:15 AM',
+                                  customerName: 'Lê Thị Bảy',
+                                  location: 'Tân Hưng, Ô Môn (4.8 ha lúa)',
+                                  productLine: '50 bao Phân Urê Phú Mỹ hạt trong',
+                                  productNote: 'Giao thẳng tại bến xuồng kênh Cây Dừa',
+                                  total: '46.200.000 ₫',
+                                  statusLabel: 'Gối nợ 60 ngày',
+                                  statusClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
+                                  statusDotClassName: 'bg-[#D97706]',
+                                }),
+                            },
                             { label: 'In phiếu xuất', icon: 'print' },
                           ]}
                         />
@@ -221,7 +312,27 @@ export default function DashboardPage() {
                     </td>
                   </tr>
                   {/* Order Row 3 */}
-                  <tr className="hover:bg-surface-container-low/40 transition-colors">
+                  <tr
+                    className={`transition-colors cursor-pointer ${
+                      selectedOrder?.id === '#DH-2410-087'
+                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                        : 'hover:bg-surface-container-low/40'
+                    }`}
+                    onClick={() =>
+                      setSelectedOrder({
+                        id: '#DH-2410-087',
+                        time: '09:50 AM',
+                        customerName: 'Nguyễn Hữu Trí',
+                        location: 'Nhơn Ái, Phong Điền (1.5 ha sầu riêng)',
+                        productLine: '20kg Lúa ST25 cấp xác nhận + 5 can Chess 50WG',
+                        productNote: 'Đã cấp bao bì chuyên dụng bảo hộ',
+                        total: '14.800.000 ₫',
+                        statusLabel: 'Tiền mặt tại trạm',
+                        statusClassName: 'bg-surface-container text-on-surface-variant border-outline-variant/60',
+                        statusDotClassName: 'bg-outline',
+                      })
+                    }
+                  >
                     <td className="py-2 px-3">
                       <span className="font-semibold text-primary tabular-nums block">#DH-2410-087</span>
                       <span className="text-[10px] text-outline">09:50 AM</span>
@@ -249,7 +360,24 @@ export default function DashboardPage() {
                         <RowActionsMenu
                           triggerLabel="Thao tác đơn #DH-2410-087"
                           actions={[
-                            { label: 'Xem chi tiết', icon: 'visibility', tone: 'primary' },
+                            {
+                              label: 'Xem chi tiết',
+                              icon: 'visibility',
+                              tone: 'primary',
+                              onClick: () =>
+                                setSelectedOrder({
+                                  id: '#DH-2410-087',
+                                  time: '09:50 AM',
+                                  customerName: 'Nguyễn Hữu Trí',
+                                  location: 'Nhơn Ái, Phong Điền (1.5 ha sầu riêng)',
+                                  productLine: '20kg Lúa ST25 cấp xác nhận + 5 can Chess 50WG',
+                                  productNote: 'Đã cấp bao bì chuyên dụng bảo hộ',
+                                  total: '14.800.000 ₫',
+                                  statusLabel: 'Tiền mặt tại trạm',
+                                  statusClassName: 'bg-surface-container text-on-surface-variant border-outline-variant/60',
+                                  statusDotClassName: 'bg-outline',
+                                }),
+                            },
                             { label: 'In phiếu xuất', icon: 'print' },
                           ]}
                         />
@@ -276,6 +404,40 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+
+      {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
+      <DetailModal open={selectedOrder !== null} onClose={() => setSelectedOrder(null)}>
+        {selectedOrder ? (
+          <div className="p-space-md space-y-3">
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono font-bold text-primary">{selectedOrder.id}</span>
+                <span className="text-[11px] text-outline">{selectedOrder.time}</span>
+              </div>
+              <h3 className="font-title-md text-title-md text-on-surface font-bold mt-0.5">{selectedOrder.customerName}</h3>
+              <div className="text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+                <span className="material-symbols-outlined text-[14px] text-outline">location_on</span>
+                {selectedOrder.location}
+              </div>
+            </div>
+            <div className="p-2.5 bg-surface-container-low rounded border border-outline-variant">
+              <div className="font-medium text-on-surface text-body-sm">{selectedOrder.productLine}</div>
+              {selectedOrder.productNote ? (
+                <div className="text-[11px] text-outline mt-0.5">{selectedOrder.productNote}</div>
+              ) : null}
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
+              <span
+                className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${selectedOrder.statusClassName}`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedOrder.statusDotClassName}`}></span>
+                {selectedOrder.statusLabel}
+              </span>
+              <span className="font-bold text-on-surface tabular-nums">{selectedOrder.total}</span>
+            </div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

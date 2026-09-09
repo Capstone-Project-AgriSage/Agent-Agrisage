@@ -347,6 +347,43 @@ export interface Payment {
   paymentHistory: PaymentHistoryEntry[]
 }
 
+export interface Product {
+  id: string
+  name: string
+  discontinued?: boolean
+  description: string
+  categoryLabel: string
+  categoryClassName: string
+  price: string
+  priceClassName?: string
+  stockLabel: string
+  stockClassName: string
+  stockDotClassName: string
+  businessStatus: string
+  rowClassName?: string
+  actions: RowAction[]
+}
+
+export interface InventoryItem {
+  id: string
+  name: string
+  description: string
+  sku: string
+  categoryLabel: string
+  stockQuantity: string
+  stockQuantityClassName?: string
+  stockBarClassName: string
+  stockBarWidth: string
+  stockLabel: string
+  stockClassName: string
+  stockDotClassName: string
+  updatedAgo: string
+  updatedBy: string
+  rowClassName?: string
+  nameClassName?: string
+  actions: RowAction[]
+}
+
 export interface LogEntry {
   id: string
   time: string

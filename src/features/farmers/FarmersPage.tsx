@@ -1,8 +1,10 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { farmers as FARMERS } from '../../data/mockFarmers'
 
 const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
@@ -34,6 +36,9 @@ export default function FarmersPage() {
         (debtFilter === 'Không có nợ' && !farmer.hasDebt) ||
         (debtFilter === 'Nợ quá hạn' && farmer.statusBadge.label === 'Quá hạn nợ')),
   )
+
+  const { page, totalPages, paginated: paginatedFarmers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
+    usePagination(filteredFarmers, 10)
 
   return (
     <>
@@ -217,7 +222,7 @@ export default function FarmersPage() {
                 {filteredFarmers.length === 0 ? (
                   <EmptyTableRow colSpan={9} message="Không tìm thấy nông dân phù hợp với bộ lọc." className="text-slate-400" />
                 ) : null}
-                {filteredFarmers.map((farmer) => {
+                {paginatedFarmers.map((farmer) => {
                   const isSelected = farmer.id === selectedId
                   return (
                     <tr
@@ -315,41 +320,17 @@ export default function FarmersPage() {
               </tbody>
             </table>
           </div>
-          {/* TABLE PAGINATION FOOTER */}
-          <div className="py-2.5 px-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-600">
-            <div className="">
-              Hiển thị <span className="font-semibold text-slate-900">1 - 5</span> trong số{' '}
-              <span className="font-semibold text-slate-900">248</span> nông dân
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                className="w-7 h-7 rounded border border-slate-300 bg-white flex items-center justify-center text-slate-400 hover:text-slate-700 disabled:opacity-50"
-                disabled
-              >
-                <span className="material-symbols-outlined text-sm" data-icon="chevron_left">
-                  chevron_left
-                </span>
-              </button>
-              <button className="w-7 h-7 rounded border border-emerald-700 bg-primary-container text-white font-semibold flex items-center justify-center text-xs">
-                1
-              </button>
-              <button className="w-7 h-7 rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-medium flex items-center justify-center text-xs">
-                2
-              </button>
-              <button className="w-7 h-7 rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-medium flex items-center justify-center text-xs">
-                3
-              </button>
-              <span className="px-1 text-slate-400">...</span>
-              <button className="w-7 h-7 rounded border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 font-medium flex items-center justify-center text-xs">
-                50
-              </button>
-              <button className="w-7 h-7 rounded border border-slate-300 bg-white flex items-center justify-center text-slate-700 hover:bg-slate-50">
-                <span className="material-symbols-outlined text-sm" data-icon="chevron_right">
-                  chevron_right
-                </span>
-              </button>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalCount={totalCount}
+            unitLabel="nông dân"
+            goPrev={goPrev}
+            goNext={goNext}
+            setPage={setPage}
+          />
       </div>
 
       {/* DETAIL MODAL: THÔNG TIN NÔNG DÂN */}

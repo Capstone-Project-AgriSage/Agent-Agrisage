@@ -1,10 +1,30 @@
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
+import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
+import { useSelectableList } from '../../hooks/useSelectableList'
+import { usePagination } from '../../hooks/usePagination'
+import { products as INITIAL_PRODUCTS } from '../../data/mockProducts'
 
 export default function ProductsPage() {
   usePageHeader({
     title: 'Quản lý sản phẩm',
   })
+
+  const { selectedId, setSelectedId, selected: selectedProduct } = useSelectableList(INITIAL_PRODUCTS, (p) => p.id)
+  const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
+    usePagination(INITIAL_PRODUCTS, 10)
+
+  const handleProductAction = (id: string, label: string) => {
+    if (label === 'Xem chi tiết') setSelectedId(id)
+  }
+
+  const totalCount = INITIAL_PRODUCTS.length
+  const activeCount = INITIAL_PRODUCTS.filter((p) => p.businessStatus === 'Đang kinh doanh').length
+  const lowStockCount = INITIAL_PRODUCTS.filter((p) => p.stockLabel === 'Sắp hết').length
+  const outOfStockCount = INITIAL_PRODUCTS.filter((p) => p.stockLabel === 'Hết hàng').length
+  const activePercent = totalCount ? Math.round((activeCount / totalCount) * 1000) / 10 : 0
+  const categoryCount = new Set(INITIAL_PRODUCTS.map((p) => p.categoryLabel)).size
 
   return (
     <>
@@ -35,10 +55,10 @@ export default function ProductsPage() {
           <div className="space-y-1">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Tổng sản phẩm</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface tabular-nums">184</span>
+              <span className="font-metric-num text-metric-num text-on-surface tabular-nums">{totalCount}</span>
               <span className="font-body-sm text-body-sm text-outline">mặt hàng</span>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">14 danh mục đang hoạt động</p>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">{categoryCount} danh mục đang hoạt động</p>
           </div>
           <div className="p-2.5 bg-surface-container rounded-lg text-primary">
             <span className="material-symbols-outlined text-2xl" data-icon="inventory_2">inventory_2</span>
@@ -49,9 +69,9 @@ export default function ProductsPage() {
           <div className="space-y-1">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Đang kinh doanh</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#15803D] tabular-nums">168</span>
+              <span className="font-metric-num text-metric-num text-[#15803D] tabular-nums">{activeCount}</span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                91.3%
+                {activePercent}%
               </span>
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant">Đảm bảo dòng tiền bán lẻ</p>
@@ -65,7 +85,7 @@ export default function ProductsPage() {
           <div className="space-y-1">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Sắp hết hàng</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B45309] tabular-nums">12</span>
+              <span className="font-metric-num text-metric-num text-[#B45309] tabular-nums">{lowStockCount}</span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
                 Cần nhập
               </span>
@@ -81,7 +101,7 @@ export default function ProductsPage() {
           <div className="space-y-1">
             <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Ngừng KD / Hết hàng</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B91C1C] tabular-nums">4</span>
+              <span className="font-metric-num text-metric-num text-[#B91C1C] tabular-nums">{outOfStockCount}</span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
                 Tồn: 0
               </span>
@@ -151,7 +171,11 @@ export default function ProductsPage() {
             <thead>
               <tr className="bg-[#F8FAFC] border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
                 <th className="py-3 pl-4 pr-2 w-10 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
+                  <input
+                    className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                    type="checkbox"
+                    onClick={(e) => e.stopPropagation()}
+                  />
                 </th>
                 <th className="py-3 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
                 <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
@@ -161,417 +185,83 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
-              {/* ROW 1: Phân NPK Đầu Trâu */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Phân NPK Đầu Trâu 20-20-15+TE
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Quy cách đóng bao chính hãng Bình Điền</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Phân bón
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">685.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                      Sắp hết
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân NPK Đầu Trâu 20-20-15+TE"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 2: Thuốc Trừ Bệnh Beam 75WP */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Thuốc Trừ Bệnh Beam 75WP
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Hoạt chất Tricyclazole - Trị đạo ôn cổ bông</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    Thuốc BVTV
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">42.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                      Sắp hết
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Bệnh Beam 75WP"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 3: Lúa Giống Xác Nhận ST25 */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Lúa Giống Xác Nhận ST25 (F1)
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Giống lúa chuẩn thuần Sóc Trăng - Độ nảy mầm 92%</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800 border border-blue-200">
-                    Lúa giống
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">720.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Còn hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Lúa Giống Xác Nhận ST25 (F1)"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 4: Thuốc Trừ Cỏ Sofit 300EC */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Thuốc Trừ Cỏ Sofit 300EC (Syngenta)
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Hoạt chất Pretilachlor + Fenclorim chống cháy lá mầm</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    Thuốc BVTV
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">165.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Còn hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Cỏ Sofit 300EC (Syngenta)"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 5: Phân Urê Hạt Đục Cà Mau */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Phân Urê Hạt Đục Cà Mau
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Đạm 46.3% N tối thiểu, chống thất thoát phân tử khí</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Phân bón
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">540.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Còn hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân Urê Hạt Đục Cà Mau"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 6: Thuốc Trừ Sâu Virtako 40WG */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Thuốc Trừ Sâu Virtako 40WG
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Chlorantraniliprole + Thiamethoxam - Đặc trị sâu cuốn lá</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    Thuốc BVTV
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">28.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#DC2626]"></span>
-                      Hết hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Trừ Sâu Virtako 40WG"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Tạo phiếu nhập gấp', icon: 'add_business', tone: 'primary' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 7: Phân Bón Lá Siêu Ra Rễ Roots 2 */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Phân Bón Lá Siêu Ra Rễ Roots 2
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Dung tích lớn chuyên dụng cho hệ thống tưới nhỏ giọt sầu riêng</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    Phân bón lá
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">380.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Còn hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Phân Bón Lá Siêu Ra Rễ Roots 2"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 8: Hạt Giống Rau Cải Ngọt Sen Hồng */}
-              <tr className="hover:bg-surface/70 transition-colors group">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">
-                    Hạt Giống Rau Cải Ngọt Sen Hồng
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Kháng bệnh tốt, ăn ngọt mềm không xơ - Thu hoạch 25-30 ngày</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-800 border border-purple-200">
-                    Giống rau màu
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-on-surface">18.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-                      Còn hàng
-                    </span>
-                    <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                      Đang kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Hạt Giống Rau Cải Ngọt Sen Hồng"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Nhập thêm kho', icon: 'add_business' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
-              {/* ROW 9: Thuốc Điều Hòa Sinh Trưởng Gibberellin 90% */}
-              <tr className="hover:bg-surface/70 transition-colors group bg-slate-50/50">
-                <td className="py-3.5 pl-4 pr-2 text-center">
-                  <input className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer" type="checkbox" />
-                </td>
-                <td className="py-3.5 px-3">
-                  <div className="font-title-md text-title-md text-outline group-hover:text-on-surface transition-colors line-through">
-                    Thuốc Điều Hòa Sinh Trưởng Gibberellin 90%
-                  </div>
-                  <div className="text-body-sm text-outline mt-0.5">Tạm dừng phân phối do nhà máy chuyển giao đổi bao bì mới</div>
-                </td>
-                <td className="py-3.5 px-3">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-                    Kích thích ST
-                  </span>
-                </td>
-                <td className="py-3.5 px-3 text-right font-semibold tabular-nums text-outline">65.000 ₫</td>
-                <td className="py-3.5 px-3">
-                  <div className="flex flex-col gap-1 items-start">
-                    <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#64748B]"></span>
-                      Hết hàng
-                    </span>
-                    <span className="text-[11px] text-[#475569] font-medium flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-[#64748B]"></span>
-                      Tạm ngừng kinh doanh
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3.5 pr-4 pl-3 text-right">
-                  <div className="flex items-center justify-end">
-                    <RowActionsMenu
-                      triggerLabel="Thao tác Thuốc Điều Hòa Sinh Trưởng Gibberellin 90%"
-                      actions={[
-                        { label: 'Xem chi tiết', icon: 'visibility' },
-                        { label: 'Chỉnh sửa', icon: 'edit' },
-                        { label: 'Tạm khóa nhập', icon: 'lock', tone: 'danger' },
-                      ]}
-                    />
-                  </div>
-                </td>
-              </tr>
+              {paginated.map((product) => {
+                const isSelected = product.id === selectedId
+                return (
+                  <tr
+                    key={product.id}
+                    onClick={() => setSelectedId(product.id)}
+                    className={`transition-colors cursor-pointer group ${
+                      isSelected
+                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                        : `hover:bg-surface/70 ${product.rowClassName ?? ''}`
+                    }`}
+                  >
+                    <td className="py-3.5 pl-4 pr-2 text-center">
+                      <input
+                        className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                        type="checkbox"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <div
+                        className={`font-title-md text-title-md group-hover:text-primary transition-colors ${
+                          product.discontinued ? 'text-outline line-through' : 'text-on-surface'
+                        }`}
+                      >
+                        {product.name}
+                      </div>
+                      <div className="text-body-sm text-outline mt-0.5">{product.description}</div>
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${product.categoryClassName}`}>
+                        {product.categoryLabel}
+                      </span>
+                    </td>
+                    <td className={`py-3.5 px-3 text-right font-semibold tabular-nums ${product.priceClassName ?? 'text-on-surface'}`}>
+                      {product.price}
+                    </td>
+                    <td className="py-3.5 px-3">
+                      <div className="flex flex-col gap-1 items-start">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${product.stockClassName}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${product.stockDotClassName}`}></span>
+                          {product.stockLabel}
+                        </span>
+                        <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
+                          <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
+                          {product.businessStatus}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 pr-4 pl-3 text-right">
+                      <div className="flex items-center justify-end">
+                        <RowActionsMenu
+                          triggerLabel={`Thao tác ${product.name}`}
+                          actions={product.actions.map((action) => ({
+                            ...action,
+                            onClick: () => handleProductAction(product.id, action.label),
+                          }))}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
-        {/* 5. TABLE FOOTER & PAGINATION */}
-        <div className="bg-[#F8FAFC] px-space-md py-space-sm border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-on-surface-variant select-none">
-          <div className="flex items-center gap-4">
-            <span>Hiển thị <strong className="font-semibold text-on-surface tabular-nums">1 - 9</strong> trong số <strong className="font-semibold text-on-surface tabular-nums">184</strong> sản phẩm</span>
-            <div className="flex items-center gap-1.5 border-l border-outline-variant pl-4">
-              <span className="text-xs text-outline">Số dòng:</span>
-              <select defaultValue="10 sản phẩm / trang" className="h-7 text-xs bg-surface border border-outline-variant rounded px-2 py-0 focus:ring-primary focus:border-primary">
-                <option>10 sản phẩm / trang</option>
-                <option>25 sản phẩm / trang</option>
-                <option>50 sản phẩm / trang</option>
-                <option>100 sản phẩm / trang</option>
-              </select>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <button className="h-8 px-2.5 rounded border border-outline-variant bg-surface-container-lowest text-outline hover:text-on-surface hover:bg-surface flex items-center gap-1 disabled:opacity-40" disabled>
-              <span className="material-symbols-outlined text-base" data-icon="chevron_left">chevron_left</span>
-              <span className="font-label-sm text-label-sm">Trước</span>
-            </button>
-            <button className="h-8 w-8 rounded bg-[#1E5E3A] text-on-primary font-semibold text-xs flex items-center justify-center shadow-xs">1</button>
-            <button className="h-8 w-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface text-xs flex items-center justify-center">2</button>
-            <button className="h-8 w-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface text-xs flex items-center justify-center">3</button>
-            <span className="px-1 text-outline font-medium">...</span>
-            <button className="h-8 w-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface text-xs flex items-center justify-center">19</button>
-            <button className="h-8 px-2.5 rounded border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface flex items-center gap-1">
-              <span className="font-label-sm text-label-sm">Sau</span>
-              <span className="material-symbols-outlined text-base" data-icon="chevron_right">chevron_right</span>
-            </button>
-          </div>
-        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={pageTotalCount}
+          unitLabel="sản phẩm"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
       </section>
 
       {/* 6. OPERATIONAL AUDIT & FAST NOTES STRIP */}
@@ -586,6 +276,36 @@ export default function ProductsPage() {
           <span>15 phút trước qua VietQR Dispatch</span>
         </div>
       </section>
+
+      {/* DETAIL MODAL: CHI TIẾT SẢN PHẨM */}
+      <DetailModal open={selectedProduct !== null} onClose={() => setSelectedId(null)}>
+        {selectedProduct ? (
+          <div className="p-space-md space-y-3">
+            <div>
+              <h3 className={`font-title-md text-title-md font-bold ${selectedProduct.discontinued ? 'text-outline line-through' : 'text-on-surface'}`}>
+                {selectedProduct.name}
+              </h3>
+              <p className="text-body-sm text-outline mt-0.5">{selectedProduct.description}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${selectedProduct.categoryClassName}`}>
+                {selectedProduct.categoryLabel}
+              </span>
+              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${selectedProduct.stockClassName}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${selectedProduct.stockDotClassName}`}></span>
+                {selectedProduct.stockLabel}
+              </span>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
+              <span className="text-body-sm text-outline">Giá bán niêm yết</span>
+              <span className={`font-semibold text-lg tabular-nums ${selectedProduct.priceClassName ?? 'text-on-surface'}`}>
+                {selectedProduct.price}
+              </span>
+            </div>
+            <div className="text-body-sm text-on-surface-variant">{selectedProduct.businessStatus}</div>
+          </div>
+        ) : null}
+      </DetailModal>
     </>
   )
 }

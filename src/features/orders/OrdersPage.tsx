@@ -4,8 +4,10 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import Pagination from '../../components/ui/Pagination'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
+import { usePagination } from '../../hooks/usePagination'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
@@ -63,6 +65,7 @@ export default function OrdersPage() {
     if (label === 'Duyệt đơn') setOrderStatus(id, 'Đã xác nhận')
     else if (label === 'Xác nhận') setOrderStatus(id, 'Đang giao')
     else if (label === 'Cập nhật') advanceOrderStatus(id)
+    else if (label === 'Xem') setSelectedId(id)
   }
 
   const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(orders, (o) => o.id)
@@ -84,6 +87,9 @@ export default function OrdersPage() {
         order.phone.toLowerCase().includes(keyword)) &&
       (status === STATUS_OPTIONS[0] || order.statusBadge.label === status),
   )
+
+  const { page, totalPages, paginated: paginatedOrders, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
+    usePagination(filteredOrders, 10)
 
   return (
     <>
@@ -281,7 +287,7 @@ export default function OrdersPage() {
                 {filteredOrders.length === 0 ? (
                   <EmptyTableRow colSpan={8} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
                 ) : null}
-                {filteredOrders.map((order) => {
+                {paginatedOrders.map((order) => {
                   const isSelected = order.id === selectedId
                   return (
                     <tr
@@ -347,35 +353,17 @@ export default function OrdersPage() {
               </tbody>
             </table>
           </div>
-          {/* Pagination Bar */}
-          <div className="px-space-md py-space-sm bg-surface-container-low/50 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-space-sm text-xs">
-            <div className="text-outline">
-              Hiển thị <span className="font-medium text-on-surface">1 - 5</span> trong số <span className="font-medium text-on-surface">48</span> đơn hàng
-            </div>
-            <div className="flex items-center gap-space-md">
-              <div className="flex items-center gap-1">
-                <span className="text-outline">Số dòng:</span>
-                <select className="py-0.5 px-2 bg-surface-container-lowest border border-outline-variant rounded text-xs focus:ring-1 focus:ring-primary">
-                  <option>10</option>
-                  <option>25</option>
-                  <option>50</option>
-                </select>
-              </div>
-              <div className="flex items-center gap-1">
-                <button className="p-1 rounded border border-outline-variant hover:bg-surface-container disabled:opacity-40" disabled>
-                  <span className="material-symbols-outlined text-sm" data-icon="chevron_left">chevron_left</span>
-                </button>
-                <span className="px-2 py-0.5 rounded bg-primary text-on-primary font-semibold">1</span>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">2</button>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">3</button>
-                <span className="text-outline">...</span>
-                <button className="px-2 py-0.5 rounded hover:bg-surface-container">5</button>
-                <button className="p-1 rounded border border-outline-variant hover:bg-surface-container">
-                  <span className="material-symbols-outlined text-sm" data-icon="chevron_right">chevron_right</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalCount={totalCount}
+            unitLabel="đơn hàng"
+            goPrev={goPrev}
+            goNext={goNext}
+            setPage={setPage}
+          />
         </div>
 
       {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
