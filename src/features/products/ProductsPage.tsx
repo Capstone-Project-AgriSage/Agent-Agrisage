@@ -1,10 +1,17 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { usePagination } from '../../hooks/usePagination'
 import { products as INITIAL_PRODUCTS } from '../../data/mockProducts'
+
+const CATEGORY_OPTIONS = ['Tất cả danh mục', ...new Set(INITIAL_PRODUCTS.map((p) => p.categoryLabel))]
+const BUSINESS_OPTIONS = ['Tất cả trạng thái KD', 'Đang kinh doanh', 'Tạm ngừng kinh doanh']
 
 export default function ProductsPage() {
   usePageHeader({
@@ -12,8 +19,27 @@ export default function ProductsPage() {
   })
 
   const { selectedId, setSelectedId, selected: selectedProduct } = useSelectableList(INITIAL_PRODUCTS, (p) => p.id)
+
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState(CATEGORY_OPTIONS[0])
+  const [businessFilter, setBusinessFilter] = useState(BUSINESS_OPTIONS[0])
+
+  const keyword = search.trim().toLowerCase()
+  const filteredProducts = INITIAL_PRODUCTS.filter(
+    (p) =>
+      (!keyword || p.name.toLowerCase().includes(keyword) || p.description.toLowerCase().includes(keyword)) &&
+      (categoryFilter === CATEGORY_OPTIONS[0] || p.categoryLabel === categoryFilter) &&
+      (businessFilter === BUSINESS_OPTIONS[0] || p.businessStatus === businessFilter),
+  )
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setCategoryFilter(CATEGORY_OPTIONS[0])
+    setBusinessFilter(BUSINESS_OPTIONS[0])
+  }
+
   const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
-    usePagination(INITIAL_PRODUCTS, 10)
+    usePagination(filteredProducts, 10)
 
   const handleProductAction = (id: string, label: string) => {
     if (label === 'Xem chi tiết') setSelectedId(id)
@@ -117,31 +143,14 @@ export default function ProductsPage() {
       {/* 3. DATA FILTERS TOOLBAR */}
       <section className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex flex-wrap items-center justify-between gap-space-md">
         <div className="flex flex-wrap items-center gap-space-sm flex-1">
-          <div className="relative min-w-[210px]">
-            <select className="w-full h-9 pl-3 pr-8 bg-surface rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md focus:ring-1 focus:ring-primary focus:border-primary">
-              <option>Tất cả danh mục</option>
-              <option>Phân bón vô cơ &amp; hữu cơ</option>
-              <option>Thuốc BVTV &amp; Trừ bệnh</option>
-              <option>Giống cây trồng</option>
-              <option>Dụng cụ nông nghiệp</option>
-            </select>
-          </div>
-          <div className="relative min-w-[170px]">
-            <select className="w-full h-9 pl-3 pr-8 bg-surface rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md focus:ring-1 focus:ring-primary focus:border-primary">
-              <option>Tất cả trạng thái kho</option>
-              <option>Còn hàng (An toàn)</option>
-              <option>Sắp hết (&lt;20)</option>
-              <option>Hết hàng (0 tồn)</option>
-            </select>
-          </div>
-          <div className="relative min-w-[170px]">
-            <select className="w-full h-9 pl-3 pr-8 bg-surface rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md focus:ring-1 focus:ring-primary focus:border-primary">
-              <option>Tất cả trạng thái KD</option>
-              <option>Đang kinh doanh</option>
-              <option>Tạm ngừng kinh doanh</option>
-            </select>
-          </div>
-          <button className="h-9 px-space-sm text-outline hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 transition-colors">
+          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, hoạt chất..." />
+          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[210px]" />
+          <FilterSelect value={businessFilter} onChange={setBusinessFilter} options={BUSINESS_OPTIONS} className="relative min-w-[170px]" />
+          <button
+            className="h-9 px-space-sm text-outline hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 transition-colors"
+            onClick={handleClearFilters}
+            type="button"
+          >
             <span className="material-symbols-outlined text-base" data-icon="filter_alt_off">filter_alt_off</span>
             <span>Đặt lại bộ lọc</span>
           </button>
@@ -180,11 +189,14 @@ export default function ProductsPage() {
                 <th className="py-3 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
                 <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
                 <th className="py-3 px-3 min-w-[120px] text-right">Giá bán niêm yết</th>
-                <th className="py-3 px-3 min-w-[170px]">Trạng thái</th>
+                <th className="py-3 px-3 min-w-[170px] text-right">Số lượng</th>
                 <th className="py-3 pr-4 pl-3 w-28 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
+              {paginated.length === 0 ? (
+                <EmptyTableRow colSpan={6} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
+              ) : null}
               {paginated.map((product) => {
                 const isSelected = product.id === selectedId
                 return (
@@ -222,17 +234,11 @@ export default function ProductsPage() {
                     <td className={`py-3.5 px-3 text-right font-semibold tabular-nums ${product.priceClassName ?? 'text-on-surface'}`}>
                       {product.price}
                     </td>
-                    <td className="py-3.5 px-3">
-                      <div className="flex flex-col gap-1 items-start">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${product.stockClassName}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${product.stockDotClassName}`}></span>
-                          {product.stockLabel}
-                        </span>
-                        <span className="text-[11px] text-[#15803D] font-medium flex items-center gap-1">
-                          <span className="w-1 h-1 rounded-full bg-[#15803D]"></span>
-                          {product.businessStatus}
-                        </span>
-                      </div>
+                    <td className="py-3.5 px-3 text-right">
+                      <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums text-on-surface">
+                        <span className={`w-1.5 h-1.5 rounded-full ${product.stockDotClassName}`}></span>
+                        {product.stockQuantity}
+                      </span>
                     </td>
                     <td className="py-3.5 pr-4 pl-3 text-right">
                       <div className="flex items-center justify-end">

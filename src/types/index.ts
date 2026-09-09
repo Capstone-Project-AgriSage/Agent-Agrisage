@@ -359,6 +359,7 @@ export interface Product {
   stockLabel: string
   stockClassName: string
   stockDotClassName: string
+  stockQuantity: string
   businessStatus: string
   rowClassName?: string
   actions: RowAction[]

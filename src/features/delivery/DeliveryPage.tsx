@@ -5,6 +5,8 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import type { TripTimelineStep } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
@@ -20,6 +22,9 @@ const STATUS_OPTIONS = [
   'Giao thành công',
   'Giao thất bại',
 ]
+
+const DRIVER_OPTIONS = ['Tất cả tài xế', 'Nguyễn Văn Út', 'Lê Hoàng Nam', 'Trần Quốc Bảo', 'Huỳnh Minh Sang']
+const COD_OPTIONS = ['Tất cả COD', 'Chờ thu COD', 'Đã thu COD', 'Đã CK / 0 COD', 'Tiền mặt tại kho', 'Chưa thu được']
 
 const STATUS_VISUALS: Record<string, { className: string; dotClassName: string; dotPulseClassName?: string }> = {
   'Chờ phân công': { className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
@@ -72,13 +77,16 @@ export default function DeliveryPage() {
 
   const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(trips, (t) => t.id)
 
+  const [driverFilter, setDriverFilter] = useState(DRIVER_OPTIONS[0])
+  const [codFilter, setCodFilter] = useState(COD_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
     filtered: filteredTrips,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     trips,
     STATUS_OPTIONS[0],
@@ -87,8 +95,16 @@ export default function DeliveryPage() {
         trip.id.toLowerCase().includes(keyword) ||
         trip.orderId.toLowerCase().includes(keyword) ||
         trip.customerName.toLowerCase().includes(keyword)) &&
-      (status === STATUS_OPTIONS[0] || trip.statusBadge.label === status),
+      (status === STATUS_OPTIONS[0] || trip.statusBadge.label === status) &&
+      (driverFilter === DRIVER_OPTIONS[0] || trip.driverName === driverFilter) &&
+      (codFilter === COD_OPTIONS[0] || trip.codBadge.label === codFilter),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setDriverFilter(DRIVER_OPTIONS[0])
+    setCodFilter(COD_OPTIONS[0])
+  }
 
   const { page, totalPages, paginated: paginatedTrips, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredTrips, 10)
@@ -211,41 +227,16 @@ export default function DeliveryPage() {
       {/* 3. BỘ LỌC TÌM KIẾM (Filters bar) */}
       <div className="bg-white rounded-lg border border-[#E2E8F0] p-3 shadow-sm flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-          <div className="relative w-72 min-w-[220px]">
-            <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-[#94A3B8]">
-              <span className="material-symbols-outlined text-[17px]" data-icon="search">search</span>
-            </span>
-            <input
-              className="w-full pl-8 pr-3 py-1.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-body-sm font-body-sm text-[#0F172A] placeholder-[#94A3B8] focus:outline-none focus:border-[#1E5E3A] focus:ring-1 focus:ring-[#1E5E3A]"
-              placeholder="Tìm mã giao hàng / mã đơn / khách hàng..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select
-            className="py-1.5 pl-3 pr-8 bg-white border border-[#CBD5E1] rounded-lg text-body-sm font-body-sm text-[#334155] focus:outline-none focus:border-[#1E5E3A] focus:ring-1 focus:ring-[#1E5E3A]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            {STATUS_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-          <select className="py-1.5 pl-3 pr-8 bg-white border border-[#CBD5E1] rounded-lg text-body-sm font-body-sm text-[#334155] focus:outline-none focus:border-[#1E5E3A] focus:ring-1 focus:ring-[#1E5E3A]">
-            <option>Tất cả tài xế</option>
-            <option>Nguyễn Văn Út</option>
-            <option>Lê Hoàng Nam</option>
-            <option>Trần Quốc Bảo</option>
-            <option>Huỳnh Minh Sang</option>
-          </select>
-          <select className="py-1.5 pl-3 pr-8 bg-white border border-[#CBD5E1] rounded-lg text-body-sm font-body-sm text-[#334155] focus:outline-none focus:border-[#1E5E3A] focus:ring-1 focus:ring-[#1E5E3A]">
-            <option>Tất cả COD</option>
-            <option>Không COD / Đã CK</option>
-            <option>Chờ thu COD</option>
-            <option>Đã thu COD</option>
-          </select>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg text-body-sm text-[#334155]">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm mã giao hàng / mã đơn / khách hàng..."
+            className="relative w-72 min-w-[220px]"
+          />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+          <FilterSelect value={driverFilter} onChange={setDriverFilter} options={DRIVER_OPTIONS} />
+          <FilterSelect value={codFilter} onChange={setCodFilter} options={COD_OPTIONS} />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm text-outline">
             <span className="material-symbols-outlined text-[16px] text-[#64748B]" data-icon="calendar_today">calendar_today</span>
             <span className="">Hôm nay - Vụ Thu Đông</span>
           </div>

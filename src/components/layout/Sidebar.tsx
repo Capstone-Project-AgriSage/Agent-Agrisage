@@ -47,8 +47,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         />
       ) : null}
       <aside
-        className={`fixed left-0 top-0 h-screen w-nav-sidebar-width flex flex-col py-space-md px-space-xs z-50 bg-surface-container-lowest border-r border-outline-variant select-none transition-transform duration-200 ease-out lg:translate-x-0 ${
-          open ? 'translate-x-0' : '-translate-x-full'
+        className={`sidebar-drawer fixed left-0 top-0 h-screen w-nav-sidebar-width flex flex-col py-space-md px-space-xs z-50 bg-surface-container-lowest border-r border-outline-variant select-none ${
+          open ? 'is-open' : ''
         }`}
       >
       <div className="shrink-0">

@@ -5,12 +5,15 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
+const METHOD_OPTIONS = ['Tất cả phương thức', ...new Set(INITIAL_PAYMENTS.map((p) => p.methodLabel))]
 
 export default function PaymentsPage() {
   usePageHeader({
@@ -60,13 +63,15 @@ export default function PaymentsPage() {
 
   const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
 
+  const [methodFilter, setMethodFilter] = useState(METHOD_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
     filtered: filteredPayments,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     payments,
     STATUS_OPTIONS[0],
@@ -75,8 +80,14 @@ export default function PaymentsPage() {
         payment.id.toLowerCase().includes(keyword) ||
         payment.orderId.toLowerCase().includes(keyword) ||
         payment.customerName.toLowerCase().includes(keyword)) &&
-      (status === STATUS_OPTIONS[0] || payment.statusBadge.label === status),
+      (status === STATUS_OPTIONS[0] || payment.statusBadge.label === status) &&
+      (methodFilter === METHOD_OPTIONS[0] || payment.methodLabel === methodFilter),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setMethodFilter(METHOD_OPTIONS[0])
+  }
 
   const { page, totalPages, paginated: paginatedPayments, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredPayments, 10)
@@ -174,39 +185,15 @@ export default function PaymentsPage() {
 
       {/* FILTER BAR */}
       <div className="bg-surface-container-lowest border border-outline-variant p-3.5 rounded-xl shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        <div className="relative flex-1 min-w-[280px]">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-          <input
-            className="w-full pl-9 pr-3 py-1.5 text-body-md font-body-md bg-surface-container-low border border-outline-variant rounded-xl text-on-surface placeholder:text-outline focus:bg-white focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-            placeholder="Tìm mã thanh toán / mã đơn / khách hàng..."
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchInput
+          value={search}
+          onChange={setSearch}
+          placeholder="Tìm mã thanh toán / mã đơn / khách hàng..."
+          className="relative flex-1 min-w-[280px]"
+        />
         <div className="flex items-center gap-2.5 flex-wrap">
-          <select
-            className="py-1.5 pl-3 pr-8 text-label-md font-label-md bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            {STATUS_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-          <select className="py-1.5 pl-3 pr-8 text-label-md font-label-md bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">
-            <option>Tất cả phương thức</option>
-            <option>Tiền mặt</option>
-            <option>VietQR</option>
-            <option>Chuyển khoản</option>
-            <option>COD</option>
-          </select>
-          <select className="py-1.5 pl-3 pr-8 text-label-md font-label-md bg-surface-container-lowest border border-outline-variant rounded-xl text-on-surface focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container">
-            <option>Hôm nay - Vụ Thu Đông</option>
-            <option>7 ngày gần nhất</option>
-            <option>30 ngày qua</option>
-            <option>Tùy chọn khoảng ngày...</option>
-          </select>
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+          <FilterSelect value={methodFilter} onChange={setMethodFilter} options={METHOD_OPTIONS} />
           <button
             className="flex items-center gap-1 px-3 py-1.5 text-outline hover:text-on-surface hover:bg-surface-container-low rounded-xl font-label-md text-label-md transition-colors"
             onClick={handleClearFilters}

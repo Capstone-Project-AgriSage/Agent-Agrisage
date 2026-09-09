@@ -5,12 +5,15 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
+const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt tại kho', 'Cọc 50%', 'Gối nợ vụ mùa']
 
 const STATUS_VISUALS: Record<string, { className: string; panelClassName: string }> = {
   'Chờ xác nhận': { className: 'bg-amber-100 text-amber-800 border-amber-300', panelClassName: 'bg-amber-100 text-amber-800' },
@@ -70,13 +73,15 @@ export default function OrdersPage() {
 
   const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(orders, (o) => o.id)
 
+  const [paymentFilter, setPaymentFilter] = useState(PAYMENT_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
     filtered: filteredOrders,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     orders,
     STATUS_OPTIONS[0],
@@ -85,8 +90,14 @@ export default function OrdersPage() {
         order.id.toLowerCase().includes(keyword) ||
         order.customerName.toLowerCase().includes(keyword) ||
         order.phone.toLowerCase().includes(keyword)) &&
-      (status === STATUS_OPTIONS[0] || order.statusBadge.label === status),
+      (status === STATUS_OPTIONS[0] || order.statusBadge.label === status) &&
+      (paymentFilter === PAYMENT_OPTIONS[0] || order.paymentBadge.label === paymentFilter),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setPaymentFilter(PAYMENT_OPTIONS[0])
+  }
 
   const { page, totalPages, paginated: paginatedOrders, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredOrders, 10)
@@ -203,43 +214,14 @@ export default function OrdersPage() {
       {/* FILTER & SEARCH BAR */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
         <div className="flex items-center gap-space-sm flex-1 flex-wrap">
-          <div className="relative min-w-[240px] flex-1 max-w-sm">
-            <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-outline text-base" data-icon="search">search</span>
-            <input
-              className="w-full pl-8 pr-3 py-1.5 bg-surface-container-low border border-outline-variant rounded font-body-sm text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
-              placeholder="Tìm kiếm mã đơn, tên nông dân, SĐT..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="relative">
-            <select
-              className="pl-2.5 pr-8 py-1.5 bg-surface-container-low border border-outline-variant rounded font-body-sm text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-          </div>
-          <div className="relative">
-            <select className="pl-2.5 pr-8 py-1.5 bg-surface-container-low border border-outline-variant rounded font-body-sm text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option>Tất cả thanh toán</option>
-              <option>Đã thanh toán</option>
-              <option>Chưa thanh toán</option>
-              <option>Thanh toán một phần</option>
-            </select>
-          </div>
-          <div className="relative">
-            <select className="pl-2.5 pr-8 py-1.5 bg-surface-container-low border border-outline-variant rounded font-body-sm text-xs text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option>Hôm nay - Vụ Thu Đông</option>
-              <option>3 ngày gần đây</option>
-              <option>Tuần này</option>
-              <option>Toàn bộ vụ mùa 2024</option>
-            </select>
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm kiếm mã đơn, tên nông dân, SĐT..."
+            className="relative min-w-[240px] flex-1 max-w-sm"
+          />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+          <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={PAYMENT_OPTIONS} />
         </div>
         <div className="flex items-center gap-space-xs">
           <button

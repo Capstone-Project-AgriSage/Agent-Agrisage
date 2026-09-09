@@ -1,13 +1,18 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
 
 const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
+const ACTION_OPTIONS = ['Tất cả loại thao tác', 'Tạo mới', 'Cập nhật', 'Xác nhận', 'Phê duyệt', 'Từ chối', 'Đối soát', 'Gửi nhắc', 'Điều chỉnh', 'Xuất kho', 'Nhập kho']
+const ACTOR_OPTIONS = ['Người thực hiện: Tất cả', 'Nguyễn Văn Minh', 'ĐP. Lê Hoàng', 'KT. Trần Thảo', 'Hệ thống VietQR']
 
 export default function ActivityLogPage() {
   usePageHeader({
@@ -16,13 +21,16 @@ export default function ActivityLogPage() {
 
   const { selectedId, setSelectedId, selected } = useSelectableList(LOG_ENTRIES, (entry) => entry.id)
 
+  const [actionFilter, setActionFilter] = useState(ACTION_OPTIONS[0])
+  const [actorFilter, setActorFilter] = useState(ACTOR_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter: moduleFilter,
     setStatusFilter: setModuleFilter,
     filtered: filteredEntries,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     LOG_ENTRIES,
     MODULE_OPTIONS[0],
@@ -32,8 +40,16 @@ export default function ActivityLogPage() {
         entry.actorName.toLowerCase().includes(keyword) ||
         entry.description.toLowerCase().includes(keyword) ||
         entry.objectId.toLowerCase().includes(keyword)) &&
-      (moduleFilter === MODULE_OPTIONS[0] || entry.moduleLabel === moduleFilter),
+      (moduleFilter === MODULE_OPTIONS[0] || entry.moduleLabel === moduleFilter) &&
+      (actionFilter === ACTION_OPTIONS[0] || entry.actionLabel === actionFilter) &&
+      (actorFilter === ACTOR_OPTIONS[0] || entry.actorName === actorFilter),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setActionFilter(ACTION_OPTIONS[0])
+    setActorFilter(ACTOR_OPTIONS[0])
+  }
 
   const {
     page,
@@ -151,88 +167,12 @@ export default function ActivityLogPage() {
       {/* ==================== FILTER TOOLBAR ==================== */}
       <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm">
         <div className="flex flex-wrap items-center gap-space-sm justify-between">
-          {/* Search input */}
-          <div className="relative flex-1 min-w-[260px]">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-outline">
-              <span className="material-symbols-outlined text-[18px]" data-icon="search">
-                search
-              </span>
-            </div>
-            <input
-              className="w-full pl-9 pr-3 py-1.5 text-body-sm font-body-sm bg-surface-container-low border border-outline-variant rounded-lg placeholder-outline text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-white"
-              placeholder="Tìm kiếm theo mã, nội dung, người thực hiện..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
+          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm theo mã, nội dung, người thực hiện..." />
           {/* Dropdowns Group */}
           <div className="flex flex-wrap items-center gap-space-sm">
-            {/* Phân hệ */}
-            <div className="relative">
-              <select
-                className="appearance-none bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface text-label-md font-label-md py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer"
-                value={moduleFilter}
-                onChange={(e) => setModuleFilter(e.target.value)}
-              >
-                {MODULE_OPTIONS.map((option) => (
-                  <option key={option}>{option}</option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-outline">
-                <span className="material-symbols-outlined text-[16px]" data-icon="expand_more">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            {/* Loại thao tác */}
-            <div className="relative">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface text-label-md font-label-md py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer">
-                <option defaultValue="">Tất cả loại thao tác</option>
-                <option>Nguyễn Văn Minh</option>
-                <option>Cập nhật</option>
-                <option>Xác nhận</option>
-                <option>Phê duyệt</option>
-                <option>Từ chối</option>
-                <option>Đối soát</option>
-                <option>Gửi nhắc</option>
-                <option>Điều chỉnh</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-outline">
-                <span className="material-symbols-outlined text-[16px]" data-icon="expand_more">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            {/* Người thực hiện */}
-            <div className="relative">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface text-label-md font-label-md py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer">
-                <option defaultValue="">Người thực hiện: Tất cả</option>
-                <option>Nguyễn Văn Minh</option>
-                <option>ĐP. Lê Hoàng</option>
-                <option>KT. Trần Thảo</option>
-                <option>Hệ thống VietQR</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-outline">
-                <span className="material-symbols-outlined text-[16px]" data-icon="expand_more">
-                  expand_more
-                </span>
-              </div>
-            </div>
-            {/* Thời gian */}
-            <div className="relative">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface text-label-md font-label-md py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-container cursor-pointer">
-                <option defaultValue="">Thời gian: Hôm nay</option>
-                <option>Nguyễn Văn Minh</option>
-                <option>7 ngày qua</option>
-                <option>Vụ Thu Đông</option>
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-outline">
-                <span className="material-symbols-outlined text-[16px]" data-icon="expand_more">
-                  expand_more
-                </span>
-              </div>
-            </div>
+            <FilterSelect value={moduleFilter} onChange={setModuleFilter} options={MODULE_OPTIONS} />
+            <FilterSelect value={actionFilter} onChange={setActionFilter} options={ACTION_OPTIONS} />
+            <FilterSelect value={actorFilter} onChange={setActorFilter} options={ACTOR_OPTIONS} />
             {/* Xóa bộ lọc */}
             <button
               className="flex items-center gap-1 text-outline hover:text-error px-2.5 py-1.5 rounded-lg hover:bg-error-container/20 font-label-md text-label-md transition"

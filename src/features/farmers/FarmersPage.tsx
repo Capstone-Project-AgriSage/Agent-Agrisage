@@ -1,13 +1,18 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { farmers as FARMERS } from '../../data/mockFarmers'
 
 const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
+const REGION_OPTIONS = ['Tất cả khu vực', ...new Set(FARMERS.map((f) => f.areaShort.split(',').pop()?.trim() ?? '').filter(Boolean))]
+const ACTIVITY_OPTIONS = ['Tất cả hoạt động', 'Đang hoạt động', 'Ít hoạt động']
 
 export default function FarmersPage() {
   usePageHeader({
@@ -16,13 +21,16 @@ export default function FarmersPage() {
 
   const { selectedId, setSelectedId, selected: selectedFarmer } = useSelectableList(FARMERS, (f) => f.id)
 
+  const [regionFilter, setRegionFilter] = useState(REGION_OPTIONS[0])
+  const [activityFilter, setActivityFilter] = useState(ACTIVITY_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter: debtFilter,
     setStatusFilter: setDebtFilter,
     filtered: filteredFarmers,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     FARMERS,
     DEBT_OPTIONS[0],
@@ -34,8 +42,16 @@ export default function FarmersPage() {
       (debtFilter === DEBT_OPTIONS[0] ||
         (debtFilter === 'Có công nợ' && farmer.hasDebt) ||
         (debtFilter === 'Không có nợ' && !farmer.hasDebt) ||
-        (debtFilter === 'Nợ quá hạn' && farmer.statusBadge.label === 'Quá hạn nợ')),
+        (debtFilter === 'Nợ quá hạn' && farmer.statusBadge.label === 'Quá hạn nợ')) &&
+      (regionFilter === REGION_OPTIONS[0] || farmer.areaShort.includes(regionFilter)) &&
+      (activityFilter === ACTIVITY_OPTIONS[0] || farmer.statusBadge.label === activityFilter),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setRegionFilter(REGION_OPTIONS[0])
+    setActivityFilter(ACTIVITY_OPTIONS[0])
+  }
 
   const { page, totalPages, paginated: paginatedFarmers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredFarmers, 10)
@@ -127,68 +143,15 @@ export default function FarmersPage() {
       {/* FILTER TOOLBAR */}
       <div className="bg-white border border-slate-200 rounded-lg p-3 mt-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
         <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-          {/* Search */}
-          <div className="relative min-w-[220px] flex-1 max-w-xs">
-            <span className="material-symbols-outlined absolute left-2.5 top-2 text-slate-400 text-lg" data-icon="search">
-              search
-            </span>
-            <input
-              className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-700 focus:border-emerald-700"
-              placeholder="Tìm tên nông dân, số điện thoại..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          {/* Region Filter */}
-          <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-700 cursor-pointer">
-              <option>Tất cả khu vực</option>
-              <option>Thới Lai</option>
-              <option>Ô Môn</option>
-              <option>Phong Điền</option>
-              <option>Cờ Đỏ</option>
-              <option>Vĩnh Thạnh</option>
-            </select>
-            <span
-              className="material-symbols-outlined absolute right-2 top-2 text-slate-400 text-sm pointer-events-none"
-              data-icon="expand_more"
-            >
-              expand_more
-            </span>
-          </div>
-          {/* Debt Status Filter */}
-          <div className="relative">
-            <select
-              className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-700 cursor-pointer"
-              value={debtFilter}
-              onChange={(e) => setDebtFilter(e.target.value)}
-            >
-              {DEBT_OPTIONS.map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-            <span
-              className="material-symbols-outlined absolute right-2 top-2 text-slate-400 text-sm pointer-events-none"
-              data-icon="expand_more"
-            >
-              expand_more
-            </span>
-          </div>
-          {/* Activity Filter */}
-          <div className="relative">
-            <select className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs py-1.5 pl-3 pr-8 rounded-lg focus:outline-none focus:ring-1 focus:ring-emerald-700 cursor-pointer">
-              <option>Tất cả hoạt động</option>
-              <option>Đang hoạt động</option>
-              <option>Ít hoạt động</option>
-            </select>
-            <span
-              className="material-symbols-outlined absolute right-2 top-2 text-slate-400 text-sm pointer-events-none"
-              data-icon="expand_more"
-            >
-              expand_more
-            </span>
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm tên nông dân, số điện thoại..."
+            className="relative min-w-[220px] flex-1 max-w-xs"
+          />
+          <FilterSelect value={regionFilter} onChange={setRegionFilter} options={REGION_OPTIONS} />
+          <FilterSelect value={debtFilter} onChange={setDebtFilter} options={DEBT_OPTIONS} />
+          <FilterSelect value={activityFilter} onChange={setActivityFilter} options={ACTIVITY_OPTIONS} />
         </div>
         <button
           className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 px-2.5 py-1.5 rounded hover:bg-slate-100 transition-colors"

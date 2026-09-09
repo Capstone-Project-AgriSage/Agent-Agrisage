@@ -5,12 +5,18 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
+const REGION_OPTIONS = [
+  'Tất cả khu vực',
+  ...new Set(INITIAL_DEBT_CUSTOMERS.map((c) => c.addressShort.split(',').pop()?.trim() ?? '').filter(Boolean)),
+]
 
 export default function DebtsPage() {
   usePageHeader({
@@ -54,13 +60,15 @@ export default function DebtsPage() {
 
   const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
 
+  const [regionFilter, setRegionFilter] = useState(REGION_OPTIONS[0])
+
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
     filtered: filteredCustomers,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     customers,
     STATUS_OPTIONS[0],
@@ -69,8 +77,14 @@ export default function DebtsPage() {
         customer.name.toLowerCase().includes(keyword) ||
         customer.phone.toLowerCase().includes(keyword) ||
         customer.addressShort.toLowerCase().includes(keyword)) &&
-      (status === STATUS_OPTIONS[0] || customer.statusBadge.label === status),
+      (status === STATUS_OPTIONS[0] || customer.statusBadge.label === status) &&
+      (regionFilter === REGION_OPTIONS[0] || customer.addressShort.includes(regionFilter)),
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setRegionFilter(REGION_OPTIONS[0])
+  }
 
   const { page, totalPages, paginated: paginatedCustomers, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
     usePagination(filteredCustomers, 10)
@@ -175,39 +189,14 @@ export default function DebtsPage() {
       {/* BỘ LỌC CHUYÊN DỤNG */}
       <section className="bg-white border border-slate-200 rounded-lg p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[320px]">
-          <div className="relative min-w-[240px] flex-1 max-w-sm">
-            <span className="material-symbols-outlined absolute left-2.5 top-2.5 text-slate-400 text-[18px]">search</span>
-            <input
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-md font-body-sm text-body-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-primary-container focus:bg-white"
-              placeholder="Tìm khách hàng / số điện thoại / ấp..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <select
-            className="py-1.5 px-3 bg-white border border-slate-300 rounded-md font-body-sm text-body-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-container cursor-pointer"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            {STATUS_OPTIONS.map((option) => (
-              <option key={option}>{option}</option>
-            ))}
-          </select>
-          <select className="py-1.5 px-3 bg-white border border-slate-300 rounded-md font-body-sm text-body-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-container cursor-pointer" defaultValue="Tất cả thời hạn (Trong 7 ngày, 15 ngày, >30 ngày)">
-            <option>Tất cả thời hạn (Trong 7 ngày, 15 ngày, &gt;30 ngày)</option>
-            <option>Trong 7 ngày tới</option>
-            <option>Trong 15 ngày tới</option>
-            <option>Quá hạn &gt; 30 ngày</option>
-          </select>
-          <select className="py-1.5 px-3 bg-white border border-slate-300 rounded-md font-body-sm text-body-sm text-slate-700 focus:outline-none focus:ring-1 focus:ring-primary-container cursor-pointer" defaultValue="Tất cả khu vực (Thới Lai, Ô Môn, Phong Điền, Cờ Đỏ, Thốt Nốt)">
-            <option>Tất cả khu vực (Thới Lai, Ô Môn, Phong Điền, Cờ Đỏ, Thốt Nốt)</option>
-            <option>Huyện Thới Lai</option>
-            <option>Quận Ô Môn</option>
-            <option>Huyện Phong Điền</option>
-            <option>Huyện Cờ Đỏ</option>
-            <option>Quận Thốt Nốt</option>
-          </select>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm khách hàng / số điện thoại / ấp..."
+            className="relative min-w-[240px] flex-1 max-w-sm"
+          />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+          <FilterSelect value={regionFilter} onChange={setRegionFilter} options={REGION_OPTIONS} />
         </div>
         <button
           className="inline-flex items-center gap-1 px-2.5 py-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md font-label-md text-label-md transition-colors"

@@ -1,10 +1,22 @@
+import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import EmptyTableRow from '../../components/ui/EmptyTableRow'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { usePagination } from '../../hooks/usePagination'
 import { inventoryItems as INITIAL_INVENTORY } from '../../data/mockInventory'
+
+const CATEGORY_OPTIONS = ['Tất cả danh mục', ...new Set(INITIAL_INVENTORY.map((item) => item.categoryLabel))]
+const STOCK_OPTIONS = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'Tồn kho tốt', label: 'Tồn kho tốt' },
+  { value: 'Sắp hết', label: 'Sắp hết hàng' },
+  { value: 'Hết hàng', label: 'Hết hàng' },
+]
 
 export default function InventoryPage() {
   usePageHeader({
@@ -12,8 +24,30 @@ export default function InventoryPage() {
   })
 
   const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(INITIAL_INVENTORY, (item) => item.id)
+
+  const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState(CATEGORY_OPTIONS[0])
+  const [stockFilter, setStockFilter] = useState('')
+
+  const keyword = search.trim().toLowerCase()
+  const filteredInventory = INITIAL_INVENTORY.filter(
+    (item) =>
+      (!keyword ||
+        item.name.toLowerCase().includes(keyword) ||
+        item.sku.toLowerCase().includes(keyword) ||
+        item.description.toLowerCase().includes(keyword)) &&
+      (categoryFilter === CATEGORY_OPTIONS[0] || item.categoryLabel === categoryFilter) &&
+      (!stockFilter || item.stockLabel === stockFilter),
+  )
+
+  const handleClearFilters = () => {
+    setSearch('')
+    setCategoryFilter(CATEGORY_OPTIONS[0])
+    setStockFilter('')
+  }
+
   const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
-    usePagination(INITIAL_INVENTORY, 10)
+    usePagination(filteredInventory, 10)
 
   const handleInventoryAction = (id: string, label: string) => {
     if (label === 'Xem chi tiết') setSelectedId(id)
@@ -125,42 +159,15 @@ export default function InventoryPage() {
 
       {/* FILTERS & SEARCH CONTROLS */}
       <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
-        <div className="relative flex-1">
-          <span className="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-outline" data-icon="search">search</span>
-          <input className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-xl text-body-md font-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Tìm kiếm sản phẩm, mã SKU, hoạt chất..." type="text" />
-        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, mã SKU, hoạt chất..." className="relative flex-1" />
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="relative min-w-[150px]">
-            <select className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-lowest border border-outline-variant rounded-xl text-body-sm font-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option>Tất cả danh mục</option>
-              <option>Phân bón</option>
-              <option>Thuốc BVTV</option>
-              <option>Lúa giống</option>
-              <option>Hạt giống rau</option>
-              <option>Phân bón lá</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-2.5 text-[18px] text-outline" data-icon="arrow_drop_down">arrow_drop_down</span>
-          </div>
-          <div className="relative min-w-[150px]">
-            <select className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-lowest border border-outline-variant rounded-xl text-body-sm font-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option>Tất cả trạng thái</option>
-              <option>Tồn kho tốt</option>
-              <option>Sắp hết hàng</option>
-              <option>Hết hàng</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-2.5 text-[18px] text-outline" data-icon="arrow_drop_down">arrow_drop_down</span>
-          </div>
-          <div className="relative min-w-[170px]">
-            <select className="w-full appearance-none pl-3 pr-8 py-2 bg-surface-container-lowest border border-outline-variant rounded-xl text-body-sm font-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option>Tất cả vị trí kho</option>
-              <option>Kho A - Kệ 01-04</option>
-              <option>Kho B - Khu phân bón</option>
-              <option>Kho C - Gian lạnh hạt giống</option>
-              <option>Kho D - Tủ bảo quản BVTV</option>
-            </select>
-            <span className="material-symbols-outlined pointer-events-none absolute right-2.5 top-2.5 text-[18px] text-outline" data-icon="arrow_drop_down">arrow_drop_down</span>
-          </div>
-          <button className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1" type="button">
+          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[150px]" />
+          <FilterSelect value={stockFilter} onChange={setStockFilter} options={STOCK_OPTIONS} className="relative min-w-[150px]" />
+          <button
+            className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
+            type="button"
+            onClick={handleClearFilters}
+          >
             <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
             <span>Xóa lọc</span>
           </button>
@@ -176,13 +183,16 @@ export default function InventoryPage() {
                 <th className="py-3 px-4 font-semibold" scope="col">Sản phẩm &amp; Hoạt chất</th>
                 <th className="py-3 px-3 font-semibold" scope="col">SKU</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Danh mục</th>
-                <th className="py-3 px-3 font-semibold text-right" scope="col">Tồn thực tế</th>
+                <th className="py-3 px-3 font-semibold text-right" scope="col">Số lượng</th>
                 <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Cập nhật gần nhất</th>
                 <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant text-body-md">
+              {paginated.length === 0 ? (
+                <EmptyTableRow colSpan={7} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
+              ) : null}
               {paginated.map((item) => {
                 const isSelected = item.id === selectedId
                 return (
@@ -412,7 +422,7 @@ export default function InventoryPage() {
             </div>
             <div className="pt-2 border-t border-outline-variant">
               <div className="flex items-center justify-between text-body-sm text-outline mb-1">
-                <span>Tồn thực tế</span>
+                <span>Số lượng</span>
                 <span className="font-semibold text-on-surface tabular-nums">{selectedItem.stockQuantity}</span>
               </div>
               <div className="w-full h-1.5 bg-surface-container-high rounded-full overflow-hidden">

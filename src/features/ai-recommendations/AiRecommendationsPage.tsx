@@ -5,6 +5,8 @@ import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import SearchInput from '../../components/ui/SearchInput'
+import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -16,6 +18,42 @@ const STATUS_LABELS: Record<string, string> = {
   'da-tu-choi': 'Đã từ chối',
   'chua-chac-chan': 'Chưa đủ chắc chắn',
 }
+
+const DISEASE_KEYWORDS: Record<string, string> = {
+  'dao-on': 'Đạo ôn',
+  'bac-la': 'Bạc lá',
+  'kho-van': 'Khô vằn',
+  'dom-nau': 'Đốm nâu',
+}
+
+const CONFIDENCE_RANGES: Record<string, (percent: number) => boolean> = {
+  high: (percent) => percent > 90,
+  med: (percent) => percent >= 75 && percent <= 90,
+  low: (percent) => percent < 75,
+}
+
+const DISEASE_OPTIONS = [
+  { value: '', label: 'Tất cả bệnh (4 loại lúa)' },
+  { value: 'dao-on', label: 'Đạo ôn' },
+  { value: 'bac-la', label: 'Bạc lá' },
+  { value: 'kho-van', label: 'Khô vằn' },
+  { value: 'dom-nau', label: 'Đốm nâu' },
+]
+
+const AI_STATUS_OPTIONS = [
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'cho-duyet', label: 'Chờ duyệt' },
+  { value: 'da-duyet', label: 'Đã phê duyệt' },
+  { value: 'da-tu-choi', label: 'Đã từ chối' },
+  { value: 'chua-chac-chan', label: 'Chưa đủ chắc chắn (<70%)' },
+]
+
+const CONFIDENCE_OPTIONS = [
+  { value: '', label: 'Tất cả độ tin cậy' },
+  { value: 'high', label: '>90% (Độ tin cậy cao)' },
+  { value: 'med', label: '75-90% (Phù hợp)' },
+  { value: 'low', label: '<75% (Thấp / Chưa chắc chắn)' },
+]
 
 export default function AiRecommendationsPage() {
   usePageHeader({
@@ -65,13 +103,16 @@ export default function AiRecommendationsPage() {
 
   const { selectedId, setSelectedId, selected } = useSelectableList(cases, (c) => c.id)
 
+  const [diseaseFilter, setDiseaseFilter] = useState('')
+  const [confidenceFilter, setConfidenceFilter] = useState('')
+
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
     filtered: filteredCases,
-    clearFilters: handleClearFilters,
+    clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     cases,
     'cho-duyet',
@@ -80,9 +121,17 @@ export default function AiRecommendationsPage() {
         item.id.toLowerCase().includes(keyword) ||
         item.farmerName.toLowerCase().includes(keyword) ||
         item.field.farmerPhone.toLowerCase().includes(keyword)) &&
-      (!status || item.statusBadge.label === STATUS_LABELS[status]),
+      (!status || item.statusBadge.label === STATUS_LABELS[status]) &&
+      (!diseaseFilter || item.diseaseLabel.includes(DISEASE_KEYWORDS[diseaseFilter])) &&
+      (!confidenceFilter || CONFIDENCE_RANGES[confidenceFilter](item.confidencePercent)),
     '',
   )
+
+  const handleClearFilters = () => {
+    handleClearFiltersBase()
+    setDiseaseFilter('')
+    setConfidenceFilter('')
+  }
 
   const {
     page,
@@ -171,53 +220,15 @@ export default function AiRecommendationsPage() {
       {/* FILTER BAR */}
       <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-wrap items-center justify-between gap-space-md">
         <div className="flex flex-wrap items-center gap-space-sm flex-1">
-          <div className="relative min-w-[240px] flex-1 max-w-sm">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">filter_alt</span>
-            <input
-              className="w-full pl-9 pr-3 py-1.5 bg-surface-container-low/50 border border-outline-variant rounded-lg font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-outline"
-              placeholder="Tìm mã phân tích / tên nông dân / SĐT..."
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center">
-            <select className="py-1.5 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary" defaultValue="dao-on">
-              <option value="">Tất cả bệnh (4 loại lúa)</option>
-              <option value="dao-on">Đạo ôn</option>
-              <option value="bac-la">Bạc lá</option>
-              <option value="kho-van">Khô vằn</option>
-              <option value="dom-nau">Đốm nâu</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <select
-              className="py-1.5 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">Tất cả trạng thái</option>
-              <option value="cho-duyet">Chờ duyệt</option>
-              <option value="da-duyet">Đã phê duyệt</option>
-              <option value="da-tu-choi">Đã từ chối</option>
-              <option value="chua-chac-chan">Chưa đủ chắc chắn (&lt;70%)</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <select className="py-1.5 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option value="">Tất cả độ tin cậy</option>
-              <option value="high">&gt;90% (Độ tin cậy cao)</option>
-              <option value="med">75-90% (Phù hợp)</option>
-              <option value="low">&lt;75% (Thấp / Chưa chắc chắn)</option>
-            </select>
-          </div>
-          <div className="flex items-center">
-            <select className="py-1.5 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary">
-              <option value="today">Hôm nay - Vụ Thu Đông</option>
-              <option value="yesterday">Hôm qua</option>
-              <option value="7days">7 ngày qua</option>
-            </select>
-          </div>
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm mã phân tích / tên nông dân / SĐT..."
+            className="relative min-w-[240px] flex-1 max-w-sm"
+          />
+          <FilterSelect value={diseaseFilter} onChange={setDiseaseFilter} options={DISEASE_OPTIONS} />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={AI_STATUS_OPTIONS} />
+          <FilterSelect value={confidenceFilter} onChange={setConfidenceFilter} options={CONFIDENCE_OPTIONS} />
         </div>
         <button
           className="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-1 transition-colors"
