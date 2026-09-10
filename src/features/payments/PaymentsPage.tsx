@@ -5,17 +5,41 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
+import { useFormValues } from '../../hooks/useFormValues'
 import { payments as INITIAL_PAYMENTS } from '../../data/mockPayments'
 import { parseVnd, formatVnd } from '../../utils/money'
+import { downloadCsv } from '../../utils/csv'
+import type { Payment } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
 const METHOD_OPTIONS = ['Tất cả phương thức', ...new Set(INITIAL_PAYMENTS.map((p) => p.methodLabel))]
+const NEW_PAYMENT_METHODS = METHOD_OPTIONS.slice(1)
+const emptyPaymentForm = {
+  orderId: '',
+  customerName: '',
+  customerPhone: '',
+  addressShort: '',
+  totalAmount: '',
+  paidAmount: '',
+  methodLabel: NEW_PAYMENT_METHODS[0] ?? '',
+}
+
+const CREATE_PAYMENT_FIELDS: FormFieldSpec[] = [
+  { key: 'orderId', label: 'Mã đơn hàng gốc (VD: #DH-2024-1082)' },
+  { key: 'customerName', label: 'Tên khách hàng' },
+  { key: 'customerPhone', label: 'Số điện thoại' },
+  { key: 'addressShort', label: 'Địa chỉ' },
+  { key: 'totalAmount', label: 'Tổng giá trị đơn (₫)', placeholder: 'VD: 8.245.000', group: 'amounts' },
+  { key: 'paidAmount', label: 'Số tiền đã thu (₫)', placeholder: 'VD: 5.000.000 (để trống nếu chưa thu)', group: 'amounts' },
+  { key: 'methodLabel', label: 'Phương thức thanh toán', type: 'select', options: NEW_PAYMENT_METHODS },
+]
 
 export default function PaymentsPage() {
   usePageHeader({
@@ -62,6 +86,95 @@ export default function PaymentsPage() {
     else if (label === 'Đối soát') markPaymentReconciled(id)
     else if (label === 'Xem') setSelectedId(id)
     else showToast(`Đã thực hiện "${label}" cho giao dịch #${id}`)
+  }
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const { values: createForm, update: updateCreateForm, reset: resetCreateForm } = useFormValues(emptyPaymentForm)
+
+  const handleCreatePayment = () => {
+    const { orderId, customerName, customerPhone, addressShort, totalAmount, paidAmount, methodLabel } = createForm
+    const total = parseVnd(totalAmount)
+    const paid = paidAmount.trim() ? parseVnd(paidAmount) : 0
+    if (!orderId.trim() || !customerName.trim() || !customerPhone.trim() || !addressShort.trim() || total <= 0 || paid > total) {
+      showToast('Vui lòng nhập đầy đủ và hợp lệ thông tin thanh toán')
+      return
+    }
+    const maxNum = payments.reduce((max, p) => {
+      const n = Number.parseInt(p.id.split('-').pop() ?? '0', 10)
+      return Number.isNaN(n) ? max : Math.max(max, n)
+    }, 0)
+    const remaining = total - paid
+    const hasRemaining = remaining > 0
+    const newPayment: Payment = {
+      id: `TT-${maxNum + 1}`,
+      orderId: orderId.trim(),
+      customerName: customerName.trim(),
+      customerPhone: customerPhone.trim(),
+      addressShort: addressShort.trim(),
+      totalAmount: formatVnd(total),
+      paidAmount: formatVnd(paid),
+      paidAmountClassName: paid > 0 ? 'text-emerald-700' : 'text-outline',
+      remainingAmount: formatVnd(remaining),
+      remainingAmountClassName: hasRemaining ? 'text-amber-700' : 'text-outline',
+      methodLabel,
+      methodClassName: 'bg-surface-container text-on-surface',
+      statusBadge: hasRemaining
+        ? paid > 0
+          ? { label: 'Thanh toán 1 phần', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-600' }
+          : { label: 'Chưa thanh toán', className: 'bg-slate-100 text-slate-800 border-slate-300', dotClassName: 'bg-slate-500' }
+        : { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
+      time: 'Vừa xong',
+      actions: [
+        { label: 'Xem', icon: 'visibility' },
+        { label: 'Thu tiếp', icon: 'payments', tone: 'primary' },
+      ],
+      subtitle: 'Giao dịch thu vật tư nông nghiệp',
+      customerNote: addressShort.trim(),
+      goodsNote: 'Chưa có chi tiết vật tư',
+      collectedLabel: `${formatVnd(paid)} (${total > 0 ? Math.round((paid / total) * 1000) / 10 : 0}%)`,
+      progressWidth: `${total > 0 ? Math.round((paid / total) * 1000) / 10 : 0}%`,
+      hasRemaining,
+      recordedBy: 'Bạn',
+      paymentHistory:
+        paid > 0
+          ? [
+              {
+                title: 'Vừa xong — Ghi nhận thanh toán',
+                note: 'Ghi nhận thủ công',
+                amountLabel: `+${formatVnd(paid)}`,
+                amountClassName: 'text-emerald-700',
+                cardClassName: 'bg-surface-container-low border-outline-variant/70',
+              },
+            ]
+          : [],
+    }
+    setPayments((prev) => [newPayment, ...prev])
+    showToast(`Đã ghi nhận thanh toán ${newPayment.id}`)
+    resetCreateForm()
+    setCreateOpen(false)
+  }
+
+  const handleExportPayments = () => {
+    downloadCsv(
+      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
+      `giao-dich-thanh-toan-${Date.now()}.csv`,
+      filteredPayments.map((p) => ({
+        'Mã TT': p.id,
+        'Mã đơn': p.orderId,
+        'Khách hàng': p.customerName,
+        'Tổng đơn': p.totalAmount,
+        'Đã thu': p.paidAmount,
+        'Còn lại': p.remainingAmount,
+        'Phương thức': p.methodLabel,
+        'Trạng thái': p.statusBadge.label,
+      })),
+    )
+    showToast(`Đã xuất báo cáo ${filteredPayments.length} giao dịch`)
+  }
+
+  const handlePrintPayments = () => {
+    showToast('Đang in sổ thu chi')
+    window.print()
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
@@ -119,21 +232,21 @@ export default function PaymentsPage() {
         <div className="flex items-center gap-space-sm flex-wrap">
           <button
             className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
-            onClick={() => showToast(`Đã xuất báo cáo ${filteredPayments.length} giao dịch`)}
+            onClick={handleExportPayments}
           >
             <span className="material-symbols-outlined text-[18px] text-outline">download</span>
             <span className="">Xuất báo cáo</span>
           </button>
           <button
             className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
-            onClick={() => showToast('Đã in sổ thu chi')}
+            onClick={handlePrintPayments}
           >
             <span className="material-symbols-outlined text-[18px] text-outline">print</span>
             <span className="">In sổ thu chi</span>
           </button>
           <button
             className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-surface-container-lowest rounded-xl font-title-md text-title-md transition-colors shadow-sm focus:ring-2 focus:ring-primary-container focus:outline-none"
-            onClick={() => showToast('Chức năng ghi nhận thanh toán mới đang được phát triển')}
+            onClick={() => setCreateOpen(true)}
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
             <span className="">Ghi nhận thanh toán</span>
@@ -436,7 +549,10 @@ export default function PaymentsPage() {
                 </button>
                 <button
                   className="w-full py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
-                  onClick={() => showToast(`Đã in phiếu thu VietQR / biên nhận cho giao dịch #${selected.id}`)}
+                  onClick={() => {
+                    showToast(`Đang in phiếu thu VietQR / biên nhận cho giao dịch #${selected.id}`)
+                    window.print()
+                  }}
                 >
                   <span className="material-symbols-outlined text-[18px] text-outline">print</span>
                   <span className="">In phiếu thu VietQR / Biên nhận</span>
@@ -453,6 +569,18 @@ export default function PaymentsPage() {
           </>
         ) : null}
       </DetailModal>
+
+      {/* MODAL: GHI NHẬN THANH TOÁN MỚI */}
+      <FormModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Ghi nhận thanh toán mới"
+        fields={CREATE_PAYMENT_FIELDS}
+        values={createForm}
+        onChange={updateCreateForm}
+        onSubmit={handleCreatePayment}
+        submitLabel="Ghi nhận thanh toán"
+      />
 
       {/* Compact Recent Payment Activity */}
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-space-md">

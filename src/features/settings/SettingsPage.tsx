@@ -18,6 +18,23 @@ const DEFAULT_NOTIFICATIONS = {
 
 type NotificationKey = keyof typeof DEFAULT_NOTIFICATIONS
 
+const NOTIFICATION_ROWS: { key: NotificationKey; title: string; description: string }[] = [
+  { key: 'newOrder', title: 'Đơn hàng mới', description: 'Nhận thông báo khi nông dân hoặc HTX đặt vật tư' },
+  { key: 'pendingPayment', title: 'Thanh toán chờ xác nhận', description: 'Biến động số dư VietQR và giao dịch tiền mặt chờ khớp' },
+  { key: 'debtDue', title: 'Công nợ sắp đến hạn', description: 'Cảnh báo nông dân có nợ gối đầu sắp quá hạn 7 ngày' },
+  { key: 'lowStock', title: 'Sản phẩm sắp hết hàng', description: 'Cảnh báo tồn kho dưới ngưỡng an toàn tại trạm' },
+  { key: 'aiPending', title: 'Gợi ý AI chờ duyệt', description: 'Gợi ý sản phẩm thương mại cho sâu bệnh mới tải lên chờ xác nhận' },
+]
+
+function NotificationToggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
+  return (
+    <label className="inline-flex items-center cursor-pointer">
+      <input checked={checked} onChange={onChange} className="sr-only peer" type="checkbox" />
+      <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+    </label>
+  )
+}
+
 export default function SettingsPage() {
   usePageHeader({
     title: 'Cài đặt',
@@ -337,155 +354,26 @@ export default function SettingsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
-                    {/* Row 1: Đơn hàng mới */}
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4 min-w-[220px]">
-                        <div className="font-title-md text-title-md font-semibold text-on-surface">Đơn hàng mới</div>
-                        <div className="text-on-surface-variant text-[13px]">Nhận thông báo khi nông dân hoặc HTX đặt vật tư</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.newOrder.inApp}
-                            onChange={() => toggleNotification('newOrder', 'inApp')}
-                            className="sr-only peer"
-                            type="checkbox"
+                    {NOTIFICATION_ROWS.map((row) => (
+                      <tr key={row.key} className="hover:bg-surface-container-low/50 transition-colors">
+                        <td className="py-3.5 px-4 min-w-[220px]">
+                          <div className="font-title-md text-title-md font-semibold text-on-surface">{row.title}</div>
+                          <div className="text-on-surface-variant text-[13px]">{row.description}</div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <NotificationToggle
+                            checked={notifications[row.key].inApp}
+                            onChange={() => toggleNotification(row.key, 'inApp')}
                           />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.newOrder.email}
-                            onChange={() => toggleNotification('newOrder', 'email')}
-                            className="sr-only peer"
-                            type="checkbox"
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <NotificationToggle
+                            checked={notifications[row.key].email}
+                            onChange={() => toggleNotification(row.key, 'email')}
                           />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                    </tr>
-                    {/* Row 2: Thanh toán chờ xác nhận */}
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4 min-w-[220px]">
-                        <div className="font-title-md text-title-md font-semibold text-on-surface">Thanh toán chờ xác nhận</div>
-                        <div className="text-on-surface-variant text-[13px]">
-                          Biến động số dư VietQR và giao dịch tiền mặt chờ khớp
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.pendingPayment.inApp}
-                            onChange={() => toggleNotification('pendingPayment', 'inApp')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.pendingPayment.email}
-                            onChange={() => toggleNotification('pendingPayment', 'email')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                    </tr>
-                    {/* Row 3: Công nợ sắp đến hạn */}
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4 min-w-[220px]">
-                        <div className="font-title-md text-title-md font-semibold text-on-surface">Công nợ sắp đến hạn</div>
-                        <div className="text-on-surface-variant text-[13px]">Cảnh báo nông dân có nợ gối đầu sắp quá hạn 7 ngày</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.debtDue.inApp}
-                            onChange={() => toggleNotification('debtDue', 'inApp')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.debtDue.email}
-                            onChange={() => toggleNotification('debtDue', 'email')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                    </tr>
-                    {/* Row 4: Sản phẩm sắp hết hàng */}
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4 min-w-[220px]">
-                        <div className="font-title-md text-title-md font-semibold text-on-surface">Sản phẩm sắp hết hàng</div>
-                        <div className="text-on-surface-variant text-[13px]">Cảnh báo tồn kho dưới ngưỡng an toàn tại trạm</div>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.lowStock.inApp}
-                            onChange={() => toggleNotification('lowStock', 'inApp')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.lowStock.email}
-                            onChange={() => toggleNotification('lowStock', 'email')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                    </tr>
-                    {/* Row 5: Gợi ý AI chờ duyệt */}
-                    <tr className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="py-3.5 px-4 min-w-[220px]">
-                        <div className="font-title-md text-title-md font-semibold text-on-surface">Gợi ý AI chờ duyệt</div>
-                        <div className="text-on-surface-variant text-[13px]">
-                          Gợi ý sản phẩm thương mại cho sâu bệnh mới tải lên chờ xác nhận
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.aiPending.inApp}
-                            onChange={() => toggleNotification('aiPending', 'inApp')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <label className="inline-flex items-center cursor-pointer">
-                          <input
-                            checked={notifications.aiPending.email}
-                            onChange={() => toggleNotification('aiPending', 'email')}
-                            className="sr-only peer"
-                            type="checkbox"
-                          />
-                          <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
-                        </label>
-                      </td>
-                    </tr>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -665,7 +553,7 @@ export default function SettingsPage() {
                       type="button"
                       onClick={() => setShowNewPassword((prev) => !prev)}
                     >
-                      <span className="material-symbols-outlined text-[18px]">{showNewPassword ? 'visibility' : 'visibility_off'}</span>
+                      <span className="material-symbols-outlined text-[18px]">{showNewPassword ? 'visibility_off' : 'visibility'}</span>
                     </button>
                   </div>
                   <p className="font-body-sm text-body-sm text-outline">

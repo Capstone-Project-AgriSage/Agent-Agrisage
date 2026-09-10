@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
@@ -11,6 +12,7 @@ import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { farmers as FARMERS } from '../../data/mockFarmers'
 import { parseVnd, formatVnd } from '../../utils/money'
+import { downloadCsv } from '../../utils/csv'
 
 const DEBT_OPTIONS = ['Tất cả công nợ', 'Có công nợ', 'Không có nợ', 'Nợ quá hạn']
 const REGION_OPTIONS = ['Tất cả khu vực', ...new Set(FARMERS.map((f) => f.areaShort.split(',').pop()?.trim() ?? '').filter(Boolean))]
@@ -22,7 +24,24 @@ export default function FarmersPage() {
   })
 
   const { showToast } = useToast()
+  const navigate = useNavigate()
   const { selectedId, setSelectedId, selected: selectedFarmer } = useSelectableList(FARMERS, (f) => f.id)
+
+  const handleExportFarmers = () => {
+    downloadCsv(
+      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
+      `nong-dan-${Date.now()}.csv`,
+      filteredFarmers.map((f) => ({
+        'Tên nông dân': f.name,
+        'SĐT': f.phone,
+        'Khu vực': f.areaShort,
+        'Tổng mua': f.totalPurchaseLabel,
+        'Công nợ': f.hasDebt ? f.debtLabel : 'Không có nợ',
+        'Trạng thái': f.statusBadge.label,
+      })),
+    )
+    showToast(`Đã xuất danh sách ${filteredFarmers.length} nông dân`)
+  }
 
   const [regionFilter, setRegionFilter] = useState(REGION_OPTIONS[0])
   const [activityFilter, setActivityFilter] = useState(ACTIVITY_OPTIONS[0])
@@ -74,7 +93,7 @@ export default function FarmersPage() {
         <div className="flex items-center gap-2.5">
           <button
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-label-md text-label-md shadow-sm transition-colors"
-            onClick={() => showToast(`Đã xuất danh sách ${filteredFarmers.length} nông dân`)}
+            onClick={handleExportFarmers}
           >
             <span className="material-symbols-outlined text-base" data-icon="file_download">
               file_download
@@ -518,19 +537,28 @@ export default function FarmersPage() {
           <div className="p-3 bg-slate-50 border-t border-slate-200 grid grid-cols-3 gap-2">
             <button
               className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm"
-              onClick={() => showToast(`Xem tất cả đơn hàng của ${selectedFarmer.name} đang được phát triển`)}
+              onClick={() => {
+                navigate('/orders')
+                showToast(`Đang mở danh sách đơn hàng của ${selectedFarmer.name}`)
+              }}
             >
               Xem tất cả đơn hàng
             </button>
             <button
               className="px-2 py-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 rounded text-center font-medium text-[11px] transition-colors leading-tight shadow-sm"
-              onClick={() => showToast(`Xem chi tiết công nợ của ${selectedFarmer.name} đang được phát triển`)}
+              onClick={() => {
+                navigate('/debts')
+                showToast(`Đang mở chi tiết công nợ của ${selectedFarmer.name}`)
+              }}
             >
               Chi tiết công nợ
             </button>
             <button
               className="px-2 py-2 bg-emerald-50 border border-emerald-300 text-emerald-800 hover:bg-emerald-100 rounded text-center font-semibold text-[11px] transition-colors leading-tight shadow-sm"
-              onClick={() => showToast(`Xem lịch sử phân tích AI của ${selectedFarmer.name} đang được phát triển`)}
+              onClick={() => {
+                navigate('/ai-recommendations')
+                showToast(`Đang mở lịch sử phân tích AI của ${selectedFarmer.name}`)
+              }}
             >
               Lịch sử phân tích AI
             </button>

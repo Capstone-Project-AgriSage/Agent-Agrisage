@@ -11,6 +11,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
+import { downloadCsv } from '../../utils/csv'
 
 const STATUS_LABELS: Record<string, string> = {
   'cho-duyet': 'Chờ duyệt',
@@ -176,7 +177,20 @@ export default function AiRecommendationsPage() {
         <div className="flex items-center gap-space-sm">
           <button
             className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md shadow-sm transition-colors"
-            onClick={() => showToast(`Đã xuất báo cáo ${filteredCases.length} kết quả phân tích`)}
+            onClick={() => {
+              downloadCsv(
+                `phan-tich-ai-${Date.now()}.csv`,
+                filteredCases.map((c) => ({
+                  'Mã ca': c.id,
+                  'Nông dân': c.farmerName,
+                  'Khu vực': c.farmerLocationLine,
+                  'Bệnh nhận diện': c.diseaseLabel,
+                  'Độ tin cậy': `${c.confidencePercent}%`,
+                  'Trạng thái': c.statusBadge.label,
+                })),
+              )
+              showToast(`Đã xuất báo cáo ${filteredCases.length} kết quả phân tích`)
+            }}
           >
             <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
             <span className="">Xuất báo cáo</span>

@@ -5,14 +5,18 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
+import { useFormValues } from '../../hooks/useFormValues'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
 import { parseVnd, formatVnd } from '../../utils/money'
+import { downloadCsv } from '../../utils/csv'
+import type { Order } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
 const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt tại kho', 'Cọc 50%', 'Gối nợ vụ mùa']
@@ -31,6 +35,26 @@ const NEXT_STATUS: Record<string, string> = {
   'Đang xử lý': 'Đang giao',
   'Đang giao': 'Hoàn thành',
 }
+
+const emptyOrderForm = {
+  customerName: '',
+  phone: '',
+  shortLocation: '',
+  wardAddress: '',
+  productTitle: '',
+  quantity: '',
+  unitPrice: '',
+}
+
+const CREATE_ORDER_FIELDS: FormFieldSpec[] = [
+  { key: 'customerName', label: 'Tên khách hàng' },
+  { key: 'phone', label: 'Số điện thoại' },
+  { key: 'shortLocation', label: 'Địa chỉ ngắn gọn (VD: Thới Lai)' },
+  { key: 'wardAddress', label: 'Địa chỉ đầy đủ (Xã/Huyện/Tỉnh)' },
+  { key: 'productTitle', label: 'Sản phẩm' },
+  { key: 'quantity', label: 'Số lượng', type: 'number', min: '1', group: 'qtyPrice' },
+  { key: 'unitPrice', label: 'Đơn giá (₫)', placeholder: 'VD: 685.000', group: 'qtyPrice' },
+]
 
 export default function OrdersPage() {
   usePageHeader({
@@ -72,6 +96,79 @@ export default function OrdersPage() {
     else if (label === 'Cập nhật') advanceOrderStatus(id)
     else if (label === 'Xem') setSelectedId(id)
     else showToast(`Đã thực hiện "${label}" cho đơn #${id}`)
+  }
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const { values: createForm, update: updateCreateForm, reset: resetCreateForm } = useFormValues(emptyOrderForm)
+
+  const handleCreateOrder = () => {
+    const { customerName, phone, shortLocation, wardAddress, productTitle, quantity, unitPrice } = createForm
+    const qty = Number.parseInt(quantity, 10)
+    const price = parseVnd(unitPrice)
+    if (!customerName.trim() || !phone.trim() || !shortLocation.trim() || !wardAddress.trim() || !productTitle.trim() || Number.isNaN(qty) || qty <= 0 || price <= 0) {
+      showToast('Vui lòng nhập đầy đủ thông tin đơn hàng')
+      return
+    }
+    const maxNum = orders.reduce((max, o) => {
+      const n = Number.parseInt(o.id.split('-').pop() ?? '0', 10)
+      return Number.isNaN(n) ? max : Math.max(max, n)
+    }, 0)
+    const total = qty * price
+    const newOrder: Order = {
+      id: `DH-2024-${maxNum + 1}`,
+      customerName: customerName.trim(),
+      phone: phone.trim(),
+      shortLocation: shortLocation.trim(),
+      fullAddress: shortLocation.trim(),
+      wardAddress: wardAddress.trim(),
+      timeRest: 'Vừa tạo',
+      createdAgo: 'Vừa tạo',
+      productLine: productTitle.trim(),
+      productTitle: productTitle.trim(),
+      productNote: `Số lượng: ${qty}`,
+      items: [{ name: productTitle.trim(), qtyPrice: `${qty} x ${formatVnd(price)}`, total: formatVnd(total) }],
+      total: formatVnd(total),
+      paymentBadge: { label: 'Gối nợ vụ mùa', className: 'bg-slate-100 text-slate-800 border-slate-300' },
+      statusBadge: { label: 'Chờ xác nhận', className: STATUS_VISUALS['Chờ xác nhận'].className, pulse: true },
+      shippingIcon: 'local_shipping',
+      shippingIconClassName: 'text-outline',
+      shippingLabel: 'Chưa xếp chuyến',
+      idClassName: 'text-on-surface',
+      panelBadge: { label: 'Chờ xác nhận', className: STATUS_VISUALS['Chờ xác nhận'].panelClassName },
+      paymentFooterNote: 'Chưa thanh toán',
+      paymentFooterClassName: 'text-outline',
+      actions: [
+        { label: 'Xem', icon: 'visibility' },
+        { label: 'Duyệt đơn', icon: 'check_circle', tone: 'primary' },
+      ],
+    }
+    setOrders((prev) => [newOrder, ...prev])
+    showToast(`Đã tạo đơn hàng ${newOrder.id}`)
+    resetCreateForm()
+    setCreateOpen(false)
+  }
+
+  const handleExportOrders = () => {
+    downloadCsv(
+      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
+      `don-hang-${Date.now()}.csv`,
+      filteredOrders.map((o) => ({
+        'Mã đơn': o.id,
+        'Khách hàng': o.customerName,
+        'SĐT': o.phone,
+        'Địa chỉ': o.wardAddress,
+        'Sản phẩm': o.productTitle,
+        'Tổng tiền': o.total,
+        'Thanh toán': o.paymentBadge.label,
+        'Trạng thái': o.statusBadge.label,
+      })),
+    )
+    showToast(`Đã xuất Excel ${filteredOrders.length} đơn hàng`)
+  }
+
+  const handlePrintOrders = () => {
+    showToast(`Đang in phiếu xuất hàng loạt cho ${filteredOrders.length} đơn hàng`)
+    window.print()
   }
 
   const { selectedId, setSelectedId, selected: selectedOrder } = useSelectableList(orders, (o) => o.id)
@@ -125,7 +222,7 @@ export default function OrdersPage() {
           <button
             className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
             type="button"
-            onClick={() => showToast(`Đã xuất Excel ${filteredOrders.length} đơn hàng`)}
+            onClick={handleExportOrders}
           >
             <span className="material-symbols-outlined text-base text-outline" data-icon="table_view">table_view</span>
             <span>Xuất Excel</span>
@@ -133,7 +230,7 @@ export default function OrdersPage() {
           <button
             className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
             type="button"
-            onClick={() => showToast(`Đã in phiếu xuất hàng loạt cho ${filteredOrders.length} đơn hàng`)}
+            onClick={handlePrintOrders}
           >
             <span className="material-symbols-outlined text-base text-outline" data-icon="print">print</span>
             <span>In phiếu xuất hàng loạt</span>
@@ -141,7 +238,7 @@ export default function OrdersPage() {
           <button
             className="inline-flex items-center gap-1 px-space-md py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors shadow-sm"
             type="button"
-            onClick={() => showToast('Chức năng tạo đơn hàng mới đang được phát triển')}
+            onClick={() => setCreateOpen(true)}
           >
             <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Tạo đơn hàng</span>
           </button>
@@ -450,7 +547,10 @@ export default function OrdersPage() {
                 <button
                   className="flex items-center justify-center gap-1 px-2 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface rounded text-xs font-medium transition-colors"
                   type="button"
-                  onClick={() => showToast(`Đã in phiếu giao hàng cho đơn #${selectedOrder.id}`)}
+                  onClick={() => {
+                    showToast(`Đang in phiếu giao hàng cho đơn #${selectedOrder.id}`)
+                    window.print()
+                  }}
                 >
                   <span className="material-symbols-outlined text-sm" data-icon="print">print</span>
                   <span>In phiếu giao hàng</span>
@@ -481,6 +581,18 @@ export default function OrdersPage() {
           </>
         ) : null}
       </DetailModal>
+
+      {/* MODAL: TẠO ĐƠN HÀNG MỚI */}
+      <FormModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Tạo đơn hàng mới"
+        fields={CREATE_ORDER_FIELDS}
+        values={createForm}
+        onChange={updateCreateForm}
+        onSubmit={handleCreateOrder}
+        submitLabel="Tạo đơn hàng"
+      />
     </>
   )
 }

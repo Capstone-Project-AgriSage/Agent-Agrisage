@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -13,6 +13,7 @@ import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
 import { parseVnd, formatVnd } from '../../utils/money'
+import { downloadCsv } from '../../utils/csv'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 const REGION_OPTIONS = [
@@ -27,6 +28,7 @@ export default function DebtsPage() {
 
   const [customers, setCustomers] = useState(INITIAL_DEBT_CUSTOMERS)
   const { showToast } = useToast()
+  const navigate = useNavigate()
 
   const markDebtPaid = (id: string) => {
     const customer = customers.find((c) => c.id === id)
@@ -62,6 +64,34 @@ export default function DebtsPage() {
       const customer = customers.find((c) => c.id === id)
       showToast(`Đã thực hiện "${label}" cho khách hàng ${customer?.name ?? id}`)
     }
+  }
+
+  const handleExportDebts = () => {
+    downloadCsv(
+      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
+      `cong-no-${Date.now()}.csv`,
+      filteredCustomers.map((c) => ({
+        'Khách hàng': c.name,
+        'SĐT': c.phone,
+        'Địa chỉ': c.addressShort,
+        'Tổng mua': c.totalPurchase,
+        'Đã thanh toán': c.paidAmount,
+        'Còn phải thu': c.remaining,
+        'Hạn gần nhất': c.dueDate,
+        'Trạng thái': c.statusBadge.label,
+      })),
+    )
+    showToast(`Đã xuất báo cáo công nợ ${filteredCustomers.length} khách hàng`)
+  }
+
+  const handlePrintDebts = () => {
+    showToast('Đang in sổ nợ')
+    window.print()
+  }
+
+  const handleViewOriginalOrder = (orderId: string, customerName: string) => {
+    navigate('/orders')
+    showToast(`Đang mở đơn hàng gốc ${orderId} của ${customerName}`)
   }
 
   const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
@@ -117,7 +147,7 @@ export default function DebtsPage() {
           <button
             className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
             type="button"
-            onClick={() => showToast(`Đã xuất báo cáo công nợ ${filteredCustomers.length} khách hàng`)}
+            onClick={handleExportDebts}
           >
             <span className="material-symbols-outlined text-[18px]">file_download</span>
             <span className="">Xuất báo cáo</span>
@@ -125,7 +155,7 @@ export default function DebtsPage() {
           <button
             className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
             type="button"
-            onClick={() => showToast('Đã in sổ nợ')}
+            onClick={handlePrintDebts}
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
             <span className="">In sổ nợ</span>
@@ -457,7 +487,7 @@ export default function DebtsPage() {
                 <button
                   className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors"
                   type="button"
-                  onClick={() => showToast(`Xem đơn hàng gốc của ${selected.name} đang được phát triển`)}
+                  onClick={() => handleViewOriginalOrder(selected.relatedOrders[0]?.id ?? selected.customerCode, selected.name)}
                 >
                   <span className="material-symbols-outlined text-[16px] text-slate-500">description</span>
                   <span className="">Xem đơn hàng gốc</span>

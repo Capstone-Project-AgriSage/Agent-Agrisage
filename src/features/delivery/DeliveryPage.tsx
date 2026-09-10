@@ -5,6 +5,7 @@ import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import DetailModal from '../../components/ui/DetailModal'
+import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
@@ -12,8 +13,11 @@ import type { TripTimelineStep } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
+import { useFormValues } from '../../hooks/useFormValues'
 import { trips as INITIAL_TRIPS } from '../../data/mockDeliveries'
 import { parseVnd, formatVnd } from '../../utils/money'
+import { downloadCsv } from '../../utils/csv'
+import type { Trip } from '../../types'
 
 const STATUS_OPTIONS = [
   'Tất cả trạng thái (Chờ, Đang giao, Thành công...)',
@@ -27,6 +31,27 @@ const STATUS_OPTIONS = [
 
 const DRIVER_OPTIONS = ['Tất cả tài xế', 'Nguyễn Văn Út', 'Lê Hoàng Nam', 'Trần Quốc Bảo', 'Huỳnh Minh Sang']
 const COD_OPTIONS = ['Tất cả COD', 'Chờ thu COD', 'Đã thu COD', 'Đã CK / 0 COD', 'Tiền mặt tại kho', 'Chưa thu được']
+
+const NEW_TRIP_DRIVERS = DRIVER_OPTIONS.slice(1)
+const emptyTripForm = {
+  orderId: '',
+  customerName: '',
+  customerPhone: '',
+  addressShort: '',
+  driverName: NEW_TRIP_DRIVERS[0] ?? '',
+  scheduledWindow: '',
+  codAmount: '',
+}
+
+const CREATE_TRIP_FIELDS: FormFieldSpec[] = [
+  { key: 'orderId', label: 'Mã đơn hàng gốc (VD: #DH-2024-1082)' },
+  { key: 'customerName', label: 'Tên khách hàng' },
+  { key: 'customerPhone', label: 'Số điện thoại khách hàng' },
+  { key: 'addressShort', label: 'Địa chỉ giao hàng' },
+  { key: 'scheduledWindow', label: 'Khung giờ hẹn giao (VD: 10:00 - 10:30)' },
+  { key: 'codAmount', label: 'Số tiền thu hộ COD (₫)' },
+  { key: 'driverName', label: 'Tài xế', type: 'select', options: NEW_TRIP_DRIVERS },
+]
 
 const STATUS_VISUALS: Record<string, { className: string; dotClassName: string; dotPulseClassName?: string }> = {
   'Chờ phân công': { className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
@@ -75,7 +100,81 @@ export default function DeliveryPage() {
     if (label === 'Phân công tài xế') setTripStatus(id, 'Đã phân công')
     else if (label === 'Xử lý lại chuyến giao') setTripStatus(id, 'Đang giao')
     else if (label === 'Xem chi tiết' || label === 'Xem ghi chú') setSelectedId(id)
+    else if (label === 'In phiếu giao') window.print()
     else showToast(`Đã thực hiện "${label}" cho chuyến #${id}`)
+  }
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const { values: createForm, update: updateCreateForm, reset: resetCreateForm } = useFormValues(emptyTripForm)
+
+  const handleCreateTrip = () => {
+    const { orderId, customerName, customerPhone, addressShort, driverName, scheduledWindow, codAmount } = createForm
+    const cod = parseVnd(codAmount)
+    if (!orderId.trim() || !customerName.trim() || !customerPhone.trim() || !addressShort.trim() || !scheduledWindow.trim() || cod <= 0) {
+      showToast('Vui lòng nhập đầy đủ thông tin chuyến giao')
+      return
+    }
+    const maxNum = trips.reduce((max, t) => {
+      const n = Number.parseInt(t.id.split('-').pop() ?? '0', 10)
+      return Number.isNaN(n) ? max : Math.max(max, n)
+    }, 0)
+    const newTrip: Trip = {
+      id: `GH-${maxNum + 1}`,
+      orderId: orderId.trim(),
+      customerName: customerName.trim(),
+      addressShort: addressShort.trim(),
+      addressTitle: addressShort.trim(),
+      driverName,
+      driverIcon: 'local_shipping',
+      vehicleLabel: 'Chưa xác định',
+      etaLabel: scheduledWindow.trim(),
+      etaClassName: 'text-[#334155] font-medium',
+      codAmountLabel: formatVnd(cod),
+      codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+      codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+      statusBadge: { label: 'Chờ phân công', className: STATUS_VISUALS['Chờ phân công'].className, dotClassName: STATUS_VISUALS['Chờ phân công'].dotClassName },
+      actions: [
+        { label: 'Xem chi tiết', icon: 'visibility' },
+        { label: 'Phân công tài xế', icon: 'person_add', tone: 'primary' },
+      ],
+      customerPhone: customerPhone.trim(),
+      customerAddressDetail: addressShort.trim(),
+      driverInitial: driverName.charAt(0),
+      driverPhone: 'Chưa cập nhật',
+      driverRoleLabel: 'Chưa phân công',
+      scheduledWindow: scheduledWindow.trim(),
+      timeline: [{ label: 'Đã tạo chuyến giao', time: 'Vừa xong', note: 'Chờ phân công tài xế', state: 'current', icon: 'flag' }],
+      items: [],
+      orderTotalLabel: formatVnd(cod),
+      codToCollectLabel: formatVnd(cod),
+      codNote: 'Thu tiền mặt hoặc quét VietQR cá nhân của tài xế.',
+    }
+    setTrips((prev) => [newTrip, ...prev])
+    showToast(`Đã tạo chuyến giao ${newTrip.id}`)
+    resetCreateForm()
+    setCreateOpen(false)
+  }
+
+  const handleExportTrips = () => {
+    downloadCsv(
+      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
+      `chuyen-giao-${Date.now()}.csv`,
+      filteredTrips.map((t) => ({
+        'Mã GH': t.id,
+        'Mã đơn': t.orderId,
+        'Khách hàng': t.customerName,
+        'Địa chỉ': t.addressTitle,
+        'Tài xế': t.driverName,
+        'Thu COD': t.codAmountLabel,
+        'Trạng thái': t.statusBadge.label,
+      })),
+    )
+    showToast(`Đã xuất danh sách ${filteredTrips.length} chuyến giao`)
+  }
+
+  const handlePrintTrips = () => {
+    showToast(`Đang in phiếu giao cho ${filteredTrips.length} chuyến`)
+    window.print()
   }
 
   const { selectedId, setSelectedId, selected: selectedTrip } = useSelectableList(trips, (t) => t.id)
@@ -155,7 +254,7 @@ export default function DeliveryPage() {
           <button
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors"
             type="button"
-            onClick={() => showToast(`Đã xuất danh sách ${filteredTrips.length} chuyến giao`)}
+            onClick={handleExportTrips}
           >
             <span className="material-symbols-outlined text-[17px] text-[#64748B]" data-icon="download">download</span>
             <span className="">Xuất danh sách</span>
@@ -163,7 +262,7 @@ export default function DeliveryPage() {
           <button
             className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-[#CBD5E1] hover:bg-[#F8FAFC] text-[#334155] rounded-lg font-label-md text-label-md shadow-sm transition-colors"
             type="button"
-            onClick={() => showToast(`Đã in phiếu giao cho ${filteredTrips.length} chuyến`)}
+            onClick={handlePrintTrips}
           >
             <span className="material-symbols-outlined text-[17px] text-[#64748B]" data-icon="print">print</span>
             <span className="">In phiếu giao loạt</span>
@@ -171,7 +270,7 @@ export default function DeliveryPage() {
           <button
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-lg font-label-md text-label-md shadow-sm font-semibold transition-colors focus:ring-2 focus:ring-[#1E5E3A] focus:outline-none"
             type="button"
-            onClick={() => showToast('Chức năng tạo chuyến giao mới đang được phát triển')}
+            onClick={() => setCreateOpen(true)}
           >
             <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
             <span className="">Tạo chuyến giao</span>
@@ -555,7 +654,10 @@ export default function DeliveryPage() {
               <button
                 className="py-2 px-2 bg-white border border-[#CBD5E1] hover:bg-[#F1F5F9] text-[#0F172A] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
                 type="button"
-                onClick={() => showToast(`Đã in phiếu giao cho chuyến #${selectedTrip.id}`)}
+                onClick={() => {
+                  showToast(`Đang in phiếu giao cho chuyến #${selectedTrip.id}`)
+                  window.print()
+                }}
               >
                 <span className="material-symbols-outlined text-[16px] text-[#64748B]" data-icon="print">print</span>
                 <span className="">In phiếu giao</span>
@@ -564,7 +666,10 @@ export default function DeliveryPage() {
             <button
               className="w-full py-1.5 px-3 bg-white border border-[#FCA5A5] text-[#DC2626] hover:bg-[#FEE2E2] rounded-lg text-body-sm font-medium flex items-center justify-center gap-1.5 transition-colors"
               type="button"
-              onClick={() => showToast(`Đã ghi nhận báo giao thất bại / đổi lịch cho chuyến #${selectedTrip.id}`)}
+              onClick={() => {
+                setTripStatus(selectedTrip.id, 'Giao thất bại')
+                showToast(`Đã ghi nhận báo giao thất bại / đổi lịch cho chuyến #${selectedTrip.id}`)
+              }}
             >
               <span className="material-symbols-outlined text-[16px]" data-icon="report_problem">report_problem</span>
               <span className="">Báo giao thất bại / Đổi lịch</span>
@@ -573,6 +678,18 @@ export default function DeliveryPage() {
           </div>
         ) : null}
       </DetailModal>
+
+      {/* MODAL: TẠO CHUYẾN GIAO MỚI */}
+      <FormModal
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        title="Tạo chuyến giao mới"
+        fields={CREATE_TRIP_FIELDS}
+        values={createForm}
+        onChange={updateCreateForm}
+        onSubmit={handleCreateTrip}
+        submitLabel="Tạo chuyến giao"
+      />
     </>
   )
 }

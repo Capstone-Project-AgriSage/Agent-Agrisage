@@ -4,12 +4,15 @@ import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
+import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { usePagination } from '../../hooks/usePagination'
+import { useFormValues } from '../../hooks/useFormValues'
+import { downloadCsv } from '../../utils/csv'
 import { inventoryItems as INITIAL_INVENTORY } from '../../data/mockInventory'
 
 const CATEGORY_OPTIONS = ['Tất cả danh mục', ...new Set(INITIAL_INVENTORY.map((item) => item.categoryLabel))]
@@ -26,14 +29,18 @@ export default function InventoryPage() {
   })
 
   const { showToast } = useToast()
-  const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(INITIAL_INVENTORY, (item) => item.id)
+  const [inventoryItems, setInventoryItems] = useState(INITIAL_INVENTORY)
+  const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(inventoryItems, (item) => item.id)
 
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState(CATEGORY_OPTIONS[0])
   const [stockFilter, setStockFilter] = useState('')
 
+  const [restockOpen, setRestockOpen] = useState(false)
+  const { values: restockForm, update: updateRestockForm, reset: resetRestockForm } = useFormValues({ itemId: '', amount: '' })
+
   const keyword = search.trim().toLowerCase()
-  const filteredInventory = INITIAL_INVENTORY.filter(
+  const filteredInventory = inventoryItems.filter(
     (item) =>
       (!keyword ||
         item.name.toLowerCase().includes(keyword) ||
@@ -57,13 +64,85 @@ export default function InventoryPage() {
       setSelectedId(id)
       return
     }
-    const item = INITIAL_INVENTORY.find((i) => i.id === id)
+    if (label === 'Nhập hàng ngay' || label === 'Tạo đề nghị nhập khẩn') {
+      resetRestockForm({ itemId: id, amount: '' })
+      setRestockOpen(true)
+      return
+    }
+    const item = inventoryItems.find((i) => i.id === id)
     showToast(`Đã thực hiện "${label}" cho ${item?.name ?? id}`)
   }
 
-  const totalCount = INITIAL_INVENTORY.length
-  const lowStockCount = INITIAL_INVENTORY.filter((item) => item.stockLabel === 'Sắp hết').length
-  const outOfStockCount = INITIAL_INVENTORY.filter((item) => item.stockLabel === 'Hết hàng').length
+  const restockItem = inventoryItems.find((i) => i.id === restockForm.itemId) ?? null
+
+  const handleConfirmRestock = () => {
+    const amount = Number.parseInt(restockForm.amount, 10)
+    if (!restockItem || !restockForm.amount.trim() || Number.isNaN(amount) || amount <= 0) {
+      showToast('Vui lòng nhập số lượng hợp lệ')
+      return
+    }
+    const currentQty = Number.parseInt(restockItem.stockQuantity, 10) || 0
+    const unit = restockItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()
+    const newQty = currentQty + amount
+    setInventoryItems((prev) =>
+      prev.map((item) =>
+        item.id === restockItem.id
+          ? {
+              ...item,
+              stockQuantity: `${newQty} ${unit}`.trim(),
+              stockQuantityClassName: undefined,
+              stockBarClassName: 'bg-emerald-600',
+              stockBarWidth: '100%',
+              stockLabel: 'Tồn kho tốt',
+              stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
+              stockDotClassName: 'bg-[#16A34A]',
+              updatedAgo: 'Vừa xong',
+              updatedBy: 'Bạn',
+            }
+          : item,
+      ),
+    )
+    showToast(`Đã nhập thêm ${amount} vào kho cho ${restockItem.name}`)
+    setRestockOpen(false)
+  }
+
+  const handleExportInventory = () => {
+    downloadCsv(
+      `bien-ban-kiem-ke-${Date.now()}.csv`,
+      filteredInventory.map((item) => ({
+        'Mã kho': item.id,
+        'Tên sản phẩm': item.name,
+        'SKU': item.sku,
+        'Danh mục': item.categoryLabel,
+        'Số lượng': item.stockQuantity,
+        'Trạng thái': item.stockLabel,
+      })),
+    )
+    showToast(`Đã xuất biên bản kiểm kê ${filteredInventory.length} mặt hàng`)
+  }
+
+  const totalCount = inventoryItems.length
+  const lowStockCount = inventoryItems.filter((item) => item.stockLabel === 'Sắp hết').length
+  const outOfStockCount = inventoryItems.filter((item) => item.stockLabel === 'Hết hàng').length
+
+  const restockFields: FormFieldSpec[] = [
+    {
+      key: 'itemId',
+      label: 'Sản phẩm',
+      type: 'select',
+      options: inventoryItems.map((item) => ({ value: item.id, label: `${item.name} (${item.sku})` })),
+    },
+    {
+      key: 'currentStockNote',
+      type: 'note',
+      content: restockItem ? (
+        <p className="text-body-sm text-outline">
+          Tồn hiện tại: <span className="font-semibold text-on-surface">{restockItem.stockQuantity}</span>
+        </p>
+      ) : null,
+    },
+    { key: 'amount', label: 'Số lượng nhập thêm', type: 'number', min: '1', placeholder: 'Nhập số lượng' },
+  ]
 
   return (
     <div className="max-w-[1600px] mx-auto flex flex-col gap-space-lg">
@@ -85,7 +164,7 @@ export default function InventoryPage() {
           <button
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
             type="button"
-            onClick={() => showToast(`Đã xuất biên bản kiểm kê ${filteredInventory.length} mặt hàng`)}
+            onClick={handleExportInventory}
           >
             <span className="material-symbols-outlined text-[18px] text-outline" data-icon="file_download">file_download</span>
             <span>Xuất biên bản kiểm kê</span>
@@ -101,7 +180,10 @@ export default function InventoryPage() {
           <button
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-[#17482D] active:bg-[#113622] text-on-primary font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             type="button"
-            onClick={() => showToast('Chức năng nhập kho đang được phát triển')}
+            onClick={() => {
+              resetRestockForm({ itemId: inventoryItems[0]?.id ?? '', amount: '' })
+              setRestockOpen(true)
+            }}
           >
             <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
             <span>Nhập kho</span>
@@ -431,7 +513,7 @@ export default function InventoryPage() {
               <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="verified">verified</span>
               Thẻ kho điện tử mã hóa an toàn theo tiêu chuẩn AgriSage
             </span>
-            <button className="text-primary font-semibold hover:underline" type="button" onClick={() => showToast('Đã in sổ kho')}>In sổ kho</button>
+            <button className="text-primary font-semibold hover:underline" type="button" onClick={() => window.print()}>In sổ kho</button>
           </div>
         </div>
       </div>
@@ -467,6 +549,18 @@ export default function InventoryPage() {
           </div>
         ) : null}
       </DetailModal>
+
+      {/* MODAL: NHẬP KHO */}
+      <FormModal
+        open={restockOpen}
+        onClose={() => setRestockOpen(false)}
+        title="Nhập kho"
+        fields={restockFields}
+        values={restockForm}
+        onChange={updateRestockForm}
+        onSubmit={handleConfirmRestock}
+        submitLabel="Xác nhận nhập kho"
+      />
     </div>
   )
 }

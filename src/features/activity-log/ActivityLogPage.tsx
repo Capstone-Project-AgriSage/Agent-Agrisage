@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
@@ -10,6 +11,7 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
+import { downloadCsv } from '../../utils/csv'
 
 const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
 const ACTION_OPTIONS = ['Tất cả loại thao tác', 'Tạo mới', 'Cập nhật', 'Xác nhận', 'Phê duyệt', 'Từ chối', 'Đối soát', 'Gửi nhắc', 'Điều chỉnh', 'Xuất kho', 'Nhập kho']
@@ -21,6 +23,7 @@ export default function ActivityLogPage() {
   })
 
   const { showToast } = useToast()
+  const navigate = useNavigate()
   const { selectedId, setSelectedId, selected } = useSelectableList(LOG_ENTRIES, (entry) => entry.id)
 
   const [actionFilter, setActionFilter] = useState(ACTION_OPTIONS[0])
@@ -79,7 +82,21 @@ export default function ActivityLogPage() {
         <button
           className="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface rounded-lg font-label-md text-label-md font-semibold shadow-sm hover:bg-surface-container-low active:bg-surface-container-high transition"
           type="button"
-          onClick={() => showToast(`Đã xuất dữ liệu nhật ký (${filteredEntries.length} bản ghi)`)}
+          onClick={() => {
+            downloadCsv(
+              `nhat-ky-thao-tac-${Date.now()}.csv`,
+              filteredEntries.map((entry) => ({
+                'Thời gian': entry.time,
+                'Người thực hiện': entry.actorName,
+                'Phân hệ': entry.moduleLabel,
+                'Thao tác': entry.actionLabel,
+                'Đối tượng': entry.objectId,
+                'Mô tả': entry.description,
+                'Kết quả': entry.resultLabel,
+              })),
+            )
+            showToast(`Đã xuất dữ liệu nhật ký (${filteredEntries.length} bản ghi)`)
+          }}
         >
           <span className="material-symbols-outlined text-outline" data-icon="download">
             download
@@ -504,7 +521,10 @@ export default function ActivityLogPage() {
             <button
               className="w-full py-2 px-3 bg-primary-container hover:bg-primary text-white font-label-md text-label-md font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.99]"
               type="button"
-              onClick={() => showToast(`Xem phân tích AI gốc cho ${selected.objectId} đang được phát triển`)}
+              onClick={() => {
+                navigate('/ai-recommendations')
+                showToast(`Đang mở phân tích AI gốc cho ${selected.objectId}`)
+              }}
             >
               <span className="material-symbols-outlined text-[18px]" data-icon="psychology">
                 psychology
@@ -514,7 +534,10 @@ export default function ActivityLogPage() {
             <button
               className="w-full py-2 px-3 bg-white border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-lg flex items-center justify-center gap-2 transition"
               type="button"
-              onClick={() => showToast(`Xem hồ sơ khách hàng của ${selected.actorName} đang được phát triển`)}
+              onClick={() => {
+                navigate('/farmers')
+                showToast(`Đang mở hồ sơ liên quan đến ${selected.actorName}`)
+              }}
             >
               <span className="material-symbols-outlined text-[18px] text-outline" data-icon="contact_page">
                 contact_page
