@@ -417,3 +417,18 @@ export interface LogEntry {
   technicalNote?: string
   relatedLinks: RelatedLink[]
 }
+
+export interface ContactRequest {
+  id: string
+  senderName: string
+  senderPhone: string
+  senderArea: string
+  channel: string
+  channelIcon: string
+  requestType: string
+  message: string
+  submittedAgo: string
+  statusBadge: { label: string; className: string; dotClassName: string }
+  assignedTo?: string
+  actions: RowAction[]
+}

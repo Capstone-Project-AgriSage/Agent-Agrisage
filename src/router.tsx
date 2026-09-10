@@ -14,6 +14,7 @@ import AiRecommendationsPage from './features/ai-recommendations/AiRecommendatio
 import FarmersPage from './features/farmers/FarmersPage'
 import ActivityLogPage from './features/activity-log/ActivityLogPage'
 import SettingsPage from './features/settings/SettingsPage'
+import ContactPage from './features/contact/ContactPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -36,6 +37,7 @@ export const router = createBrowserRouter([
           { path: 'farmers', element: <FarmersPage /> },
           { path: 'activity-log', element: <ActivityLogPage /> },
           { path: 'settings', element: <SettingsPage /> },
+          { path: 'contact', element: <ContactPage /> },
         ],
       },
     ],

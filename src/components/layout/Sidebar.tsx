@@ -8,6 +8,7 @@ import { trips } from '../../data/mockDeliveries'
 import { payments } from '../../data/mockPayments'
 import { debtCustomers } from '../../data/mockDebts'
 import { aiCases } from '../../data/mockAiRecommendations'
+import { contactRequests } from '../../data/mockContactRequests'
 import { parseVnd, formatVndShort } from '../../utils/money'
 
 function badgeClasses(tone: NavItem['badgeTone']) {
@@ -36,6 +37,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const unpaidPaymentCount = payments.filter((p) => p.statusBadge.label !== 'Đã thanh toán').length
   const totalDebtRemaining = debtCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const pendingAiCount = aiCases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
+  const pendingRequestCount = contactRequests.filter((r) => r.statusBadge.label === 'Chưa xử lý').length
 
   const navItems: NavItem[] = [
     { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
@@ -48,6 +50,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     { label: 'Gợi ý AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
     { label: 'Nông dân', to: '/farmers', icon: 'groups' },
     { label: 'Nhật ký thao tác', to: '/activity-log', icon: 'history_toggle_off' },
+    { label: 'Yêu cầu hỗ trợ', to: '/contact', icon: 'support_agent', badge: String(pendingRequestCount), badgeTone: 'error' },
     { label: 'Cài đặt', to: '/settings', icon: 'settings' },
   ]
 
