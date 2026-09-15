@@ -33,12 +33,15 @@
   --color-inverse-on-surface: #eef0ff;
   --color-outline: #707971;
   --color-outline-variant: #c0c9bf;
-  --color-surface-tint: #2b6a45;
-  --color-primary: #004625;
+  /* Primary greens aligned to farmer_web_agrisage's brand palette (--color-primary
+     and friends in farmer_web_agrisage/src/index.css) so both apps read as the
+     same AgriSage brand instead of two different shades of green. */
+  --color-surface-tint: #256628;
+  --color-primary: #2e7d32;
   --color-on-primary: #ffffff;
-  --color-primary-container: #1e5e3a;
-  --color-on-primary-container: #94d5a8;
-  --color-inverse-primary: #94d5a7;
+  --color-primary-container: #1b5e20;
+  --color-on-primary-container: #e8f5e9;
+  --color-inverse-primary: #94d597;
   --color-secondary: #8b5000;
   --color-on-secondary: #ffffff;
   --color-secondary-container: #fda548;
@@ -51,10 +54,10 @@
   --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
-  --color-primary-fixed: #aff2c2;
-  --color-primary-fixed-dim: #94d5a7;
-  --color-on-primary-fixed: #00210f;
-  --color-on-primary-fixed-variant: #0d512f;
+  --color-primary-fixed: #e8f5e9;
+  --color-primary-fixed-dim: #94d597;
+  --color-on-primary-fixed: #1b5e20;
+  --color-on-primary-fixed-variant: #256628;
   --color-secondary-fixed: #ffdcbf;
   --color-secondary-fixed-dim: #ffb872;
   --color-on-secondary-fixed: #2d1600;
