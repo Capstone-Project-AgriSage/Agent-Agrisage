@@ -7,6 +7,7 @@ import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -368,10 +369,12 @@ export default function AiRecommendationsPage() {
                         </span>
                       </td>
                       <td className="py-3 px-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${item.statusBadge.className}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${item.statusBadge.dotClassName} mr-1.5`}></span>
-                          {item.statusBadge.label}
-                        </span>
+                        <StatusBadge
+                          label={item.statusBadge.label}
+                          className={item.statusBadge.className}
+                          dotClassName={item.statusBadge.dotClassName}
+                          minWidthClassName="min-w-[158px]"
+                        />
                       </td>
                       <td className="py-3 px-3 text-right">
                         {item.actionsMode === 'menu' ? (
@@ -427,10 +430,7 @@ export default function AiRecommendationsPage() {
               <span className="font-title-md text-title-md text-on-surface font-semibold">Chi tiết đánh giá gợi ý AI</span>
             </div>
             <div className="flex flex-col items-end gap-0.5">
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${selected.panelBadge.className}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${selected.panelBadge.dotClassName} mr-1.5`}></span>
-                {selected.panelBadge.label}
-              </span>
+              <StatusBadge label={selected.panelBadge.label} className={selected.panelBadge.className} dotClassName={selected.panelBadge.dotClassName} />
               {selected.rejectReasonLabel ? (
                 <span className="text-[11px] text-outline">Lý do: {selected.rejectReasonLabel}</span>
               ) : null}

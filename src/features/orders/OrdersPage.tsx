@@ -9,6 +9,7 @@ import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -434,20 +435,15 @@ export default function OrdersPage() {
                         {order.total}
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${order.paymentBadge.className}`}
-                        >
-                          <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
-                          {order.paymentBadge.label}
-                        </span>
+                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[150px]" />
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${order.statusBadge.className}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full bg-current ${order.statusBadge.pulse ? 'animate-pulse' : ''}`}></span>
-                          {order.statusBadge.label}
-                        </span>
+                        <StatusBadge
+                          label={order.statusBadge.label}
+                          className={order.statusBadge.className}
+                          dotPulseClassName={order.statusBadge.pulse ? 'animate-pulse' : ''}
+                          minWidthClassName="min-w-[120px]"
+                        />
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">

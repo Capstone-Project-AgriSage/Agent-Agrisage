@@ -9,6 +9,7 @@ import Pagination from '../../components/ui/Pagination'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -217,12 +218,12 @@ export default function ContactPage() {
                     </td>
                     <td className="py-3 px-3 text-body-sm text-outline whitespace-nowrap">{request.submittedAgo}</td>
                     <td className="py-3 px-3 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border whitespace-nowrap ${request.statusBadge.className}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full ${request.statusBadge.dotClassName}`}></span>
-                        {request.statusBadge.label}
-                      </span>
+                      <StatusBadge
+                        label={request.statusBadge.label}
+                        className={request.statusBadge.className}
+                        dotClassName={request.statusBadge.dotClassName}
+                        minWidthClassName="min-w-[105px]"
+                      />
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end">

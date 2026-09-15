@@ -7,6 +7,7 @@ import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -275,11 +276,12 @@ export default function ActivityLogPage() {
                           <span className="text-[11px] text-outline">{entry.descriptionNote}</span>
                         </td>
                         <td className="py-3 px-2 whitespace-nowrap text-center">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${entry.resultClassName}`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${entry.resultDotClassName}`}></span> {entry.resultLabel}
-                          </span>
+                          <StatusBadge
+                            label={entry.resultLabel}
+                            className={entry.resultClassName}
+                            dotClassName={entry.resultDotClassName}
+                            minWidthClassName="min-w-[105px]"
+                          />
                         </td>
                         <td className="py-3 px-3 whitespace-nowrap text-right">
                           <button
@@ -353,11 +355,7 @@ export default function ActivityLogPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-mono font-bold text-title-md text-on-surface">#{selected.id}</span>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${selected.resultClassName}`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${selected.resultDotClassName}`}></span> {selected.resultLabel}
-                </span>
+                <StatusBadge label={selected.resultLabel} className={selected.resultClassName} dotClassName={selected.resultDotClassName} />
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
                 Thao tác: <span className="font-semibold text-primary">{selected.actionTypeLabel}</span>

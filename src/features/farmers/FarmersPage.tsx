@@ -7,6 +7,7 @@ import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -292,12 +293,12 @@ export default function FarmersPage() {
                         <span className={`text-[11px] ${farmer.activityNoteClassName}`}>{farmer.activityNote}</span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${farmer.statusBadge.className}`}
-                        >
-                          <span className={`w-1.5 h-1.5 rounded-full ${farmer.statusBadge.dotClassName}`}></span>
-                          {farmer.statusBadge.label}
-                        </span>
+                        <StatusBadge
+                          label={farmer.statusBadge.label}
+                          className={farmer.statusBadge.className}
+                          dotClassName={farmer.statusBadge.dotClassName}
+                          minWidthClassName="min-w-[135px]"
+                        />
                       </td>
                       <td className="py-3 px-3 text-right">
                         <button
@@ -354,12 +355,11 @@ export default function FarmersPage() {
                 </div>
               </div>
             </div>
-            <span
-              className={`px-2 py-0.5 text-[11px] font-medium rounded-full border flex items-center gap-1 ${selectedFarmer.statusBadge.className}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${selectedFarmer.statusBadge.dotClassName}`}></span>
-              {selectedFarmer.statusBadge.label}
-            </span>
+            <StatusBadge
+              label={selectedFarmer.statusBadge.label}
+              className={selectedFarmer.statusBadge.className}
+              dotClassName={selectedFarmer.statusBadge.dotClassName}
+            />
           </div>
           {/* Panel Scrollable Content Body */}
           <div className="p-3.5 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">

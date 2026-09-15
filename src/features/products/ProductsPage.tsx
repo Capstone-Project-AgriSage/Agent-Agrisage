@@ -9,6 +9,7 @@ import Pagination from '../../components/ui/Pagination'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { usePagination } from '../../hooks/usePagination'
 import { useFormValues } from '../../hooks/useFormValues'
@@ -423,10 +424,7 @@ export default function ProductsPage() {
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${selectedProduct.categoryClassName}`}>
                 {selectedProduct.categoryLabel}
               </span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${selectedProduct.stockClassName}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${selectedProduct.stockDotClassName}`}></span>
-                {selectedProduct.stockLabel}
-              </span>
+              <StatusBadge label={selectedProduct.stockLabel} className={selectedProduct.stockClassName} dotClassName={selectedProduct.stockDotClassName} />
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
               <span className="text-body-sm text-outline">Giá bán niêm yết</span>

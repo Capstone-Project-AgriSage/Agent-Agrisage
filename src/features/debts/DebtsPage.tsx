@@ -8,6 +8,7 @@ import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -325,12 +326,12 @@ export default function DebtsPage() {
                         <td className={`py-3 px-3 text-center font-mono ${customer.dueDateClassName}`}>{customer.dueDate}</td>
                         <td className={`py-3 px-2 text-center ${customer.overdueDaysClassName}`}>{customer.overdueDays}</td>
                         <td className="py-3 px-3 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${customer.statusBadge.className}`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${customer.statusBadge.dotClassName}`}></span>
-                            {customer.statusBadge.label}
-                          </span>
+                          <StatusBadge
+                            label={customer.statusBadge.label}
+                            className={customer.statusBadge.className}
+                            dotClassName={customer.statusBadge.dotClassName}
+                            minWidthClassName="min-w-[128px]"
+                          />
                         </td>
                         <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center">

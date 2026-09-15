@@ -3,6 +3,7 @@ import { usePageHeader } from '../../context/PageHeaderContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { usePagination } from '../../hooks/usePagination'
 import { useToast } from '../../context/ToastContext'
 import { orders as ALL_ORDERS } from '../../data/mockOrders'
@@ -225,9 +226,13 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">{order.total}</td>
                         <td className="py-2 px-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold border ${order.statusBadge.className}`}>
-                            {order.statusBadge.label}
-                          </span>
+                          <StatusBadge
+                            label={order.statusBadge.label}
+                            className={order.statusBadge.className}
+                            showDot={false}
+                            size="xs"
+                            minWidthClassName="min-w-[96px]"
+                          />
                         </td>
                         <td className="py-2 px-3 text-right">
                           <div className="flex items-center justify-end">
@@ -281,9 +286,7 @@ export default function DashboardPage() {
               ) : null}
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${selectedOrder.statusBadge.className}`}>
-                {selectedOrder.statusBadge.label}
-              </span>
+              <StatusBadge label={selectedOrder.statusBadge.label} className={selectedOrder.statusBadge.className} showDot={false} />
               <span className="font-bold text-on-surface tabular-nums">{selectedOrder.total}</span>
             </div>
           </div>

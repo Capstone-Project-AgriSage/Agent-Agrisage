@@ -9,6 +9,7 @@ import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import type { TripTimelineStep, DeliveryStatus } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
@@ -435,10 +436,13 @@ export default function DeliveryPage() {
                         </span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${trip.statusBadge.className}`}>
-                          <span className={`w-1.5 h-1.5 rounded-full ${trip.statusBadge.dotClassName} ${trip.statusBadge.dotPulseClassName ?? ''}`}></span>
-                          {trip.statusBadge.label}
-                        </span>
+                        <StatusBadge
+                          label={trip.statusBadge.label}
+                          className={trip.statusBadge.className}
+                          dotClassName={trip.statusBadge.dotClassName}
+                          dotPulseClassName={trip.statusBadge.dotPulseClassName}
+                          minWidthClassName="min-w-[144px]"
+                        />
                         {trip.failureNote ? (
                           <div className="text-[11px] text-[#DC2626] mt-0.5 font-medium">{trip.failureNote}</div>
                         ) : null}

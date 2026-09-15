@@ -9,6 +9,7 @@ import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
+import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -411,12 +412,12 @@ export default function PaymentsPage() {
                           </span>
                         </td>
                         <td className="py-3 px-space-md text-center whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${payment.statusBadge.className}`}
-                          >
-                            <span className={`w-1.5 h-1.5 rounded-full ${payment.statusBadge.dotClassName}`}></span>
-                            {payment.statusBadge.label}
-                          </span>
+                          <StatusBadge
+                            label={payment.statusBadge.label}
+                            className={payment.statusBadge.className}
+                            dotClassName={payment.statusBadge.dotClassName}
+                            minWidthClassName="min-w-[165px]"
+                          />
                         </td>
                         <td className="py-3 px-space-md text-outline whitespace-nowrap text-[12px] font-mono">{payment.time}</td>
                         <td className="py-3 px-space-md text-center whitespace-nowrap">
