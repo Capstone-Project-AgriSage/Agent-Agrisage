@@ -93,6 +93,7 @@ export default function InventoryPage() {
               stockQuantityClassName: undefined,
               stockBarClassName: 'bg-emerald-600',
               stockBarWidth: '100%',
+              stockStatus: 'Còn hàng',
               stockLabel: 'Tồn kho tốt',
               stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
               stockDotClassName: 'bg-[#16A34A]',

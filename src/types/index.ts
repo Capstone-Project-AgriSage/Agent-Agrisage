@@ -383,6 +383,9 @@ export interface InventoryItem {
   stockQuantityClassName?: string
   stockBarClassName: string
   stockBarWidth: string
+  /** 'Tồn kho tốt' maps to 'Còn hàng' — inventory uses a richer display label than
+   * Product's, but the two must agree on the underlying StockStatus. */
+  stockStatus: StockStatus
   stockLabel: string
   stockClassName: string
   stockDotClassName: string
