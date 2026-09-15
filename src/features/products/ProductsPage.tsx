@@ -169,6 +169,7 @@ export default function ProductsPage() {
         return {
           ...p,
           stockQuantity: unit ? `${newQty} ${unit}` : String(newQty),
+          stockStatus: 'Còn hàng',
           stockLabel: 'Còn hàng',
           stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
           stockDotClassName: 'bg-[#16A34A]',
