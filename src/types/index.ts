@@ -349,6 +349,11 @@ export interface Payment {
   paymentHistory: PaymentHistoryEntry[]
 }
 
+/** Discrete availability state — matches farmer_web_agrisage's StockStatus type exactly,
+ * so the two apps agree on what "in stock" means. Kept separate from `stockLabel`, which
+ * is free-form display copy (may include counts/units) and isn't meant to be machine-compared. */
+export type StockStatus = 'Còn hàng' | 'Sắp hết' | 'Hết hàng'
+
 export interface Product {
   id: string
   name: string
@@ -358,6 +363,7 @@ export interface Product {
   categoryClassName: string
   price: string
   priceClassName?: string
+  stockStatus: StockStatus
   stockLabel: string
   stockClassName: string
   stockDotClassName: string

@@ -110,6 +110,7 @@ export default function ProductsPage() {
       categoryLabel: createForm.categoryLabel,
       categoryClassName: existingSameCategory?.categoryClassName ?? 'bg-slate-50 text-slate-700 border-slate-200',
       price: createForm.price.trim(),
+      stockStatus: 'Còn hàng',
       stockLabel: 'Còn hàng',
       stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
       stockDotClassName: 'bg-[#16A34A]',
