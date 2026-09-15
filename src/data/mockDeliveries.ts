@@ -302,11 +302,11 @@ export const trips: Trip[] = [
     scheduledWindow: '16:30 - 17:00',
     timeline: [
       { label: 'Đã xác nhận đơn', time: '16:05', note: 'Đã duyệt xuất kho Thốt Nốt', state: 'done' },
-      { label: 'Đã xuất kho', time: '16:15', note: 'Kho đã bốc cây giống lên xe', state: 'done' },
+      { label: 'Đã xuất kho', time: '16:15', note: 'Kho đã bốc lúa giống lên xe', state: 'done' },
       { label: 'Đang giao hàng (Hiện tại)', time: '16:40', note: 'Đang di chuyển về Thới Thuận', state: 'current', icon: 'local_shipping' },
       { label: 'Hoàn tất giao', time: 'Dự kiến 17:00', note: 'Xác nhận biên bản giao hàng', state: 'pending' },
     ],
-    items: [{ name: 'Giống Sầu Riêng Ri6 Ghép Bầu', qtyPrice: '30 cây x 85.000 đ', total: '2.550.000 đ' }],
+    items: [{ name: 'Lúa Giống Xác Nhận ST25 Chuẩn F1', qtyPrice: '10 bao x 255.000 đ', total: '2.550.000 đ' }],
     orderTotalLabel: '2.550.000 đ',
     codToCollectLabel: '0 đ',
     codNote: 'Khách đã chuyển khoản trước, không cần thu thêm.',

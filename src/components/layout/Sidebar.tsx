@@ -4,11 +4,9 @@ import type { NavItem } from '../../types'
 import { products } from '../../data/mockProducts'
 import { inventoryItems } from '../../data/mockInventory'
 import { orders } from '../../data/mockOrders'
-import { trips } from '../../data/mockDeliveries'
 import { payments } from '../../data/mockPayments'
 import { debtCustomers } from '../../data/mockDebts'
 import { aiCases } from '../../data/mockAiRecommendations'
-import { contactRequests } from '../../data/mockContactRequests'
 import { parseVnd, formatVndShort } from '../../utils/money'
 
 function badgeClasses(tone: NavItem['badgeTone']) {
@@ -33,24 +31,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { user } = useAuth()
 
   const inventoryAlertCount = inventoryItems.filter((i) => i.stockLabel !== 'Tồn kho tốt').length
-  const activeDeliveryCount = trips.filter((t) => t.statusBadge.label !== 'Giao thành công').length
   const unpaidPaymentCount = payments.filter((p) => p.statusBadge.label !== 'Đã thanh toán').length
   const totalDebtRemaining = debtCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const pendingAiCount = aiCases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
-  const pendingRequestCount = contactRequests.filter((r) => r.statusBadge.label === 'Chưa xử lý').length
 
   const navItems: NavItem[] = [
     { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
     { label: 'Sản phẩm', to: '/products', icon: 'category', badge: String(products.length) },
-    { label: 'Kho hàng', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
+    { label: 'Kho hàng (Lite)', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
     { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: String(orders.length), badgeTone: 'primary' },
-    { label: 'Giao hàng', to: '/delivery', icon: 'local_shipping', badge: String(activeDeliveryCount) },
-    { label: 'Thanh toán', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
-    { label: 'Công nợ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
-    { label: 'Gợi ý AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
+    { label: 'Thanh toán VietQR', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
+    { label: 'Sổ nợ mùa vụ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
+    { label: 'Hàng đợi AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
     { label: 'Nông dân', to: '/farmers', icon: 'groups' },
-    { label: 'Nhật ký thao tác', to: '/activity-log', icon: 'history_toggle_off' },
-    { label: 'Yêu cầu hỗ trợ', to: '/contact', icon: 'support_agent', badge: String(pendingRequestCount), badgeTone: 'error' },
+    { label: 'Nhật ký kiểm toán', to: '/activity-log', icon: 'history_toggle_off' },
     { label: 'Cài đặt', to: '/settings', icon: 'settings' },
   ]
 

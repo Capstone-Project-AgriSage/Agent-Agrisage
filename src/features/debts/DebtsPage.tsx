@@ -12,9 +12,14 @@ import StatusBadge from '../../components/ui/StatusBadge'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
-import { debtCustomers as INITIAL_DEBT_CUSTOMERS } from '../../data/mockDebts'
+import {
+  mockCreditRequests as INITIAL_CREDIT_REQUESTS,
+  mockDebtPaymentRequests as INITIAL_PAYMENT_REQUESTS,
+  debtCustomers as INITIAL_DEBT_CUSTOMERS,
+} from '../../data/mockDebts'
 import { parseVnd, formatVnd } from '../../utils/money'
 import { downloadCsv } from '../../utils/csv'
+import type { CreditRequest, DebtPaymentRequest } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 const REGION_OPTIONS = [
@@ -28,8 +33,59 @@ export default function DebtsPage() {
   })
 
   const [customers, setCustomers] = useState(INITIAL_DEBT_CUSTOMERS)
+  const [activeTab, setActiveTab] = useState<'ledger' | 'credit-requests' | 'repayments'>('ledger')
+  const [creditRequests, setCreditRequests] = useState<CreditRequest[]>(INITIAL_CREDIT_REQUESTS)
+  const [paymentRequests, setPaymentRequests] = useState<DebtPaymentRequest[]>(INITIAL_PAYMENT_REQUESTS)
   const { showToast } = useToast()
   const navigate = useNavigate()
+
+  const pendingCreditCount = creditRequests.filter((cr) => cr.status === 'PENDING_APPROVAL').length
+  const pendingRepaymentCount = paymentRequests.filter((pr) => pr.status === 'PENDING_AGENT_CONFIRMATION').length
+
+  const handleApproveCredit = (id: string) => {
+    setCreditRequests((prev) =>
+      prev.map((cr) =>
+        cr.id === id
+          ? {
+              ...cr,
+              status: 'APPROVED',
+              reviewedAt: 'Vừa xong',
+              reviewerNote: 'Đã thẩm định hạn mức, cho phép xuất kho giao hàng gối vụ.',
+            }
+          : cr,
+      ),
+    )
+    showToast(`Đã phê duyệt cấp hạn mức tín dụng cho yêu cầu #${id}`)
+  }
+
+  const handleRejectCredit = (id: string) => {
+    setCreditRequests((prev) =>
+      prev.map((cr) =>
+        cr.id === id
+          ? {
+              ...cr,
+              status: 'REJECTED',
+              reviewedAt: 'Vừa xong',
+              reviewerNote: 'Dư nợ hiện tại vượt ngưỡng an toàn mùa vụ hoặc lịch sử hoàn ứng chậm.',
+            }
+          : cr,
+      ),
+    )
+    showToast(`Đã từ chối cấp tín dụng cho yêu cầu #${id}`)
+  }
+
+  const handleConfirmRepayment = (id: string) => {
+    const payment = paymentRequests.find((pr) => pr.id === id)
+    setPaymentRequests((prev) =>
+      prev.map((pr) => (pr.id === id ? { ...pr, status: 'CONFIRMED', confirmedAt: 'Vừa xong' } : pr)),
+    )
+    showToast(`Đã xác nhận thu nợ ${payment ? formatVnd(payment.amount) : ''} thành công (Khớp thẻ nợ)`)
+  }
+
+  const handleRejectRepayment = (id: string) => {
+    setPaymentRequests((prev) => prev.map((pr) => (pr.id === id ? { ...pr, status: 'REJECTED' } : pr)))
+    showToast(`Đã từ chối ghi nhận giao dịch thu nợ #${id}`)
+  }
 
   const markDebtPaid = (id: string) => {
     const customer = customers.find((c) => c.id === id)
@@ -173,8 +229,65 @@ export default function DebtsPage() {
         </div>
       </section>
 
-      {/* 5 THẺ KPI TÓM TẮT CÔNG NỢ */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 shrink-0">
+      {/* 3 TABS ĐIỀU HƯỚNG: SỔ NỢ NÔNG HỘ | DUYỆT TÍN DỤNG MÙA VỤ | XÁC NHẬN TRẢ NỢ */}
+      <div className="flex items-center gap-2 border-b border-slate-200 bg-white p-1.5 rounded-xl shadow-2xs shrink-0">
+        <button
+          type="button"
+          onClick={() => setActiveTab('ledger')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            activeTab === 'ledger'
+              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Sổ nợ nông hộ</span>
+          <span className={`px-2 py-0.2 rounded-full text-xs ${activeTab === 'ledger' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
+            {customers.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('credit-requests')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            activeTab === 'credit-requests'
+              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">credit_score</span>
+          <span>Duyệt tín dụng mùa vụ (WF-03)</span>
+          {pendingCreditCount > 0 && (
+            <span className="px-2 py-0.2 rounded-full bg-amber-500 text-white text-xs font-bold animate-pulse">
+              {pendingCreditCount}
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('repayments')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+            activeTab === 'repayments'
+              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[18px]">payments</span>
+          <span>Xác nhận trả nợ (WF-04)</span>
+          {pendingRepaymentCount > 0 && (
+            <span className="px-2 py-0.2 rounded-full bg-emerald-600 text-white text-xs font-bold animate-pulse">
+              {pendingRepaymentCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {activeTab === 'ledger' && (
+        <>
+          {/* 5 THẺ KPI TÓM TẮT CÔNG NỢ */}
+          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 shrink-0">
         <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
           <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="font-label-md text-label-md font-medium">Tổng công nợ</span>
@@ -611,5 +724,235 @@ export default function DebtsPage() {
         </div>
       </section>
     </>
+  )}
+
+  {/* TAB 2: DUYỆT TÍN DỤNG MÙA VỤ (WF-03) */}
+  {activeTab === 'credit-requests' && (
+    <div className="space-y-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#1E5E3A]">credit_score</span>
+            <span>Hàng đợi duyệt hạn mức tín dụng mùa vụ (Gối nợ vật tư lúa)</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Nông dân đặt mua vật tư lúa và gửi yêu cầu gối nợ. Chủ đại lý Hai Thắng thẩm định hạn mức trước khi xuất kho.
+          </p>
+        </div>
+        <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-bold text-xs whitespace-nowrap self-start sm:self-auto">
+          {pendingCreditCount} yêu cầu chờ duyệt
+        </span>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
+                <th className="py-3 px-4">Mã YC / Đơn hàng</th>
+                <th className="py-3 px-4">Nông dân &amp; SĐT</th>
+                <th className="py-3 px-3">Vụ mùa</th>
+                <th className="py-3 px-3 text-right">Số tiền đề nghị</th>
+                <th className="py-3 px-3 text-right">Hạn mức / Còn lại</th>
+                <th className="py-3 px-3 text-center">Trạng thái</th>
+                <th className="py-3 px-4 text-center">Thao tác duyệt</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {creditRequests.map((cr) => {
+                const isPending = cr.status === 'PENDING_APPROVAL'
+                const isApproved = cr.status === 'APPROVED'
+                const isRejected = cr.status === 'REJECTED'
+
+                return (
+                  <tr key={cr.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4 font-mono">
+                      <div className="font-bold text-slate-900">{cr.id}</div>
+                      <div className="text-slate-500 text-[11px]">{cr.orderCode}</div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900">{cr.farmerName}</div>
+                      <div className="text-slate-500 font-mono text-[11px]">{cr.farmerPhone}</div>
+                    </td>
+                    <td className="py-3.5 px-3 font-medium text-slate-700">{cr.cropSeason}</td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-[#1E5E3A] text-sm">
+                      {formatVnd(cr.requestedAmount)}
+                    </td>
+                    <td className="py-3.5 px-3 text-right font-mono text-[11px]">
+                      <div>HM: {formatVnd(cr.seasonalLimit)}</div>
+                      <div className="text-emerald-700 font-semibold">Còn lại: {formatVnd(cr.remainingLimit)}</div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center">
+                      {isPending && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-300">
+                          Chờ phê duyệt
+                        </span>
+                      )}
+                      {isApproved && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-300">
+                          Đã phê duyệt
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] border border-rose-300">
+                          Từ chối cấp nợ
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {isPending ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleApproveCredit(cr.id)}
+                            className="px-3 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#17482D] text-white font-bold text-xs transition-colors shadow-2xs flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">check</span>
+                            <span>Phê duyệt</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectCredit(cr.id)}
+                            className="px-2.5 py-1.5 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-50 font-semibold text-xs transition-colors"
+                          >
+                            Từ chối
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="text-[11px] text-slate-500 italic max-w-[200px] mx-auto text-left">
+                          {cr.reviewerNote}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* TAB 3: XÁC NHẬN TRẢ NỢ (WF-04) */}
+  {activeTab === 'repayments' && (
+    <div className="space-y-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
+            <span className="material-symbols-outlined text-[#1E5E3A]">payments</span>
+            <span>Hàng đợi xác nhận thanh toán trả nợ vụ mùa</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            Nông dân chuyển khoản VietQR vào Vietcombank 19006828999 hoặc nộp tiền mặt. Chủ đại lý Hai Thắng kiểm tra và bấm xác nhận để khấu trừ sổ nợ.
+          </p>
+        </div>
+        <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs whitespace-nowrap self-start sm:self-auto">
+          {pendingRepaymentCount} khoản chờ khớp
+        </span>
+      </div>
+
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
+                <th className="py-3 px-4">Mã TT / Đơn gốc</th>
+                <th className="py-3 px-4">Nông dân &amp; SĐT</th>
+                <th className="py-3 px-3 text-right">Số tiền trả</th>
+                <th className="py-3 px-3">Phương thức thanh toán</th>
+                <th className="py-3 px-3">Ghi chú giao dịch</th>
+                <th className="py-3 px-3 text-center">Trạng thái</th>
+                <th className="py-3 px-4 text-center">Thao tác khớp sổ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200">
+              {paymentRequests.map((pr) => {
+                const isPending = pr.status === 'PENDING_AGENT_CONFIRMATION'
+                const isConfirmed = pr.status === 'CONFIRMED'
+                const isRejected = pr.status === 'REJECTED'
+
+                return (
+                  <tr key={pr.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4 font-mono">
+                      <div className="font-bold text-slate-900">{pr.id}</div>
+                      <div className="text-slate-500 text-[11px]">{pr.orderCode}</div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-semibold text-slate-900">{pr.farmerName}</div>
+                      <div className="text-slate-500 font-mono text-[11px]">{pr.farmerPhone}</div>
+                    </td>
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 text-sm">
+                      +{formatVnd(pr.amount)}
+                    </td>
+                    <td className="py-3.5 px-3">
+                      {pr.paymentMethod === 'VIETQR' ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <span className="material-symbols-outlined text-[13px]">qr_code_2</span>
+                          VietQR Vietcombank (19006828999)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                          <span className="material-symbols-outlined text-[13px]">local_atm</span>
+                          Tiền mặt nộp tại trạm
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-3 text-slate-600 max-w-[220px]">
+                      <div>{pr.note || 'Không có ghi chú'}</div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">{pr.createdAt}</div>
+                    </td>
+                    <td className="py-3.5 px-3 text-center">
+                      {isPending && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-300 animate-pulse">
+                          Chờ đối soát thu tiền
+                        </span>
+                      )}
+                      {isConfirmed && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] border border-emerald-300">
+                          Đã khớp sổ nợ
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[11px] border border-rose-300">
+                          Từ chối khớp
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {isPending ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleConfirmRepayment(pr.id)}
+                            className="px-3 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#17482D] text-white font-bold text-xs transition-colors shadow-2xs flex items-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-[15px]">task_alt</span>
+                            <span>Xác nhận thu nợ</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRejectRepayment(pr.id)}
+                            className="px-2.5 py-1.5 rounded-lg border border-rose-300 text-rose-700 hover:bg-rose-50 font-semibold text-xs transition-colors"
+                          >
+                            Từ chối
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-slate-500 font-mono">
+                          {pr.confirmedAt ? `Khớp: ${pr.confirmedAt}` : 'Đã xử lý'}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )}
+</>
   )
 }
