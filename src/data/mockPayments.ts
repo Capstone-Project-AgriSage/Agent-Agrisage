@@ -16,6 +16,7 @@ export const payments: Payment[] = [
     methodIcon: 'qr_code_2',
     methodIconClassName: 'text-blue-600',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Thanh toán 1 phần',
     statusBadge: { label: 'Thanh toán 1 phần', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-600' },
     time: '10:20',
     actions: [
@@ -62,6 +63,7 @@ export const payments: Payment[] = [
     methodLabel: 'VietQR',
     methodIcon: 'qr_code_2',
     methodClassName: 'bg-blue-50 text-blue-800 border border-blue-200',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '09:45',
     actions: [
@@ -101,6 +103,7 @@ export const payments: Payment[] = [
     methodLabel: 'COD',
     methodIcon: 'local_shipping',
     methodClassName: 'bg-amber-50 text-amber-900 border border-amber-200',
+    status: 'Chờ đối soát',
     statusBadge: { label: 'Chờ đối soát', className: 'bg-indigo-100 text-indigo-800 border-indigo-300', dotClassName: 'bg-indigo-600' },
     time: '09:15',
     actions: [
@@ -139,6 +142,7 @@ export const payments: Payment[] = [
     remainingAmountClassName: 'text-red-600',
     methodLabel: 'Gối vụ / Nợ',
     methodClassName: 'bg-surface-container text-outline',
+    status: 'Chưa thanh toán',
     statusBadge: { label: 'Chưa thanh toán', className: 'bg-red-100 text-red-800 border-red-300', dotClassName: 'bg-red-600' },
     time: '08:30',
     actions: [
@@ -177,6 +181,7 @@ export const payments: Payment[] = [
     methodIcon: 'account_balance',
     methodIconClassName: 'text-primary',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '08:10',
     actions: [
@@ -217,6 +222,7 @@ export const payments: Payment[] = [
     methodIcon: 'payments',
     methodIconClassName: 'text-emerald-700',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: 'Hôm qua 14:10',
     actions: [
@@ -256,6 +262,7 @@ export const payments: Payment[] = [
     methodLabel: 'VietQR',
     methodIcon: 'qr_code_2',
     methodClassName: 'bg-blue-50 text-blue-800 border border-blue-200',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: 'Hôm qua 16:05',
     actions: [
@@ -296,6 +303,7 @@ export const payments: Payment[] = [
     methodIcon: 'account_balance',
     methodIconClassName: 'text-primary',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: 'Hôm qua 13:40',
     actions: [
@@ -336,6 +344,7 @@ export const payments: Payment[] = [
     methodIcon: 'payments',
     methodIconClassName: 'text-emerald-700',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '2 ngày trước',
     actions: [
@@ -374,6 +383,7 @@ export const payments: Payment[] = [
     remainingAmountClassName: 'text-red-600',
     methodLabel: 'Gối vụ / Nợ',
     methodClassName: 'bg-surface-container text-outline',
+    status: 'Chưa thanh toán',
     statusBadge: { label: 'Chưa thanh toán', className: 'bg-red-100 text-red-800 border-red-300', dotClassName: 'bg-red-600' },
     time: '09:20',
     actions: [
@@ -411,6 +421,7 @@ export const payments: Payment[] = [
     methodLabel: 'VietQR',
     methodIcon: 'qr_code_2',
     methodClassName: 'bg-blue-50 text-blue-800 border border-blue-200',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '2 ngày trước',
     actions: [
@@ -451,6 +462,7 @@ export const payments: Payment[] = [
     methodIcon: 'account_balance',
     methodIconClassName: 'text-primary',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '3 ngày trước',
     actions: [
@@ -491,6 +503,7 @@ export const payments: Payment[] = [
     methodIcon: 'payments',
     methodIconClassName: 'text-amber-700',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Thanh toán 1 phần',
     statusBadge: { label: 'Thanh toán 1 phần', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-600' },
     time: '3 ngày trước',
     actions: [
@@ -538,6 +551,7 @@ export const payments: Payment[] = [
     methodIcon: 'payments',
     methodIconClassName: 'text-emerald-700',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '3 ngày trước',
     actions: [
@@ -577,6 +591,7 @@ export const payments: Payment[] = [
     methodLabel: 'VietQR',
     methodIcon: 'qr_code_2',
     methodClassName: 'bg-blue-50 text-blue-800 border border-blue-200',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '15:30',
     actions: [
@@ -615,6 +630,7 @@ export const payments: Payment[] = [
     remainingAmountClassName: 'text-red-600',
     methodLabel: 'Gối vụ / Nợ',
     methodClassName: 'bg-surface-container text-outline',
+    status: 'Chưa thanh toán',
     statusBadge: { label: 'Chưa thanh toán', className: 'bg-red-100 text-red-800 border-red-300', dotClassName: 'bg-red-600' },
     time: '4 ngày trước',
     actions: [
@@ -653,6 +669,7 @@ export const payments: Payment[] = [
     methodIcon: 'payments',
     methodIconClassName: 'text-emerald-700',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '5 ngày trước',
     actions: [
@@ -693,6 +710,7 @@ export const payments: Payment[] = [
     methodIcon: 'account_balance',
     methodIconClassName: 'text-primary',
     methodClassName: 'bg-surface-container text-on-surface',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     time: '09:45',
     actions: [
@@ -731,6 +749,7 @@ export const payments: Payment[] = [
     remainingAmountClassName: 'text-red-600',
     methodLabel: 'Gối vụ / Nợ',
     methodClassName: 'bg-surface-container text-outline',
+    status: 'Chưa thanh toán',
     statusBadge: { label: 'Chưa thanh toán', className: 'bg-red-100 text-red-800 border-red-300', dotClassName: 'bg-red-600' },
     time: '6 ngày trước',
     actions: [

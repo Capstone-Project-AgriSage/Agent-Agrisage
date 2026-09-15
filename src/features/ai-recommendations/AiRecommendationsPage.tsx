@@ -80,6 +80,7 @@ export default function AiRecommendationsPage() {
         c.id === id
           ? {
               ...c,
+              status: 'Đã phê duyệt',
               statusBadge: { label: 'Đã phê duyệt', className: 'bg-emerald-100 text-emerald-800 border border-emerald-300', dotClassName: 'bg-emerald-600' },
               panelBadge: { label: 'Đã gửi đến nông dân', className: 'bg-emerald-100 text-emerald-800', dotClassName: 'bg-emerald-600' },
               actionsMode: 'sent' as const,
@@ -100,6 +101,7 @@ export default function AiRecommendationsPage() {
         c.id === id
           ? {
               ...c,
+              status: 'Đã từ chối',
               statusBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700 border border-slate-300', dotClassName: 'bg-slate-500' },
               panelBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700', dotClassName: 'bg-slate-500' },
               rowClassName: undefined,

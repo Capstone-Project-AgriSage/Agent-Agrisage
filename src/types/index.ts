@@ -28,6 +28,13 @@ export interface OrderItem {
   total: string
 }
 
+/** Order fulfillment status — the underlying value shown by both `statusBadge` and
+ * `panelBadge`, which are just two differently-styled renderings of the same status. */
+export type OrderStatus = 'Chờ xác nhận' | 'Đã xác nhận' | 'Đang xử lý' | 'Đang giao' | 'Hoàn thành' | 'Đã hủy'
+
+/** How the order is being paid — distinct from OrderStatus (fulfillment progress). */
+export type OrderPaymentMethod = 'Tiền mặt tại kho' | 'Chuyển khoản' | 'VietQR (Đã TT)' | 'Cọc 50%' | 'Gối nợ vụ mùa'
+
 export interface Order {
   id: string
   customerName: string
@@ -44,7 +51,9 @@ export interface Order {
   items: OrderItem[]
   feeLine?: { label: string; value: string }
   total: string
+  paymentMethod: OrderPaymentMethod
   paymentBadge: { label: string; className: string }
+  status: OrderStatus
   statusBadge: { label: string; className: string; pulse?: boolean }
   shippingIcon: string
   shippingIconClassName: string
@@ -80,6 +89,8 @@ export interface AiLog {
   dotClassName: string
 }
 
+export type FarmerStatus = 'Đang hoạt động' | 'Ít hoạt động' | 'Quá hạn nợ'
+
 export interface Farmer {
   id: string
   name: string
@@ -98,6 +109,7 @@ export interface Farmer {
   activityDate: string
   activityNote: string
   activityNoteClassName: string
+  status: FarmerStatus
   statusBadge: { label: string; className: string; dotClassName: string }
   fullAddress: string
   joinDate: string
@@ -141,6 +153,18 @@ export interface StatusBadge {
   dotPulseClassName?: string
 }
 
+export type DeliveryStatus =
+  | 'Chờ phân công'
+  | 'Đã phân công'
+  | 'Đang lấy hàng'
+  | 'Đang giao'
+  | 'Giao thành công'
+  | 'Giao thất bại'
+
+/** Cash-on-delivery collection state — a separate concern from DeliveryStatus
+ * (a trip can be delivered while COD is still uncollected, or paid up-front). */
+export type CodStatus = 'Chờ thu COD' | 'Đã thu COD' | 'Đã CK / 0 COD' | 'Tiền mặt tại kho' | 'Chưa thu được'
+
 export interface Trip {
   id: string
   orderId: string
@@ -154,7 +178,9 @@ export interface Trip {
   etaClassName: string
   codAmountLabel: string
   codAmountClassName: string
+  codStatus: CodStatus
   codBadge: { label: string; className: string }
+  status: DeliveryStatus
   statusBadge: StatusBadge
   rowClassName?: string
   failureNote?: string
@@ -204,6 +230,8 @@ export interface BoundingBox {
   note: string
 }
 
+export type AiCaseStatus = 'Chờ duyệt' | 'Đã phê duyệt' | 'Đã từ chối' | 'Chưa đủ chắc chắn'
+
 export interface AiCase {
   id: string
   idClassName: string
@@ -225,6 +253,7 @@ export interface AiCase {
   productSubLine?: string
   stockLabel: string
   stockLabelClassName: string
+  status: AiCaseStatus
   statusBadge: { label: string; className: string; dotClassName: string }
   rowClassName?: string
   actionsMode: 'menu' | 'sent' | 'survey'
@@ -277,6 +306,10 @@ export interface DebtPaymentHistoryEntry {
   amountClassName: string
 }
 
+/** Matches farmer_web_agrisage's own DebtStatus union (defined locally in its
+ * AccountPage) so debt state means the same thing to a farmer and their agent. */
+export type DebtStatus = 'Bình thường' | 'Sắp đến hạn' | 'Đến hạn' | 'Quá hạn' | 'Đã thanh toán'
+
 export interface DebtCustomer {
   id: string
   name: string
@@ -291,6 +324,7 @@ export interface DebtCustomer {
   dueDateClassName: string
   overdueDays: string
   overdueDaysClassName: string
+  status: DebtStatus
   statusBadge: { label: string; className: string; dotClassName: string }
   rowAttentionClassName?: string
   actions: RowAction[]
@@ -320,6 +354,8 @@ export interface PaymentHistoryEntry {
   cardClassName: string
 }
 
+export type PaymentStatus = 'Chưa thanh toán' | 'Thanh toán 1 phần' | 'Đã thanh toán' | 'Chờ đối soát' | 'Đã đối soát' | 'Hoàn tiền'
+
 export interface Payment {
   id: string
   orderId: string
@@ -335,6 +371,7 @@ export interface Payment {
   methodIcon?: string
   methodIconClassName?: string
   methodClassName: string
+  status: PaymentStatus
   statusBadge: { label: string; className: string; dotClassName: string }
   time: string
   actions: RowAction[]
@@ -396,6 +433,8 @@ export interface InventoryItem {
   actions: RowAction[]
 }
 
+export type LogResult = 'Thành công' | 'Chờ xử lý' | 'Bị từ chối'
+
 export interface LogEntry {
   id: string
   time: string
@@ -411,6 +450,7 @@ export interface LogEntry {
   objectId: string
   description: string
   descriptionNote: string
+  result: LogResult
   resultLabel: string
   resultClassName: string
   resultDotClassName: string
@@ -427,6 +467,8 @@ export interface LogEntry {
   relatedLinks: RelatedLink[]
 }
 
+export type ContactRequestStatus = 'Chưa xử lý' | 'Đang xử lý' | 'Đã xử lý'
+
 export interface ContactRequest {
   id: string
   senderName: string
@@ -437,6 +479,7 @@ export interface ContactRequest {
   requestType: string
   message: string
   submittedAgo: string
+  status: ContactRequestStatus
   statusBadge: { label: string; className: string; dotClassName: string }
   assignedTo?: string
   actions: RowAction[]

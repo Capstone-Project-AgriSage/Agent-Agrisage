@@ -9,7 +9,7 @@ import FormModal, { type FormFieldSpec } from '../../components/ui/FormModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
-import type { TripTimelineStep } from '../../types'
+import type { TripTimelineStep, DeliveryStatus } from '../../types'
 import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
@@ -53,7 +53,7 @@ const CREATE_TRIP_FIELDS: FormFieldSpec[] = [
   { key: 'driverName', label: 'Tài xế', type: 'select', options: NEW_TRIP_DRIVERS },
 ]
 
-const STATUS_VISUALS: Record<string, { className: string; dotClassName: string; dotPulseClassName?: string }> = {
+const STATUS_VISUALS: Record<DeliveryStatus, { className: string; dotClassName: string; dotPulseClassName?: string }> = {
   'Chờ phân công': { className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
   'Đã phân công': { className: 'bg-[#E0E7FF] text-[#3730A3] border-[#C7D2FE]', dotClassName: 'bg-[#4F46E5]' },
   'Đang lấy hàng': { className: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]', dotClassName: 'bg-[#D97706]' },
@@ -70,7 +70,7 @@ export default function DeliveryPage() {
   const [trips, setTrips] = useState(INITIAL_TRIPS)
   const { showToast } = useToast()
 
-  const setTripStatus = (id: string, label: string) => {
+  const setTripStatus = (id: string, label: DeliveryStatus) => {
     const visuals = STATUS_VISUALS[label]
     if (!visuals) return
     setTrips((prev) =>
@@ -78,6 +78,7 @@ export default function DeliveryPage() {
         t.id === id
           ? {
               ...t,
+              status: label,
               statusBadge: { label, className: visuals.className, dotClassName: visuals.dotClassName, dotPulseClassName: visuals.dotPulseClassName },
               rowClassName: undefined,
             }
@@ -91,7 +92,9 @@ export default function DeliveryPage() {
     setTripStatus(id, 'Giao thành công')
     setTrips((prev) =>
       prev.map((t) =>
-        t.id === id ? { ...t, codBadge: { label: 'Đã thu COD', className: 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]' } } : t,
+        t.id === id
+          ? { ...t, codStatus: 'Đã thu COD', codBadge: { label: 'Đã thu COD', className: 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]' } }
+          : t,
       ),
     )
   }
@@ -131,7 +134,9 @@ export default function DeliveryPage() {
       etaClassName: 'text-[#334155] font-medium',
       codAmountLabel: formatVnd(cod),
       codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+      codStatus: 'Chờ thu COD',
       codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+      status: 'Chờ phân công',
       statusBadge: { label: 'Chờ phân công', className: STATUS_VISUALS['Chờ phân công'].className, dotClassName: STATUS_VISUALS['Chờ phân công'].dotClassName },
       actions: [
         { label: 'Xem chi tiết', icon: 'visibility' },

@@ -16,20 +16,21 @@ import { useFormValues } from '../../hooks/useFormValues'
 import { orders as INITIAL_ORDERS } from '../../data/mockOrders'
 import { parseVnd, formatVnd } from '../../utils/money'
 import { downloadCsv } from '../../utils/csv'
-import type { Order } from '../../types'
+import type { Order, OrderStatus } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
 const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt tại kho', 'Cọc 50%', 'Gối nợ vụ mùa']
 
-const STATUS_VISUALS: Record<string, { className: string; panelClassName: string }> = {
+const STATUS_VISUALS: Record<OrderStatus, { className: string; panelClassName: string }> = {
   'Chờ xác nhận': { className: 'bg-amber-100 text-amber-800 border-amber-300', panelClassName: 'bg-amber-100 text-amber-800' },
   'Đã xác nhận': { className: 'bg-sky-100 text-sky-800 border-sky-300', panelClassName: 'bg-sky-100 text-sky-800' },
   'Đang xử lý': { className: 'bg-indigo-100 text-indigo-800 border-indigo-300', panelClassName: 'bg-indigo-100 text-indigo-800' },
   'Đang giao': { className: 'bg-blue-100 text-blue-800 border-blue-300', panelClassName: 'bg-blue-100 text-blue-800' },
   'Hoàn thành': { className: 'bg-emerald-100 text-emerald-800 border-emerald-300', panelClassName: 'bg-emerald-100 text-emerald-800' },
+  'Đã hủy': { className: 'bg-slate-100 text-slate-800 border-slate-300', panelClassName: 'bg-slate-100 text-slate-800' },
 }
 
-const NEXT_STATUS: Record<string, string> = {
+const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
   'Chờ xác nhận': 'Đã xác nhận',
   'Đã xác nhận': 'Đang xử lý',
   'Đang xử lý': 'Đang giao',
@@ -65,7 +66,7 @@ export default function OrdersPage() {
   const { showToast } = useToast()
   const itemsTotalLabel = 'Tổng thanh toán'
 
-  const setOrderStatus = (id: string, label: string) => {
+  const setOrderStatus = (id: string, label: OrderStatus) => {
     const visuals = STATUS_VISUALS[label]
     if (!visuals) return
     setOrders((prev) =>
@@ -73,6 +74,7 @@ export default function OrdersPage() {
         order.id === id
           ? {
               ...order,
+              status: label,
               statusBadge: { label, className: visuals.className, pulse: false },
               panelBadge: { label, className: visuals.panelClassName },
               rowAttentionClassName: undefined,
@@ -86,7 +88,7 @@ export default function OrdersPage() {
 
   const advanceOrderStatus = (id: string) => {
     const order = orders.find((o) => o.id === id)
-    const next = order && NEXT_STATUS[order.statusBadge.label]
+    const next = order && NEXT_STATUS[order.status]
     if (next) setOrderStatus(id, next)
   }
 
@@ -128,7 +130,9 @@ export default function OrdersPage() {
       productNote: `Số lượng: ${qty}`,
       items: [{ name: productTitle.trim(), qtyPrice: `${qty} x ${formatVnd(price)}`, total: formatVnd(total) }],
       total: formatVnd(total),
+      paymentMethod: 'Gối nợ vụ mùa',
       paymentBadge: { label: 'Gối nợ vụ mùa', className: 'bg-slate-100 text-slate-800 border-slate-300' },
+      status: 'Chờ xác nhận',
       statusBadge: { label: 'Chờ xác nhận', className: STATUS_VISUALS['Chờ xác nhận'].className, pulse: true },
       shippingIcon: 'local_shipping',
       shippingIconClassName: 'text-outline',
@@ -558,13 +562,13 @@ export default function OrdersPage() {
                 <button
                   className="flex items-center justify-center gap-1 px-2 py-2 bg-primary-container text-on-primary hover:bg-primary rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
-                  disabled={!NEXT_STATUS[selectedOrder.statusBadge.label]}
+                  disabled={!NEXT_STATUS[selectedOrder.status]}
                   onClick={() => advanceOrderStatus(selectedOrder.id)}
                 >
                   <span className="material-symbols-outlined text-sm" data-icon="update">update</span>
                   <span>
-                    {NEXT_STATUS[selectedOrder.statusBadge.label]
-                      ? `Chuyển sang "${NEXT_STATUS[selectedOrder.statusBadge.label]}"`
+                    {NEXT_STATUS[selectedOrder.status]
+                      ? `Chuyển sang "${NEXT_STATUS[selectedOrder.status]}"`
                       : 'Đã hoàn thành'}
                   </span>
                 </button>

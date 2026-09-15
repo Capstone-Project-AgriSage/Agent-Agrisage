@@ -42,6 +42,7 @@ export default function DebtsPage() {
               remainingCellClassName: 'text-emerald-700',
               overdueDays: '0 ngày',
               overdueDaysClassName: 'text-slate-400',
+              status: 'Đã thanh toán',
               statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
               rowAttentionClassName: undefined,
               remainingSectionClassName: 'bg-emerald-50/80 border-emerald-200',

@@ -15,6 +15,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Sắp đến hạn',
     statusBadge: { label: 'Sắp đến hạn', className: 'bg-amber-100 text-amber-800 border-amber-200', dotClassName: 'bg-amber-500' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -102,6 +103,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '12 ngày',
     overdueDaysClassName: 'text-rose-700 font-bold',
+    status: 'Quá hạn',
     statusBadge: { label: 'Quá hạn', className: 'bg-rose-100 text-rose-800 border-rose-200', dotClassName: 'bg-rose-600' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -182,6 +184,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-500',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
     rowAttentionClassName: 'bg-slate-50/40',
     actions: [
@@ -251,6 +254,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'font-semibold text-orange-800',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Đến hạn',
     statusBadge: { label: 'Đến hạn', className: 'bg-orange-100 text-orange-800 border-orange-200', dotClassName: 'bg-orange-600' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -331,6 +335,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '25 ngày',
     overdueDaysClassName: 'text-rose-700 font-bold',
+    status: 'Quá hạn',
     statusBadge: { label: 'Quá hạn', className: 'bg-rose-100 text-rose-800 border-rose-200', dotClassName: 'bg-rose-600' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -401,6 +406,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-500',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
     rowAttentionClassName: 'bg-slate-50/40',
     actions: [
@@ -453,6 +459,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Sắp đến hạn',
     statusBadge: { label: 'Sắp đến hạn', className: 'bg-amber-100 text-amber-800 border-amber-200', dotClassName: 'bg-amber-500' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -506,6 +513,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-500',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
     rowAttentionClassName: 'bg-slate-50/40',
     actions: [
@@ -558,6 +566,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-500',
     overdueDays: '0 ngày',
     overdueDaysClassName: 'text-slate-400',
+    status: 'Đã thanh toán',
     statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-200', dotClassName: 'bg-emerald-600' },
     rowAttentionClassName: 'bg-slate-50/40',
     actions: [
@@ -610,6 +619,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '19 ngày',
     overdueDaysClassName: 'text-rose-700 font-bold',
+    status: 'Quá hạn',
     statusBadge: { label: 'Quá hạn', className: 'bg-rose-100 text-rose-800 border-rose-200', dotClassName: 'bg-rose-600' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -663,6 +673,7 @@ export const debtCustomers: DebtCustomer[] = [
     dueDateClassName: 'text-slate-700',
     overdueDays: '23 ngày',
     overdueDaysClassName: 'text-rose-700 font-bold',
+    status: 'Quá hạn',
     statusBadge: { label: 'Quá hạn', className: 'bg-rose-100 text-rose-800 border-rose-200', dotClassName: 'bg-rose-600' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },

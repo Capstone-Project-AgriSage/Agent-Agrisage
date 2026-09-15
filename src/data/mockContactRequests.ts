@@ -12,6 +12,7 @@ export const contactRequests: ContactRequest[] = [
     message:
       'Cây cà phê nhà tôi xuất hiện lá vàng và rụng nhiều ở khu vực gần suối, đã bón NPK cách đây 2 tuần nhưng chưa cải thiện. Nhờ kỹ sư tư vấn giúp có phải bệnh vàng lá thối rễ không và hướng xử lý.',
     submittedAgo: '12 phút trước',
+    status: 'Chưa xử lý',
     statusBadge: { label: 'Chưa xử lý', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-500' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -28,6 +29,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Đặt vật tư',
     message: 'Em muốn đặt 20 bao NPK Đầu Trâu 20-20-15 và 5 chai Sofit 300EC giao trong tuần này, có thể ghi nợ gối vụ được không ạ?',
     submittedAgo: '35 phút trước',
+    status: 'Chưa xử lý',
     statusBadge: { label: 'Chưa xử lý', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-500' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -44,6 +46,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Sổ nợ mùa vụ',
     message: 'Tôi muốn kiểm tra lại số nợ hiện tại và hạn thanh toán của đơn hàng Virtako 40WG tuần trước, sổ nợ trên app thấy không khớp với biên nhận giấy.',
     submittedAgo: '1 giờ trước',
+    status: 'Đang xử lý',
     statusBadge: { label: 'Đang xử lý', className: 'bg-sky-100 text-sky-800 border-sky-300', dotClassName: 'bg-sky-500' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [
@@ -61,6 +64,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Kỹ thuật canh tác',
     message: 'Lúa ST25 giai đoạn đẻ nhánh bị rầy nâu, nhờ tư vấn loại thuốc phù hợp và liều lượng phun cho 1.2 hecta.',
     submittedAgo: '2 giờ trước',
+    status: 'Đang xử lý',
     statusBadge: { label: 'Đang xử lý', className: 'bg-sky-100 text-sky-800 border-sky-300', dotClassName: 'bg-sky-500' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [
@@ -78,6 +82,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Khác',
     message: 'Anh ơi cho em hỏi lịch giao giống lúa OM18 đã đặt tuần trước, xe đã xuất phát chưa vậy?',
     submittedAgo: '3 giờ trước',
+    status: 'Đã xử lý',
     statusBadge: { label: 'Đã xử lý', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [{ label: 'Xem chi tiết', icon: 'visibility' }],
@@ -92,6 +97,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Đặt vật tư',
     message: 'Chị cần đặt thêm 30 cây giống Sầu Riêng Ri6 ghép bầu, đại lý còn hàng loại đẹp không?',
     submittedAgo: 'Hôm qua 16:20',
+    status: 'Đã xử lý',
     statusBadge: { label: 'Đã xử lý', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [{ label: 'Xem chi tiết', icon: 'visibility' }],
@@ -106,6 +112,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Sổ nợ mùa vụ',
     message: 'Xin xác nhận giúp em đã tất toán hết nợ đơn hàng Phân Kali Clorua tháng trước chưa, hệ thống có gửi lại biên nhận được không?',
     submittedAgo: 'Hôm qua 14:05',
+    status: 'Đã xử lý',
     statusBadge: { label: 'Đã xử lý', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [{ label: 'Xem chi tiết', icon: 'visibility' }],
@@ -120,6 +127,7 @@ export const contactRequests: ContactRequest[] = [
     requestType: 'Kỹ thuật canh tác',
     message: 'Ruộng lúa bị cỏ lồng vực mọc dày sau khi sạ 10 ngày, dùng Facet 25SC được không hay cần đổi loại khác?',
     submittedAgo: '2 ngày trước',
+    status: 'Đã xử lý',
     statusBadge: { label: 'Đã xử lý', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',
     actions: [{ label: 'Xem chi tiết', icon: 'visibility' }],

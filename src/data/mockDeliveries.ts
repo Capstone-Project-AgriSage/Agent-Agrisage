@@ -14,7 +14,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155] font-medium',
     codAmountLabel: '8.245.000 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Đang giao',
     statusBadge: {
       label: 'Đang giao',
       className: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]',
@@ -61,7 +63,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Đang lấy hàng',
     statusBadge: {
       label: 'Đang lấy hàng',
       className: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
@@ -105,7 +109,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '2.160.000 đ',
     codAmountClassName: 'font-bold text-[#15803D] tabular-nums',
+    codStatus: 'Đã thu COD',
     codBadge: { label: 'Đã thu COD', className: 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]' },
+    status: 'Giao thành công',
     statusBadge: {
       label: 'Giao thành công',
       className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
@@ -149,7 +155,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '9.620.000 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Chờ phân công',
     statusBadge: {
       label: 'Chờ phân công',
       className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]',
@@ -193,7 +201,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '15.030.000 đ',
     codAmountClassName: 'font-bold text-[#DC2626] tabular-nums',
+    codStatus: 'Chưa thu được',
     codBadge: { label: 'Chưa thu được', className: 'bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]' },
+    status: 'Giao thất bại',
     statusBadge: {
       label: 'Giao thất bại',
       className: 'bg-[#FEE2E2] text-[#B91C1C] border-[#FCA5A5]',
@@ -239,7 +249,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Tiền mặt tại kho',
     codBadge: { label: 'Tiền mặt tại kho', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -274,7 +286,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Đang giao',
     statusBadge: { label: 'Đang giao', className: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]', dotClassName: 'bg-[#2563EB]', dotPulseClassName: 'animate-ping' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -310,7 +324,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Đang lấy hàng',
     statusBadge: { label: 'Đang lấy hàng', className: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]', dotClassName: 'bg-[#D97706]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -346,7 +362,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Tiền mặt tại kho',
     codBadge: { label: 'Tiền mặt tại kho', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -380,7 +398,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '462.500 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Chờ phân công',
     statusBadge: { label: 'Chờ phân công', className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
     actions: [
       { label: 'Phân công tài xế', icon: 'person_add', tone: 'primary' },
@@ -416,7 +436,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -450,7 +472,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -484,7 +508,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '780.000 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Đang lấy hàng',
     statusBadge: { label: 'Đang lấy hàng', className: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]', dotClassName: 'bg-[#D97706]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -520,7 +546,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Tiền mặt tại kho',
     codBadge: { label: 'Tiền mặt tại kho', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -554,7 +582,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Đang giao',
     statusBadge: { label: 'Đang giao', className: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]', dotClassName: 'bg-[#2563EB]', dotPulseClassName: 'animate-ping' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -590,7 +620,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '1.140.000 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Chờ phân công',
     statusBadge: { label: 'Chờ phân công', className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
     actions: [
       { label: 'Phân công tài xế', icon: 'person_add', tone: 'primary' },
@@ -626,7 +658,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#64748B]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Tiền mặt tại kho',
     codBadge: { label: 'Tiền mặt tại kho', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Giao thành công',
     statusBadge: { label: 'Giao thành công', className: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]', dotClassName: 'bg-[#16A34A]' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -660,7 +694,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '0 đ',
     codAmountClassName: 'font-medium text-[#64748B] tabular-nums',
+    codStatus: 'Đã CK / 0 COD',
     codBadge: { label: 'Đã CK / 0 COD', className: 'bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]' },
+    status: 'Đang giao',
     statusBadge: { label: 'Đang giao', className: 'bg-[#DBEAFE] text-[#1E40AF] border-[#BFDBFE]', dotClassName: 'bg-[#2563EB]', dotPulseClassName: 'animate-ping' },
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -699,7 +735,9 @@ export const trips: Trip[] = [
     etaClassName: 'text-[#334155]',
     codAmountLabel: '12.960.000 đ',
     codAmountClassName: 'font-bold text-[#0F172A] tabular-nums',
+    codStatus: 'Chờ thu COD',
     codBadge: { label: 'Chờ thu COD', className: 'bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]' },
+    status: 'Chờ phân công',
     statusBadge: { label: 'Chờ phân công', className: 'bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]', dotClassName: 'bg-[#64748B]' },
     actions: [
       { label: 'Phân công tài xế', icon: 'person_add', tone: 'primary' },

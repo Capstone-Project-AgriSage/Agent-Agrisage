@@ -13,11 +13,12 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { contactRequests as INITIAL_REQUESTS } from '../../data/mockContactRequests'
+import type { ContactRequestStatus } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa xử lý', 'Đang xử lý', 'Đã xử lý']
 const REQUEST_TYPE_OPTIONS = ['Tất cả loại yêu cầu', 'Kỹ thuật canh tác', 'Đặt vật tư', 'Sổ nợ mùa vụ', 'Khác']
 
-const STATUS_VISUALS: Record<string, { className: string; dotClassName: string }> = {
+const STATUS_VISUALS: Record<ContactRequestStatus, { className: string; dotClassName: string }> = {
   'Chưa xử lý': { className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-500' },
   'Đang xử lý': { className: 'bg-sky-100 text-sky-800 border-sky-300', dotClassName: 'bg-sky-500' },
   'Đã xử lý': { className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
@@ -32,7 +33,7 @@ export default function ContactPage() {
   const { user } = useAuth()
   const [requests, setRequests] = useState(INITIAL_REQUESTS)
 
-  const setRequestStatus = (id: string, label: string) => {
+  const setRequestStatus = (id: string, label: ContactRequestStatus) => {
     const visuals = STATUS_VISUALS[label]
     if (!visuals) return
     setRequests((prev) =>
@@ -40,6 +41,7 @@ export default function ContactPage() {
         r.id === id
           ? {
               ...r,
+              status: label,
               statusBadge: { label, className: visuals.className, dotClassName: visuals.dotClassName },
               assignedTo: label === 'Chưa xử lý' ? undefined : `${user.name} (${user.role})`,
               actions:

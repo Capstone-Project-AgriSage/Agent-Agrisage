@@ -59,6 +59,7 @@ export default function PaymentsPage() {
               paidAmountClassName: 'text-emerald-700',
               remainingAmount: '0 đ',
               remainingAmountClassName: 'text-outline',
+              status: 'Đã thanh toán',
               statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
               collectedLabel: `${p.totalAmount} (100%)`,
               progressWidth: '100%',
@@ -74,7 +75,7 @@ export default function PaymentsPage() {
     setPayments((prev) =>
       prev.map((p) =>
         p.id === id
-          ? { ...p, statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' } }
+          ? { ...p, status: 'Đã đối soát', statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' } }
           : p,
       ),
     )
@@ -118,6 +119,7 @@ export default function PaymentsPage() {
       remainingAmountClassName: hasRemaining ? 'text-amber-700' : 'text-outline',
       methodLabel,
       methodClassName: 'bg-surface-container text-on-surface',
+      status: hasRemaining ? (paid > 0 ? 'Thanh toán 1 phần' : 'Chưa thanh toán') : 'Đã thanh toán',
       statusBadge: hasRemaining
         ? paid > 0
           ? { label: 'Thanh toán 1 phần', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-600' }
