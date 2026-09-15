@@ -13,7 +13,11 @@ import { useSelectableList } from '../../hooks/useSelectableList'
 import { usePagination } from '../../hooks/usePagination'
 import { useFormValues } from '../../hooks/useFormValues'
 import { downloadCsv } from '../../utils/csv'
-import { inventoryItems as INITIAL_INVENTORY } from '../../data/mockInventory'
+import {
+  inventoryItems as INITIAL_INVENTORY,
+  mockStockMovements as INITIAL_MOVEMENTS,
+} from '../../data/mockInventory'
+import type { InventoryItem, StockMovement, StockAdjustmentReason } from '../../types'
 
 const CATEGORY_OPTIONS = ['Tất cả danh mục', ...new Set(INITIAL_INVENTORY.map((item) => item.categoryLabel))]
 const STOCK_OPTIONS = [
@@ -23,22 +27,53 @@ const STOCK_OPTIONS = [
   { value: 'Hết hàng', label: 'Hết hàng' },
 ]
 
+const MOVEMENT_TYPE_OPTIONS = [
+  { value: 'ALL', label: 'Tất cả loại biến động' },
+  { value: 'STOCK_IN', label: 'Nhập kho (STOCK_IN)' },
+  { value: 'SALE', label: 'Xuất bán hàng (SALE)' },
+  { value: 'ADJUSTMENT', label: 'Điều chỉnh kiểm kê (ADJUSTMENT)' },
+]
+
+const ADJUST_REASONS: { value: StockAdjustmentReason; label: string; desc: string }[] = [
+  { value: 'DAMAGED', label: 'Hư hỏng / Rách vỡ bao bì (DAMAGED)', desc: 'Vật tư bị hỏng do bảo quản hoặc vận chuyển' },
+  { value: 'EXPIRED', label: 'Hết hạn sử dụng (EXPIRED)', desc: 'Vật tư quá date lưu kho theo quy chuẩn BVTV' },
+  { value: 'LOST', label: 'Thất thoát / Hao hụt kiểm kê (LOST)', desc: 'Không tìm thấy hiện vật khi đối chiếu kho thực tế' },
+  { value: 'MANUAL_CORRECTION', label: 'Hiệu chỉnh sai lệch kiểm đếm (MANUAL_CORRECTION)', desc: 'Cân bằng số dư thẻ kho với kiểm kê thực tế' },
+]
+
 export default function InventoryPage() {
   usePageHeader({
-    title: 'Quản lý kho hàng',
+    title: 'Quản lý kho hàng & Thẻ kho (WF-05)',
   })
 
   const { showToast } = useToast()
+  const [activeTab, setActiveTab] = useState<'stock' | 'ledger'>('stock')
   const [inventoryItems, setInventoryItems] = useState(INITIAL_INVENTORY)
+  const [stockMovements, setStockMovements] = useState<StockMovement[]>(INITIAL_MOVEMENTS)
   const { selectedId, setSelectedId, selected: selectedItem } = useSelectableList(inventoryItems, (item) => item.id)
 
+  // Stock Filter State
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState(CATEGORY_OPTIONS[0])
   const [stockFilter, setStockFilter] = useState('')
 
+  // Ledger Filter State
+  const [ledgerSearch, setLedgerSearch] = useState('')
+  const [ledgerTypeFilter, setLedgerTypeFilter] = useState('ALL')
+
+  // Restock Modal State
   const [restockOpen, setRestockOpen] = useState(false)
   const { values: restockForm, update: updateRestockForm, reset: resetRestockForm } = useFormValues({ itemId: '', amount: '' })
 
+  // Adjustment Modal State (WF-05 Append-Only)
+  const [adjustOpen, setAdjustOpen] = useState(false)
+  const [adjustItem, setAdjustItem] = useState<InventoryItem | null>(null)
+  const [adjustChangeType, setAdjustChangeType] = useState<'decrease' | 'increase'>('decrease')
+  const [adjustAmount, setAdjustAmount] = useState('1')
+  const [adjustReason, setAdjustReason] = useState<StockAdjustmentReason>('DAMAGED')
+  const [adjustNote, setAdjustNote] = useState('')
+
+  // Filtered Stock Items
   const keyword = search.trim().toLowerCase()
   const filteredInventory = inventoryItems.filter(
     (item) =>
@@ -59,6 +94,35 @@ export default function InventoryPage() {
   const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
     usePagination(filteredInventory, 10)
 
+  // Filtered Ledger Movements
+  const ledgerKeyword = ledgerSearch.trim().toLowerCase()
+  const filteredMovements = stockMovements.filter((m) => {
+    const matchesSearch =
+      !ledgerKeyword ||
+      m.id.toLowerCase().includes(ledgerKeyword) ||
+      m.productName.toLowerCase().includes(ledgerKeyword) ||
+      m.sku.toLowerCase().includes(ledgerKeyword) ||
+      (m.referenceId && m.referenceId.toLowerCase().includes(ledgerKeyword)) ||
+      (m.createdBy && m.createdBy.toLowerCase().includes(ledgerKeyword)) ||
+      (m.note && m.note.toLowerCase().includes(ledgerKeyword))
+
+    const matchesType = ledgerTypeFilter === 'ALL' || m.movementType === ledgerTypeFilter
+
+    return matchesSearch && matchesType
+  })
+
+  const {
+    page: ledgerPage,
+    totalPages: ledgerTotalPages,
+    paginated: paginatedMovements,
+    startIndex: ledgerStartIndex,
+    endIndex: ledgerEndIndex,
+    totalCount: ledgerTotalCount,
+    goPrev: ledgerGoPrev,
+    goNext: ledgerGoNext,
+    setPage: setLedgerPage,
+  } = usePagination(filteredMovements, 10)
+
   const handleInventoryAction = (id: string, label: string) => {
     if (label === 'Xem chi tiết') {
       setSelectedId(id)
@@ -67,6 +131,15 @@ export default function InventoryPage() {
     if (label === 'Nhập hàng ngay' || label === 'Tạo đề nghị nhập khẩn') {
       resetRestockForm({ itemId: id, amount: '' })
       setRestockOpen(true)
+      return
+    }
+    if (label === 'Điều chỉnh kho') {
+      setAdjustItem(inventoryItems.find((i) => i.id === id) ?? null)
+      setAdjustChangeType('decrease')
+      setAdjustAmount('1')
+      setAdjustReason('DAMAGED')
+      setAdjustNote('')
+      setAdjustOpen(true)
       return
     }
     const item = inventoryItems.find((i) => i.id === id)
@@ -90,20 +163,90 @@ export default function InventoryPage() {
           ? {
               ...item,
               stockQuantity: `${newQty} ${unit}`.trim(),
-              stockQuantityClassName: undefined,
               stockBarClassName: 'bg-emerald-600',
               stockBarWidth: '100%',
               stockLabel: 'Tồn kho tốt',
               stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
               stockDotClassName: 'bg-[#16A34A]',
               updatedAgo: 'Vừa xong',
-              updatedBy: 'Bạn',
+              updatedBy: 'Bạn (Thủ kho)',
             }
           : item,
       ),
     )
-    showToast(`Đã nhập thêm ${amount} vào kho cho ${restockItem.name}`)
+
+    const newMovement: StockMovement = {
+      id: `SM-${Date.now().toString().slice(-4)}`,
+      productId: restockItem.id,
+      productName: restockItem.name,
+      sku: restockItem.sku,
+      movementType: 'STOCK_IN',
+      quantityChange: amount,
+      balanceAfter: newQty,
+      unit: unit || 'đơn vị',
+      referenceId: `PNK-${Date.now().toString().slice(-4)}`,
+      createdAt: 'Vừa xong',
+      createdBy: 'Bạn (Thủ kho)',
+      note: 'Nhập kho bổ sung vật tư đại lý Hai Thắng',
+    }
+    setStockMovements((prev) => [newMovement, ...prev])
+    showToast(`Đã nhập thêm ${amount} ${unit} vào kho cho ${restockItem.name}`)
     setRestockOpen(false)
+  }
+
+  const handleConfirmAdjust = () => {
+    const targetItem = adjustItem || inventoryItems[0]
+    const amount = Number.parseInt(adjustAmount, 10)
+    if (!targetItem || !adjustAmount.trim() || Number.isNaN(amount) || amount <= 0) {
+      showToast('Vui lòng chọn sản phẩm và nhập số lượng điều chỉnh hợp lệ (> 0)')
+      return
+    }
+    const currentQty = Number.parseInt(targetItem.stockQuantity, 10) || 0
+    const unit = targetItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()
+    const delta = adjustChangeType === 'decrease' ? -amount : amount
+    const newQty = Math.max(0, currentQty + delta)
+
+    setInventoryItems((prev) =>
+      prev.map((item) =>
+        item.id === targetItem.id
+          ? {
+              ...item,
+              stockQuantity: `${newQty} ${unit}`.trim(),
+              stockLabel: newQty === 0 ? 'Hết hàng' : newQty < 20 ? 'Sắp hết' : 'Tồn kho tốt',
+              stockClassName:
+                newQty === 0
+                  ? 'bg-[#FEE2E2] text-error border-error/30'
+                  : newQty < 20
+                  ? 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]'
+                  : 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
+              stockDotClassName:
+                newQty === 0 ? 'bg-error' : newQty < 20 ? 'bg-[#D97706]' : 'bg-[#16A34A]',
+              updatedAgo: 'Vừa xong',
+              updatedBy: 'Bạn (Thủ kho)',
+            }
+          : item,
+      ),
+    )
+
+    const reasonObj = ADJUST_REASONS.find((r) => r.value === adjustReason)
+    const newMovement: StockMovement = {
+      id: `SM-${Date.now().toString().slice(-4)}`,
+      productId: targetItem.id,
+      productName: targetItem.name,
+      sku: targetItem.sku,
+      movementType: 'ADJUSTMENT',
+      quantityChange: delta,
+      balanceAfter: newQty,
+      unit: unit || 'đơn vị',
+      reason: adjustReason,
+      referenceId: `DCK-${Date.now().toString().slice(-4)}`,
+      createdAt: 'Vừa xong',
+      createdBy: 'Bạn (Thủ kho)',
+      note: adjustNote.trim() || `Điều chỉnh kho (${reasonObj?.label ?? adjustReason})`,
+    }
+    setStockMovements((prev) => [newMovement, ...prev])
+    showToast(`Đã ghi nhận điều chỉnh kho (${delta > 0 ? '+' : ''}${delta} ${unit}) cho ${targetItem.name}`)
+    setAdjustOpen(false)
   }
 
   const handleExportInventory = () => {
@@ -121,9 +264,35 @@ export default function InventoryPage() {
     showToast(`Đã xuất biên bản kiểm kê ${filteredInventory.length} mặt hàng`)
   }
 
+  const handleExportLedger = () => {
+    downloadCsv(
+      `so-bien-dong-the-kho-${Date.now()}.csv`,
+      filteredMovements.map((m) => ({
+        'Mã GD': m.id,
+        'Thời gian': m.createdAt,
+        'Tên sản phẩm': m.productName,
+        'SKU': m.sku,
+        'Loại biến động': m.movementType,
+        'Biến động': m.quantityChange,
+        'Tồn sau': m.balanceAfter,
+        'Đơn vị': m.unit,
+        'Lý do': m.reason ?? '',
+        'Mã tham chiếu': m.referenceId ?? '',
+        'Người thực hiện': m.createdBy,
+        'Ghi chú': m.note ?? '',
+      })),
+    )
+    showToast(`Đã xuất sổ biến động thẻ kho (${filteredMovements.length} bản ghi)`)
+  }
+
   const totalCount = inventoryItems.length
   const lowStockCount = inventoryItems.filter((item) => item.stockLabel === 'Sắp hết').length
   const outOfStockCount = inventoryItems.filter((item) => item.stockLabel === 'Hết hàng').length
+
+  const totalMovementsCount = stockMovements.length
+  const stockInCount = stockMovements.filter((m) => m.movementType === 'STOCK_IN').length
+  const saleCount = stockMovements.filter((m) => m.movementType === 'SALE').length
+  const adjustmentCount = stockMovements.filter((m) => m.movementType === 'ADJUSTMENT').length
 
   const restockFields: FormFieldSpec[] = [
     {
@@ -152,11 +321,11 @@ export default function InventoryPage() {
           <nav className="flex items-center gap-2 text-body-sm font-body-sm text-outline">
             <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
             <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
-            <span className="text-on-surface font-medium">Quản lý kho hàng</span>
+            <span className="text-on-surface font-medium">Quản lý kho &amp; Thẻ kho (WF-05)</span>
           </nav>
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-            Đồng bộ thời gian thực
+            Đại lý Hai Thắng • ĐBSCL
           </span>
         </div>
         {/* Major Operational Action Buttons */}
@@ -164,18 +333,25 @@ export default function InventoryPage() {
           <button
             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
             type="button"
-            onClick={handleExportInventory}
+            onClick={activeTab === 'stock' ? handleExportInventory : handleExportLedger}
           >
             <span className="material-symbols-outlined text-[18px] text-outline" data-icon="file_download">file_download</span>
-            <span>Xuất biên bản kiểm kê</span>
+            <span>{activeTab === 'stock' ? 'Xuất kiểm kê CSV' : 'Xuất thẻ kho CSV'}</span>
           </button>
           <button
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 font-title-md text-title-md transition-colors shadow-sm"
             type="button"
-            onClick={() => showToast('Chức năng xuất kho hàng loạt đang được phát triển')}
+            onClick={() => {
+              setAdjustItem(inventoryItems[0] ?? null)
+              setAdjustChangeType('decrease')
+              setAdjustAmount('1')
+              setAdjustReason('DAMAGED')
+              setAdjustNote('')
+              setAdjustOpen(true)
+            }}
           >
-            <span className="material-symbols-outlined text-[18px] text-primary" data-icon="unarchive">unarchive</span>
-            <span>Xuất kho</span>
+            <span className="material-symbols-outlined text-[18px] text-amber-700" data-icon="tune">tune</span>
+            <span>Điều chỉnh kho (WF-05)</span>
           </button>
           <button
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-[#17482D] active:bg-[#113622] text-on-primary font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
@@ -191,332 +367,587 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* 4 KPI SUMMARY CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-base">
-        {/* Card 1: Total Stocked Items */}
-        <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <span className="font-label-md text-label-md text-on-surface-variant font-medium">Tổng sản phẩm trong kho</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[20px]" data-icon="inventory">inventory</span>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-on-surface">{totalCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
-            <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
-              <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="check_circle">check_circle</span>
-              <span>1.420 đơn vị bao/chai/gói đang lưu trữ</span>
-            </div>
-          </div>
-        </div>
-        {/* Card 2: Low Stock Warning */}
-        <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <span className="font-label-md text-label-md text-on-surface-variant font-medium">Sắp hết hàng</span>
-            <div className="w-8 h-8 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#B45309]">
-              <span className="material-symbols-outlined text-[20px]" data-icon="warning">warning</span>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-[#B45309]">{lowStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
-            <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-[#B45309]">
-              <span className="material-symbols-outlined text-[16px]" data-icon="trending_down">trending_down</span>
-              <span>Dưới ngưỡng an toàn, cần nhập sớm</span>
-            </div>
-          </div>
-        </div>
-        {/* Card 3: Out of Stock Alert */}
-        <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <span className="font-label-md text-label-md text-on-surface-variant font-medium">Hết hàng</span>
-            <div className="w-8 h-8 rounded-lg bg-[#FEE2E2] flex items-center justify-center text-error">
-              <span className="material-symbols-outlined text-[20px]" data-icon="block">block</span>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-error">{outOfStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
-            <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-error">
-              <span className="material-symbols-outlined text-[16px]" data-icon="error">error</span>
-              <span>Tồn kho 0, ngừng cung ứng cho nông dân</span>
-            </div>
-          </div>
-        </div>
-        {/* Card 4: Total Inventory Value */}
-        <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            <span className="font-label-md text-label-md text-on-surface-variant font-medium">Giá trị tồn kho</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-              <span className="material-symbols-outlined text-[20px]" data-icon="monetization_on">monetization_on</span>
-            </div>
-          </div>
-          <div className="mt-3">
-            <div className="font-metric-num text-metric-num text-primary">1.845.600.000 <span className="text-sm font-normal text-on-surface-variant font-body-sm">₫</span></div>
-            <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
-              <span className="material-symbols-outlined text-[16px]" data-icon="info">info</span>
-              <span>Định giá theo giá vốn nhập trạm</span>
-            </div>
-          </div>
-        </div>
+      {/* TABS NAVIGATION */}
+      <div className="flex border-b border-outline-variant bg-surface-container-lowest rounded-t-xl px-4 pt-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('stock')}
+          className={`px-4 py-3 font-title-md text-title-md border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'stock'
+              ? 'border-primary text-primary font-bold'
+              : 'border-transparent text-outline hover:text-on-surface'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]" data-icon="inventory_2">inventory_2</span>
+          <span>Tồn kho hiện tại</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+            activeTab === 'stock' ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant'
+          }`}>
+            {totalCount}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('ledger')}
+          className={`px-4 py-3 font-title-md text-title-md border-b-2 transition-colors flex items-center gap-2 ${
+            activeTab === 'ledger'
+              ? 'border-primary text-primary font-bold'
+              : 'border-transparent text-outline hover:text-on-surface'
+          }`}
+        >
+          <span className="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+          <span>Sổ biến động thẻ kho (Append-Only)</span>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+            activeTab === 'ledger' ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant'
+          }`}>
+            {totalMovementsCount}
+          </span>
+        </button>
       </div>
 
-      {/* FILTERS & SEARCH CONTROLS */}
-      <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
-        <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, mã SKU, hoạt chất..." className="relative flex-1" />
-        <div className="flex flex-wrap items-center gap-2.5">
-          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[150px]" />
-          <FilterSelect value={stockFilter} onChange={setStockFilter} options={STOCK_OPTIONS} className="relative min-w-[150px]" />
-          <button
-            className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
-            type="button"
-            onClick={handleClearFilters}
-          >
-            <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
-            <span>Xóa lọc</span>
-          </button>
-        </div>
-      </div>
-
-      {/* MAIN INVENTORY DATA TABLE */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
-                <th className="py-3 px-4 font-semibold" scope="col">Sản phẩm &amp; Hoạt chất</th>
-                <th className="py-3 px-3 font-semibold" scope="col">SKU</th>
-                <th className="py-3 px-3 font-semibold" scope="col">Danh mục</th>
-                <th className="py-3 px-3 font-semibold text-right" scope="col">Số lượng</th>
-                <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
-                <th className="py-3 px-3 font-semibold" scope="col">Cập nhật gần nhất</th>
-                <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant text-body-md">
-              {paginated.length === 0 ? (
-                <EmptyTableRow colSpan={7} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
-              ) : null}
-              {paginated.map((item) => {
-                const isSelected = item.id === selectedId
-                return (
-                  <tr
-                    key={item.id}
-                    onClick={() => setSelectedId(item.id)}
-                    className={`transition-colors cursor-pointer group ${
-                      isSelected
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : `hover:bg-surface-container-low ${item.rowClassName ?? ''}`
-                    }`}
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex flex-col">
-                        <span className={`font-title-md text-title-md font-semibold group-hover:text-primary ${item.nameClassName ?? 'text-on-surface'}`}>
-                          {item.name}
-                        </span>
-                        <span className="font-body-sm text-[12px] text-outline">{item.description}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">{item.sku}</td>
-                    <td className="py-3 px-3">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{item.categoryLabel}</span>
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <div className="flex flex-col items-end">
-                        <span className={`font-semibold tabular-nums ${item.stockQuantityClassName ?? 'text-on-surface'}`}>{item.stockQuantity}</span>
-                        <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                          <div className={`h-full rounded-full ${item.stockBarClassName}`} style={{ width: item.stockBarWidth }}></div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${item.stockDotClassName}`}></span>
-                        {item.stockLabel}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="flex flex-col text-[11px]">
-                        <span className="text-on-surface">{item.updatedAgo}</span>
-                        <span className="text-outline">{item.updatedBy}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end">
-                        <RowActionsMenu
-                          triggerLabel={`Thao tác ${item.name}`}
-                          actions={item.actions.map((action) => ({
-                            ...action,
-                            onClick: () => handleInventoryAction(item.id, action.label),
-                          }))}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          totalCount={pageTotalCount}
-          unitLabel="sản phẩm"
-          goPrev={goPrev}
-          goNext={goNext}
-          setPage={setPage}
-        />
-      </div>
-
-      {/* 2-COLUMN AUXILIARY LOWER SECTION */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-base">
-        {/* COLUMN 1: CẢNH BÁO SẮP HẾT HÀNG KHẨN CẤP (LOW STOCK ALERTS) */}
-        <div className="lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col justify-between">
-          <div className="p-space-base border-b border-outline-variant flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
-              <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Cảnh báo tồn kho khẩn cấp</h2>
-            </div>
-            <span className="text-xs px-2 py-0.5 rounded bg-error-container text-on-error-container font-semibold">3 cảnh báo nghiêm trọng</span>
-          </div>
-          <div className="p-space-base divide-y divide-outline-variant">
-            {/* Alert Item 1: Virtako 40WG */}
-            <div className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-space-md">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#FEE2E2] text-error flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="report">report</span>
-                </div>
-                <div>
-                  <h3 className="font-title-md text-title-md text-on-surface font-semibold">Thuốc Trừ Sâu Virtako 40WG</h3>
-                  <div className="flex items-center gap-2 mt-0.5 text-body-sm">
-                    <span className="font-bold text-error">Tồn 0 / Ngưỡng 40 gói</span>
-                    <span className="text-outline">•</span>
-                    <span className="text-on-surface-variant">Kho D - Tủ 02 (Đang có đơn chờ)</span>
-                  </div>
+      {/* TAB 1: TỒN KHO HIỆN TẠI */}
+      {activeTab === 'stock' && (
+        <div className="space-y-space-lg">
+          {/* 4 KPI SUMMARY CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-base">
+            {/* Card 1: Total Stocked Items */}
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Tổng sản phẩm trong kho</span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="inventory">inventory</span>
                 </div>
               </div>
-              <button
-                className="shrink-0 px-3 py-1.5 rounded-lg bg-error hover:bg-[#b91c1c] text-on-error text-body-sm font-semibold transition-colors flex items-center gap-1 shadow-sm"
-                type="button"
-                onClick={() => showToast('Đã tạo đề nghị nhập khẩn: Thuốc Trừ Sâu Virtako 40WG')}
-              >
-                <span className="material-symbols-outlined text-[16px]" data-icon="add_shopping_cart">add_shopping_cart</span>
-                <span>Tạo đề nghị nhập khẩn</span>
-              </button>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-on-surface">{totalCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+                <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="check_circle">check_circle</span>
+                  <span>9 danh mục vật tư chuẩn lúa ĐBSCL</span>
+                </div>
+              </div>
             </div>
-            {/* Alert Item 2: Beam 75WP */}
-            <div className="py-3 flex items-center justify-between gap-space-md">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#FEF3C7] text-[#B45309] flex items-center justify-center shrink-0">
+            {/* Card 2: Low Stock Warning */}
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Sắp hết hàng</span>
+                <div className="w-8 h-8 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#B45309]">
                   <span className="material-symbols-outlined text-[20px]" data-icon="warning">warning</span>
                 </div>
-                <div>
-                  <h3 className="font-title-md text-title-md text-on-surface font-semibold">Thuốc Trừ Bệnh Beam 75WP</h3>
-                  <div className="flex items-center gap-2 mt-0.5 text-body-sm">
-                    <span className="font-bold text-[#B45309]">Tồn 8 / Ngưỡng 50 gói</span>
-                    <span className="text-outline">•</span>
-                    <span className="text-on-surface-variant">Kho D - Tủ 03 (Đạt ngưỡng báo động)</span>
-                  </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-[#B45309]">{lowStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+                <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-[#B45309]">
+                  <span className="material-symbols-outlined text-[16px]" data-icon="trending_down">trending_down</span>
+                  <span>Dưới ngưỡng an toàn, cần nhập sớm</span>
                 </div>
               </div>
+            </div>
+            {/* Card 3: Out of Stock Alert */}
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Hết hàng</span>
+                <div className="w-8 h-8 rounded-lg bg-[#FEE2E2] flex items-center justify-center text-error">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="block">block</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-error">{outOfStockCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">mặt hàng</span></div>
+                <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-error">
+                  <span className="material-symbols-outlined text-[16px]" data-icon="error">error</span>
+                  <span>Tồn kho 0, ngừng cung ứng cho nông dân</span>
+                </div>
+              </div>
+            </div>
+            {/* Card 4: Total Inventory Value */}
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Giá trị tồn kho</span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="monetization_on">monetization_on</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-primary">1.845.600.000 <span className="text-sm font-normal text-on-surface-variant font-body-sm">₫</span></div>
+                <div className="mt-1 flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
+                  <span className="material-symbols-outlined text-[16px]" data-icon="info">info</span>
+                  <span>Định giá theo giá vốn kho Hai Thắng</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* FILTERS & SEARCH CONTROLS */}
+          <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+            <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, mã SKU, hoạt chất..." className="relative flex-1" />
+            <div className="flex flex-wrap items-center gap-2.5">
+              <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[150px]" />
+              <FilterSelect value={stockFilter} onChange={setStockFilter} options={STOCK_OPTIONS} className="relative min-w-[150px]" />
               <button
-                className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
+                className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
                 type="button"
-                onClick={() => showToast('Đã tạo đề nghị nhập: Thuốc Trừ Bệnh Beam 75WP')}
+                onClick={handleClearFilters}
               >
-                <span>Tạo đề nghị nhập</span>
+                <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
+                <span>Xóa lọc</span>
               </button>
             </div>
-            {/* Alert Item 3: Phân NPK Đầu Trâu */}
-            <div className="py-3 last:pb-0 flex items-center justify-between gap-space-md">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#FEF3C7] text-[#B45309] flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="hourglass_top">hourglass_top</span>
+          </div>
+
+          {/* MAIN INVENTORY DATA TABLE */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
+                    <th className="py-3 px-4 font-semibold" scope="col">Sản phẩm &amp; Hoạt chất</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">SKU</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">Danh mục</th>
+                    <th className="py-3 px-3 font-semibold text-right" scope="col">Số lượng</th>
+                    <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">Cập nhật gần nhất</th>
+                    <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant text-body-md">
+                  {paginated.length === 0 ? (
+                    <EmptyTableRow colSpan={7} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
+                  ) : null}
+                  {paginated.map((item) => {
+                    const isSelected = item.id === selectedId
+                    return (
+                      <tr
+                        key={item.id}
+                        onClick={() => setSelectedId(item.id)}
+                        className={`transition-colors cursor-pointer group ${
+                          isSelected
+                            ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                            : `hover:bg-surface-container-low ${item.rowClassName ?? ''}`
+                        }`}
+                      >
+                        <td className="py-3 px-4">
+                          <div className="flex flex-col">
+                            <span className={`font-title-md text-title-md font-semibold group-hover:text-primary ${item.nameClassName ?? 'text-on-surface'}`}>
+                              {item.name}
+                            </span>
+                            <span className="font-body-sm text-[12px] text-outline">{item.description}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">{item.sku}</td>
+                        <td className="py-3 px-3">
+                          <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{item.categoryLabel}</span>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <div className="flex flex-col items-end">
+                            <span className={`font-semibold tabular-nums ${item.stockQuantityClassName ?? 'text-on-surface'}`}>{item.stockQuantity}</span>
+                            <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
+                              <div className={`h-full rounded-full ${item.stockBarClassName}`} style={{ width: item.stockBarWidth }}></div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${item.stockDotClassName}`}></span>
+                            {item.stockLabel}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col text-[11px]">
+                            <span className="text-on-surface">{item.updatedAgo}</span>
+                            <span className="text-outline">{item.updatedBy}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          <div className="flex items-center justify-end">
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác ${item.name}`}
+                              actions={item.actions.map((action) => ({
+                                ...action,
+                                onClick: () => handleInventoryAction(item.id, action.label),
+                              }))}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              startIndex={startIndex}
+              endIndex={endIndex}
+              totalCount={pageTotalCount}
+              unitLabel="sản phẩm"
+              goPrev={goPrev}
+              goNext={goNext}
+              setPage={setPage}
+            />
+          </div>
+
+          {/* 2-COLUMN AUXILIARY LOWER SECTION */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-space-base">
+            {/* COLUMN 1: CẢNH BÁO SẮP HẾT HÀNG KHẨN CẤP */}
+            <div className="lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col justify-between">
+              <div className="p-space-base border-b border-outline-variant flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-error animate-ping"></span>
+                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Cảnh báo tồn kho khẩn cấp</h2>
                 </div>
-                <div>
-                  <h3 className="font-title-md text-title-md text-on-surface font-semibold">Phân NPK Đầu Trâu 20-20-15+TE</h3>
-                  <div className="flex items-center gap-2 mt-0.5 text-body-sm">
-                    <span className="font-bold text-[#B45309]">Tồn 18 / Ngưỡng 30 bao</span>
-                    <span className="text-outline">•</span>
-                    <span className="text-on-surface-variant">Kho B - Dãy 02 (Đang vụ bón đón đòng)</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-error-container text-on-error-container font-semibold">Cần nhập kho sớm</span>
+              </div>
+              <div className="p-space-base divide-y divide-outline-variant">
+                {/* Alert Item 1: Virtako 40WG */}
+                <div className="py-3 first:pt-0 last:pb-0 flex items-center justify-between gap-space-md">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FEE2E2] text-error flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[20px]" data-icon="report">report</span>
+                    </div>
+                    <div>
+                      <h3 className="font-title-md text-title-md text-on-surface font-semibold">Thuốc Trừ Sâu Virtako 40WG</h3>
+                      <div className="flex items-center gap-2 mt-0.5 text-body-sm">
+                        <span className="font-bold text-error">Tồn 0 / Ngưỡng 40 gói</span>
+                        <span className="text-outline">•</span>
+                        <span className="text-on-surface-variant">Kho D - Tủ 02 (Đang có đơn chờ)</span>
+                      </div>
+                    </div>
                   </div>
+                  <button
+                    className="shrink-0 px-3 py-1.5 rounded-lg bg-error hover:bg-[#b91c1c] text-on-error text-body-sm font-semibold transition-colors flex items-center gap-1 shadow-sm"
+                    type="button"
+                    onClick={() => showToast('Đã tạo đề nghị nhập khẩn: Thuốc Trừ Sâu Virtako 40WG')}
+                  >
+                    <span className="material-symbols-outlined text-[16px]" data-icon="add_shopping_cart">add_shopping_cart</span>
+                    <span>Tạo đề nghị nhập khẩn</span>
+                  </button>
+                </div>
+                {/* Alert Item 2: Beam 75WP */}
+                <div className="py-3 flex items-center justify-between gap-space-md">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FEF3C7] text-[#B45309] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[20px]" data-icon="warning">warning</span>
+                    </div>
+                    <div>
+                      <h3 className="font-title-md text-title-md text-on-surface font-semibold">Thuốc Trừ Bệnh Beam 75WP</h3>
+                      <div className="flex items-center gap-2 mt-0.5 text-body-sm">
+                        <span className="font-bold text-[#B45309]">Tồn 8 / Ngưỡng 50 gói</span>
+                        <span className="text-outline">•</span>
+                        <span className="text-on-surface-variant">Kho D - Tủ 03 (Đạt ngưỡng báo động)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
+                    type="button"
+                    onClick={() => showToast('Đã tạo đề nghị nhập: Thuốc Trừ Bệnh Beam 75WP')}
+                  >
+                    <span>Tạo đề nghị nhập</span>
+                  </button>
+                </div>
+                {/* Alert Item 3: Phân NPK Đầu Trâu */}
+                <div className="py-3 last:pb-0 flex items-center justify-between gap-space-md">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-[#FEF3C7] text-[#B45309] flex items-center justify-center shrink-0">
+                      <span className="material-symbols-outlined text-[20px]" data-icon="hourglass_top">hourglass_top</span>
+                    </div>
+                    <div>
+                      <h3 className="font-title-md text-title-md text-on-surface font-semibold">Phân NPK Đầu Trâu 20-20-15+TE</h3>
+                      <div className="flex items-center gap-2 mt-0.5 text-body-sm">
+                        <span className="font-bold text-[#B45309]">Tồn 14 / Ngưỡng 30 bao</span>
+                        <span className="text-outline">•</span>
+                        <span className="text-on-surface-variant">Kho B - Dãy 02 (Đang vụ bón đón đòng)</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
+                    type="button"
+                    onClick={() => showToast('Đã tạo đề nghị nhập: Phân NPK Đầu Trâu 20-20-15+TE')}
+                  >
+                    <span>Tạo đề nghị nhập</span>
+                  </button>
                 </div>
               </div>
+              <div className="p-space-sm bg-surface-container-low border-t border-outline-variant text-body-sm text-outline">
+                <span>Dữ liệu kích hoạt tự động theo hạn ngạch vụ mùa ĐBSCL</span>
+              </div>
+            </div>
+            {/* COLUMN 2: NHẬT KÝ XUẤT NHẬP KHO GẦN ĐÂY */}
+            <div className="lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col justify-between">
+              <div className="p-space-base border-b border-outline-variant flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[22px]" data-icon="receipt">receipt</span>
+                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Biến động kho gần đây</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('ledger')}
+                  className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+                >
+                  <span>Xem toàn bộ sổ thẻ kho</span>
+                  <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                </button>
+              </div>
+              <div className="p-space-base divide-y divide-outline-variant">
+                {stockMovements.slice(0, 4).map((m) => (
+                  <div key={m.id} className="py-2.5 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-2.5">
+                      <span
+                        className={`mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                          m.movementType === 'STOCK_IN'
+                            ? 'bg-[#DCFCE7] text-[#15803D]'
+                            : m.movementType === 'SALE'
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'bg-purple-50 text-purple-700'
+                        }`}
+                      >
+                        {m.movementType === 'STOCK_IN' ? 'NHẬP' : m.movementType === 'SALE' ? 'XUẤT' : 'ĐIỀU CHỈNH'}
+                      </span>
+                      <div className="flex flex-col">
+                        <span className="font-title-md text-title-md text-on-surface font-semibold">
+                          {m.quantityChange > 0 ? `+${m.quantityChange}` : m.quantityChange} {m.unit} {m.productName}
+                        </span>
+                        <span className="text-body-sm text-outline mt-0.5">
+                          {m.referenceId ? `${m.referenceId} • ` : ''}{m.note || m.createdBy}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-body-sm text-outline shrink-0 font-mono text-xs">{m.createdAt}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="p-space-sm bg-surface-container-low border-t border-outline-variant flex items-center justify-between text-body-sm text-outline">
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="verified">verified</span>
+                  Thẻ kho điện tử mã hóa an toàn theo chuẩn kiểm toán AgriSage
+                </span>
+                <button className="text-primary font-semibold hover:underline" type="button" onClick={() => window.print()}>In sổ kho</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2: SỔ BIẾN ĐỘNG THẺ KHO (APPEND-ONLY LEDGER - WF-05) */}
+      {activeTab === 'ledger' && (
+        <div className="space-y-space-lg">
+          {/* LEDGER 4 KPI CARDS */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-base">
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Tổng giao dịch thẻ kho</span>
+                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-on-surface">{totalMovementsCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">lượt ghi sổ</span></div>
+                <div className="mt-1 text-body-sm font-body-sm text-outline">Bảo toàn lịch sử append-only không xóa sửa</div>
+              </div>
+            </div>
+
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Lượt nhập kho (STOCK_IN)</span>
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="input">input</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-emerald-700">{stockInCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">lần nhập</span></div>
+                <div className="mt-1 text-body-sm font-body-sm text-outline">Tăng tồn kho từ nhà phân phối / đại lý</div>
+              </div>
+            </div>
+
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Lượt xuất bán (SALE)</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-700">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="shopping_cart_checkout">shopping_cart_checkout</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-blue-700">{saleCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">đơn xuất bán</span></div>
+                <div className="mt-1 text-body-sm font-body-sm text-outline">Khấu trừ tự động theo đơn hàng nông dân</div>
+              </div>
+            </div>
+
+            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                <span className="font-label-md text-label-md text-on-surface-variant font-medium">Điều chỉnh kiểm kê (ADJUSTMENT)</span>
+                <div className="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center text-purple-700">
+                  <span className="material-symbols-outlined text-[20px]" data-icon="fact_check">fact_check</span>
+                </div>
+              </div>
+              <div className="mt-3">
+                <div className="font-metric-num text-metric-num text-purple-700">{adjustmentCount} <span className="text-sm font-normal text-on-surface-variant font-body-sm">lần điều chỉnh</span></div>
+                <div className="mt-1 text-body-sm font-body-sm text-outline">Ghi nhận hư hỏng, hết hạn, hao hụt kiểm kê</div>
+              </div>
+            </div>
+          </div>
+
+          {/* AUDIT POLICY BANNER */}
+          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant flex items-start gap-3">
+            <span className="material-symbols-outlined text-primary text-[24px] shrink-0 mt-0.5" data-icon="security">security</span>
+            <div className="text-body-sm text-on-surface-variant leading-relaxed">
+              <span className="font-bold text-on-surface">Nguyên tắc sổ thẻ kho append-only (WF-05): </span>
+              Mọi thay đổi số lượng tồn kho (nhập hàng, xuất bán, hao hụt kiểm kê) đều được ghi nhận vĩnh viễn và không thể chỉnh sửa hay xóa bỏ.
+              Các biến động điều chỉnh kho bắt buộc phải gán một trong 4 mã lý do kiểm toán:
+              <code className="mx-1 px-1.5 py-0.5 rounded bg-surface-container text-xs font-mono font-bold text-on-surface">DAMAGED</code>,
+              <code className="mx-1 px-1.5 py-0.5 rounded bg-surface-container text-xs font-mono font-bold text-on-surface">EXPIRED</code>,
+              <code className="mx-1 px-1.5 py-0.5 rounded bg-surface-container text-xs font-mono font-bold text-on-surface">LOST</code>, hoặc
+              <code className="mx-1 px-1.5 py-0.5 rounded bg-surface-container text-xs font-mono font-bold text-on-surface">MANUAL_CORRECTION</code>.
+            </div>
+          </div>
+
+          {/* LEDGER SEARCH & FILTER BAR */}
+          <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-space-md">
+            <SearchInput
+              value={ledgerSearch}
+              onChange={setLedgerSearch}
+              placeholder="Tìm theo mã GD, SKU, sản phẩm, mã đơn, người lập..."
+              className="relative flex-1"
+            />
+            <div className="flex items-center gap-3">
+              <FilterSelect
+                value={ledgerTypeFilter}
+                onChange={setLedgerTypeFilter}
+                options={MOVEMENT_TYPE_OPTIONS}
+                className="relative min-w-[200px]"
+              />
               <button
-                className="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface text-body-sm font-semibold transition-colors flex items-center gap-1"
                 type="button"
-                onClick={() => showToast('Đã tạo đề nghị nhập: Phân NPK Đầu Trâu 20-20-15+TE')}
+                onClick={() => {
+                  setLedgerSearch('')
+                  setLedgerTypeFilter('ALL')
+                }}
+                className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1 shrink-0"
               >
-                <span>Tạo đề nghị nhập</span>
+                <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                <span>Đặt lại</span>
               </button>
             </div>
           </div>
-          <div className="p-space-sm bg-surface-container-low border-t border-outline-variant text-body-sm text-outline">
-            <span>Dữ liệu kích hoạt tự động theo hạn ngạch vụ mùa ĐBSCL</span>
+
+          {/* STOCK MOVEMENTS TABLE */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
+                    <th className="py-3 px-4 font-semibold" scope="col">Mã GD &amp; Thời gian</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">Sản phẩm &amp; SKU</th>
+                    <th className="py-3 px-3 font-semibold text-center" scope="col">Loại biến động</th>
+                    <th className="py-3 px-3 font-semibold text-right" scope="col">Biến động</th>
+                    <th className="py-3 px-3 font-semibold text-right" scope="col">Tồn sau GD</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">Lý do / Tham chiếu</th>
+                    <th className="py-3 px-3 font-semibold" scope="col">Người thực hiện</th>
+                    <th className="py-3 px-4 font-semibold" scope="col">Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant text-body-md">
+                  {paginatedMovements.length === 0 ? (
+                    <EmptyTableRow colSpan={8} message="Không có bản ghi biến động thẻ kho phù hợp." />
+                  ) : null}
+                  {paginatedMovements.map((m) => {
+                    const isPositive = m.quantityChange > 0
+                    return (
+                      <tr key={m.id} className="hover:bg-surface-container-low transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="flex flex-col">
+                            <span className="font-mono text-xs font-bold text-on-surface">{m.id}</span>
+                            <span className="text-[11px] text-outline mt-0.5">{m.createdAt}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col">
+                            <span className="font-title-md text-title-md font-semibold text-on-surface">{m.productName}</span>
+                            <span className="font-mono text-[11px] text-outline">{m.sku}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              m.movementType === 'STOCK_IN'
+                                ? 'bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]'
+                                : m.movementType === 'SALE'
+                                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                : 'bg-purple-50 text-purple-700 border border-purple-200'
+                            }`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full ${
+                                m.movementType === 'STOCK_IN'
+                                  ? 'bg-[#16A34A]'
+                                  : m.movementType === 'SALE'
+                                  ? 'bg-blue-600'
+                                  : 'bg-purple-600'
+                              }`}
+                            ></span>
+                            {m.movementType === 'STOCK_IN'
+                              ? 'Nhập kho'
+                              : m.movementType === 'SALE'
+                              ? 'Xuất bán'
+                              : 'Điều chỉnh'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <span
+                            className={`font-semibold tabular-nums ${
+                              isPositive ? 'text-emerald-700 font-bold' : 'text-on-surface'
+                            }`}
+                          >
+                            {isPositive ? `+${m.quantityChange}` : m.quantityChange} {m.unit}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right">
+                          <span className="font-mono text-sm font-bold text-on-surface tabular-nums">
+                            {m.balanceAfter} <span className="font-normal text-xs text-outline">{m.unit}</span>
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex flex-col gap-1">
+                            {m.reason ? (
+                              <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-900 border border-amber-300 w-fit">
+                                {m.reason}
+                              </span>
+                            ) : null}
+                            {m.referenceId ? (
+                              <span className="font-mono text-xs text-on-surface-variant font-medium">
+                                Ref: {m.referenceId}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-outline">-</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-xs text-on-surface font-medium">
+                          {m.createdBy}
+                        </td>
+                        <td className="py-3 px-4 text-xs text-outline max-w-[240px] truncate" title={m.note}>
+                          {m.note || '-'}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <Pagination
+              page={ledgerPage}
+              totalPages={ledgerTotalPages}
+              startIndex={ledgerStartIndex}
+              endIndex={ledgerEndIndex}
+              totalCount={ledgerTotalCount}
+              unitLabel="giao dịch thẻ kho"
+              goPrev={ledgerGoPrev}
+              goNext={ledgerGoNext}
+              setPage={setLedgerPage}
+            />
           </div>
         </div>
-        {/* COLUMN 2: NHẬT KÝ XUẤT NHẬP KHO GẦN ĐÂY */}
-        <div className="lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col justify-between">
-          <div className="p-space-base border-b border-outline-variant flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary text-[22px]" data-icon="receipt">receipt</span>
-            <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Nhật ký xuất nhập kho gần đây</h2>
-          </div>
-          <div className="p-space-base divide-y divide-outline-variant">
-            {/* Activity 1 */}
-            <div className="py-2.5 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#DCFCE7] text-[#15803D]">NHẬP</span>
-                <div className="flex flex-col">
-                  <span className="font-title-md text-title-md text-on-surface font-semibold">+50 bao Phân Urê Cà Mau</span>
-                  <span className="text-body-sm text-outline mt-0.5">Thực hiện: Kỹ sư Nguyễn Văn Khang (Kho B)</span>
-                </div>
-              </div>
-              <span className="text-body-sm text-outline shrink-0 font-mono">14:20 hôm nay</span>
-            </div>
-            {/* Activity 2 */}
-            <div className="py-2.5 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-[#B45309]">XUẤT</span>
-                <div className="flex flex-col">
-                  <span className="font-title-md text-title-md text-on-surface font-semibold">-15 bao Lúa Giống ST25</span>
-                  <span className="text-body-sm text-outline mt-0.5">Đơn DH-2024-884 (Hộ Bùi Tấn Lực) • KS. Minh</span>
-                </div>
-              </div>
-              <span className="text-body-sm text-outline shrink-0 font-mono">11:05 hôm nay</span>
-            </div>
-            {/* Activity 3 */}
-            <div className="py-2.5 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#FEF3C7] text-[#B45309]">XUẤT</span>
-                <div className="flex flex-col">
-                  <span className="font-title-md text-title-md text-on-surface font-semibold">-20 gói Thuốc Beam 75WP</span>
-                  <span className="text-body-sm text-outline mt-0.5">Đơn DH-2024-881 (Hộ Trần Văn Triệu) • KS. Minh</span>
-                </div>
-              </div>
-              <span className="text-body-sm text-outline shrink-0 font-mono">09:30 hôm nay</span>
-            </div>
-            {/* Activity 4 */}
-            <div className="py-2.5 last:pb-0 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-2.5">
-                <span className="mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-surface-container text-on-surface-variant">ĐIỀU CHỈNH</span>
-                <div className="flex flex-col">
-                  <span className="font-title-md text-title-md text-on-surface font-semibold">Khớp thẻ kho Sofit 300EC</span>
-                  <span className="text-body-sm text-outline mt-0.5">Kiểm đếm cuối ngày trạm • Thủ kho Lê Hoàng Nam</span>
-                </div>
-              </div>
-              <span className="text-body-sm text-outline shrink-0 font-mono">08:15 hôm nay</span>
-            </div>
-          </div>
-          <div className="p-space-sm bg-surface-container-low border-t border-outline-variant flex items-center justify-between text-body-sm text-outline">
-            <span className="flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px] text-emerald-600" data-icon="verified">verified</span>
-              Thẻ kho điện tử mã hóa an toàn theo tiêu chuẩn AgriSage
-            </span>
-            <button className="text-primary font-semibold hover:underline" type="button" onClick={() => window.print()}>In sổ kho</button>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* DETAIL MODAL: CHI TIẾT THẺ KHO */}
       <DetailModal open={selectedItem !== null} onClose={() => setSelectedId(null)}>
@@ -546,6 +977,24 @@ export default function InventoryPage() {
             <div className="text-body-sm text-on-surface-variant">
               Cập nhật gần nhất: <strong className="text-on-surface">{selectedItem.updatedAgo}</strong> bởi {selectedItem.updatedBy}
             </div>
+            <div className="pt-3 border-t border-outline-variant flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  const item = selectedItem
+                  setSelectedId(null)
+                  setAdjustItem(item)
+                  setAdjustChangeType('decrease')
+                  setAdjustAmount('1')
+                  setAdjustReason('DAMAGED')
+                  setAdjustNote('')
+                  setAdjustOpen(true)
+                }}
+                className="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-300 text-xs font-semibold hover:bg-amber-100"
+              >
+                Điều chỉnh kho mặt hàng này
+              </button>
+            </div>
           </div>
         ) : null}
       </DetailModal>
@@ -554,13 +1003,192 @@ export default function InventoryPage() {
       <FormModal
         open={restockOpen}
         onClose={() => setRestockOpen(false)}
-        title="Nhập kho"
+        title="Nhập kho vật tư Hai Thắng"
         fields={restockFields}
         values={restockForm}
         onChange={updateRestockForm}
         onSubmit={handleConfirmRestock}
         submitLabel="Xác nhận nhập kho"
       />
+
+      {/* MODAL: ĐIỀU CHỈNH KHO KIỂM KÊ (WF-05 AUDITABLE ADJUSTMENT) */}
+      {adjustOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-2xl max-w-lg w-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[20px]">tune</span>
+                </div>
+                <div>
+                  <h3 className="font-title-lg text-title-lg font-bold text-on-surface">Điều chỉnh tồn kho kiểm kê</h3>
+                  <p className="text-xs text-outline">Ghi sổ thẻ kho append-only theo quy chuẩn WF-05</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAdjustOpen(false)}
+                className="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-outline hover:text-on-surface transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
+              {/* Product Selection */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-outline mb-1.5">
+                  Sản phẩm điều chỉnh <span className="text-error">*</span>
+                </label>
+                <select
+                  value={adjustItem?.id ?? inventoryItems[0]?.id ?? ''}
+                  onChange={(e) => {
+                    const found = inventoryItems.find((i) => i.id === e.target.value) ?? null
+                    setAdjustItem(found)
+                  }}
+                  className="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary"
+                >
+                  {inventoryItems.map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name} ({item.sku}) - Hiện tồn: {item.stockQuantity}
+                    </option>
+                  ))}
+                </select>
+                {adjustItem && (
+                  <p className="mt-1 text-xs text-outline">
+                    Hiện tại kho ghi nhận: <strong className="text-on-surface">{adjustItem.stockQuantity}</strong>
+                  </p>
+                )}
+              </div>
+
+              {/* Adjustment Direction */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-outline mb-1.5">
+                  Hình thức điều chỉnh <span className="text-error">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setAdjustChangeType('decrease')}
+                    className={`px-3 py-2.5 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
+                      adjustChangeType === 'decrease'
+                        ? 'border-error bg-error-container/40 text-error'
+                        : 'border-outline-variant bg-surface-container-lowest text-outline hover:bg-surface-container'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">remove_circle</span>
+                    <span>Giảm tồn (Hao hụt/Hỏng)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAdjustChangeType('increase')}
+                    className={`px-3 py-2.5 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
+                      adjustChangeType === 'increase'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
+                        : 'border-outline-variant bg-surface-container-lowest text-outline hover:bg-surface-container'
+                    }`}
+                  >
+                    <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                    <span>Tăng tồn (Dôi dư kiểm đếm)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Quantity Input */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-outline mb-1.5">
+                  Số lượng thay đổi <span className="text-error">*</span>
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="1"
+                    value={adjustAmount}
+                    onChange={(e) => setAdjustAmount(e.target.value)}
+                    placeholder="Nhập số lượng"
+                    className="flex-1 px-3 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary font-semibold"
+                  />
+                  <span className="text-xs font-semibold text-outline px-3 py-2 bg-surface-container-low rounded-xl border border-outline-variant">
+                    {adjustItem?.stockQuantity.replace(/^[0-9.,\s]+/, '').trim() || 'đơn vị'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Mandatory Reason Select (WF-05 / ERD physical specification) */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-outline mb-1.5">
+                  Lý do kiểm kê bắt buộc (Audit Reason) <span className="text-error">*</span>
+                </label>
+                <select
+                  value={adjustReason}
+                  onChange={(e) => setAdjustReason(e.target.value as StockAdjustmentReason)}
+                  className="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary"
+                >
+                  {ADJUST_REASONS.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-outline">
+                  {ADJUST_REASONS.find((r) => r.value === adjustReason)?.desc}
+                </p>
+              </div>
+
+              {/* Note / Audit Trail */}
+              <div>
+                <label className="block text-xs font-semibold uppercase text-outline mb-1.5">
+                  Ghi chú biên bản kiểm kê / Vị trí bao bì
+                </label>
+                <textarea
+                  rows={2}
+                  value={adjustNote}
+                  onChange={(e) => setAdjustNote(e.target.value)}
+                  placeholder="Ví dụ: Rách vỏ do vận chuyển ghe từ Cần Thơ, biên bản kiểm đếm BB-042..."
+                  className="w-full px-3 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface text-body-md focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+                />
+              </div>
+
+              {/* Calculation Preview Banner */}
+              {adjustItem && (
+                <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-between text-xs">
+                  <span className="text-outline">Dự tính tồn mới sau ghi sổ:</span>
+                  <span className="font-bold text-on-surface font-mono text-sm">
+                    {Math.max(
+                      0,
+                      (Number.parseInt(adjustItem.stockQuantity, 10) || 0) +
+                        (adjustChangeType === 'decrease'
+                          ? -(Number.parseInt(adjustAmount, 10) || 0)
+                          : Number.parseInt(adjustAmount, 10) || 0),
+                    )}{' '}
+                    {adjustItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-outline-variant bg-surface-container-low flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setAdjustOpen(false)}
+                className="px-4 py-2 rounded-xl border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container text-body-sm font-semibold transition-colors"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmAdjust}
+                className="px-5 py-2 rounded-xl bg-primary hover:bg-[#17482D] text-on-primary text-body-sm font-bold transition-colors shadow-sm"
+              >
+                Xác nhận điều chỉnh &amp; Ghi sổ thẻ kho
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

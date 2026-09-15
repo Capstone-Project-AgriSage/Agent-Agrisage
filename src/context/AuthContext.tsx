@@ -5,9 +5,11 @@ const STORAGE_KEY = 'agrisage_agent_auth'
 
 const DEFAULT_USER: AgentUser = {
   name: 'Nguyễn Văn Minh',
-  role: 'Đại lý',
+  role: 'Đại lý & Thẩm định AI',
   initials: 'NM',
-  hub: 'Đại lý vật tư nông nghiệp',
+  hub: 'Đại lý Vật tư Nông nghiệp Hai Thắng (Thới Lai)',
+  can_review_ai: true,
+  storeId: 'STORE-HT-01',
 }
 
 interface AuthContextValue {

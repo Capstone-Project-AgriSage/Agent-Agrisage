@@ -5,12 +5,12 @@ export const contactRequests: ContactRequest[] = [
     id: 'YC-3021',
     senderName: 'Nguyễn Văn Hùng',
     senderPhone: '0918.234.567',
-    senderArea: 'Xã Đinh Lạc, Huyện Di Linh, Lâm Đồng',
+    senderArea: 'Ấp Thới Thuận, TT. Thới Lai, Cần Thơ',
     channel: 'Web',
     channelIcon: 'language',
     requestType: 'Kỹ thuật canh tác',
     message:
-      'Cây cà phê nhà tôi xuất hiện lá vàng và rụng nhiều ở khu vực gần suối, đã bón NPK cách đây 2 tuần nhưng chưa cải thiện. Nhờ kỹ sư tư vấn giúp có phải bệnh vàng lá thối rễ không và hướng xử lý.',
+      'Ruộng lúa OM5451 nhà tôi giai đoạn 35 ngày xuất hiện vết chấm kim màu nâu đỏ ở chóp lá, nghi là đạo ôn lá. Nhờ kỹ sư đại lý Hai Thắng xem ảnh chẩn đoán và tư vấn thuốc xịt dập dịch.',
     submittedAgo: '12 phút trước',
     statusBadge: { label: 'Chưa xử lý', className: 'bg-amber-100 text-amber-800 border-amber-300', dotClassName: 'bg-amber-500' },
     actions: [
@@ -90,7 +90,7 @@ export const contactRequests: ContactRequest[] = [
     channel: 'Hotline',
     channelIcon: 'call',
     requestType: 'Đặt vật tư',
-    message: 'Chị cần đặt thêm 30 cây giống Sầu Riêng Ri6 ghép bầu, đại lý còn hàng loại đẹp không?',
+    message: 'Chị cần đặt thêm 20 bao Lúa Giống Xác Nhận ST25 Chuẩn F1 cho vụ Đông Xuân tới, đại lý Hai Thắng còn hàng giao bờ kênh không?',
     submittedAgo: 'Hôm qua 16:20',
     statusBadge: { label: 'Đã xử lý', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
     assignedTo: 'Nguyễn Văn Minh (Đại lý)',

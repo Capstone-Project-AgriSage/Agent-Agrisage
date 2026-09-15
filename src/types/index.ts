@@ -5,6 +5,64 @@ export interface AgentUser {
   role: string
   initials: string
   hub: string
+  can_review_ai: boolean
+  storeId?: string
+}
+
+export interface AiPolicyConfig {
+  modelVersion: string
+  confidenceHigh: number
+  confidenceMed: number
+  rejectionThreshold: number
+  requiresHumanReview: boolean
+}
+
+export type StockAdjustmentReason = 'DAMAGED' | 'EXPIRED' | 'LOST' | 'MANUAL_CORRECTION'
+
+export interface StockMovement {
+  id: string
+  productId: string
+  productName: string
+  sku: string
+  movementType: 'STOCK_IN' | 'SALE' | 'ADJUSTMENT'
+  quantityChange: number
+  balanceAfter: number
+  unit: string
+  reason?: StockAdjustmentReason
+  referenceId?: string
+  createdAt: string
+  createdBy: string
+  note?: string
+}
+
+export interface CreditRequest {
+  id: string
+  orderId: string
+  orderCode: string
+  farmerId: string
+  farmerName: string
+  farmerPhone: string
+  requestedAmount: number
+  seasonalLimit: number
+  usedLimit: number
+  remainingLimit: number
+  cropSeason: string
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED'
+  createdAt: string
+  reviewerNote?: string
+}
+
+export interface DebtPaymentRequest {
+  id: string
+  debtId: string
+  orderCode: string
+  farmerName: string
+  farmerPhone: string
+  amount: number
+  paymentMethod: 'VIETQR' | 'CASH'
+  status: 'PENDING_AGENT_CONFIRMATION' | 'CONFIRMED' | 'REJECTED'
+  createdAt: string
+  note?: string
 }
 
 export interface NavItem {
@@ -431,4 +489,36 @@ export interface ContactRequest {
   statusBadge: { label: string; className: string; dotClassName: string }
   assignedTo?: string
   actions: RowAction[]
+}
+
+export interface CreditRequest {
+  id: string
+  orderId: string
+  orderCode: string
+  farmerId: string
+  farmerName: string
+  farmerPhone: string
+  requestedAmount: number
+  seasonalLimit: number
+  usedLimit: number
+  remainingLimit: number
+  cropSeason: string
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED'
+  createdAt: string
+  reviewerNote?: string
+  reviewedAt?: string
+}
+
+export interface DebtPaymentRequest {
+  id: string
+  debtId: string
+  orderCode: string
+  farmerName: string
+  farmerPhone: string
+  amount: number
+  paymentMethod: 'VIETQR' | 'CASH'
+  status: 'PENDING_AGENT_CONFIRMATION' | 'CONFIRMED' | 'REJECTED'
+  createdAt: string
+  note?: string
+  confirmedAt?: string
 }

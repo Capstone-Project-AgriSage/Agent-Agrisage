@@ -32,8 +32,8 @@ export default function DashboardPage() {
   const cashRevenue = ALL_ORDERS.filter((o) => o.paymentBadge.label === 'Tiền mặt tại kho').reduce((sum, o) => sum + parseVnd(o.total), 0)
   const debtRevenue = ALL_ORDERS.filter((o) => o.paymentBadge.label === 'Gối nợ vụ mùa').reduce((sum, o) => sum + parseVnd(o.total), 0)
 
-  const pendingReconciliation = ALL_PAYMENTS.filter((p) => p.statusBadge.label === 'Chờ đối soát')
-  const pendingReconciliationAmount = pendingReconciliation.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const pendingVietQrPayments = ALL_PAYMENTS.filter((p) => p.methodLabel.includes('VietQR') && p.statusBadge.label !== 'Đã thanh toán')
+  const pendingVietQrAmount = pendingVietQrPayments.reduce((sum, p) => sum + parseVnd(p.totalAmount), 0)
 
   const debtHouseholds = ALL_DEBT_CUSTOMERS.filter((c) => parseVnd(c.remaining) > 0)
   const totalDebtRemaining = debtHouseholds.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
@@ -93,21 +93,21 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* KPI 3: Chờ đối soát */}
+        {/* KPI 3: VietQR Chờ Khớp */}
         <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
           <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Chờ Đối Soát</span>
+            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">VietQR Chờ Khớp</span>
             <span className="w-7 h-7 rounded-lg bg-secondary-fixed/50 flex items-center justify-center text-secondary flex-shrink-0">
               <span className="material-symbols-outlined text-[16px]" data-icon="qr_code_2">qr_code_2</span>
             </span>
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{pendingReconciliation.length}</span>
+              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{pendingVietQrPayments.length}</span>
               <span className="text-xs text-on-surface-variant font-medium">giao dịch</span>
             </div>
             <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between items-center">
-              <span>Giá trị: <strong className="text-on-surface font-semibold tabular-nums">{formatVnd(pendingReconciliationAmount)}</strong></span>
+              <span>Chờ duyệt: <strong className="text-on-surface font-semibold tabular-nums">{formatVnd(pendingVietQrAmount)}</strong></span>
             </div>
           </div>
         </div>

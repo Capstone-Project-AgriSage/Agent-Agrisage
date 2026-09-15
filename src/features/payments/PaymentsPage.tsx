@@ -74,11 +74,21 @@ export default function PaymentsPage() {
     setPayments((prev) =>
       prev.map((p) =>
         p.id === id
-          ? { ...p, statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' } }
+          ? {
+              ...p,
+              paidAmount: p.totalAmount,
+              paidAmountClassName: 'text-emerald-700',
+              remainingAmount: '0 đ',
+              remainingAmountClassName: 'text-outline',
+              statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
+              collectedLabel: `${p.totalAmount} (100%)`,
+              progressWidth: '100%',
+              hasRemaining: false,
+            }
           : p,
       ),
     )
-    showToast(`Đã đối soát giao dịch #${id}`)
+    showToast(`Đã đối soát khớp tiền Vietcombank STK 19006828999 cho giao dịch #${id}`)
   }
 
   const handlePaymentAction = (id: string, label: string) => {
@@ -216,9 +226,9 @@ export default function PaymentsPage() {
   const partialPayments = payments.filter((p) => p.statusBadge.label === 'Thanh toán 1 phần')
   const partialPaidAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
   const partialRemainingAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.remainingAmount), 0)
-  const paidCount = payments.filter((p) => p.statusBadge.label === 'Đã thanh toán').length
-  const codPendingPayments = payments.filter((p) => p.statusBadge.label === 'Chờ đối soát')
-  const codPendingAmount = codPendingPayments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
+  const paidCount = payments.filter((p) => p.statusBadge.label === 'Đã thanh toán' || p.statusBadge.label === 'Đã đối soát').length
+  const vietqrPendingPayments = payments.filter((p) => p.statusBadge.label === 'Chờ đối soát' || p.methodLabel.includes('VietQR Chờ Khớp'))
+  const vietqrPendingAmount = vietqrPendingPayments.reduce((sum, p) => sum + parseVnd(p.remainingAmount), 0)
 
   return (
     <>
@@ -303,15 +313,15 @@ export default function PaymentsPage() {
             </div>
           </div>
         </div>
-        <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
+        <div className="bg-surface-container-lowest border border-amber-300 p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-amber-400 transition-colors bg-amber-50/20">
           <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-outline font-medium">COD chờ đối soát</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 ring-4 ring-indigo-100"></span>
+            <span className="font-label-md text-label-md text-amber-900 font-bold">VietQR chờ đối soát</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100 animate-pulse"></span>
           </div>
           <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-indigo-900 tracking-tight font-bold">{formatVnd(codPendingAmount)}</div>
-            <div className="text-[12px] text-indigo-700 font-medium mt-1 truncate">
-              {codPendingPayments.length} giao dịch COD cần nộp quỹ
+            <div className="font-metric-num text-metric-num text-amber-900 tracking-tight font-bold">{formatVnd(vietqrPendingAmount)}</div>
+            <div className="text-[12px] text-amber-700 font-medium mt-1 truncate">
+              {vietqrPendingPayments.length} chuyển khoản VCB cần khớp lệnh
             </div>
           </div>
         </div>

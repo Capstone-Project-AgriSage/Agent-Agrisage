@@ -7,14 +7,12 @@ import DashboardPage from './features/dashboard/DashboardPage'
 import ProductsPage from './features/products/ProductsPage'
 import InventoryPage from './features/inventory/InventoryPage'
 import OrdersPage from './features/orders/OrdersPage'
-import DeliveryPage from './features/delivery/DeliveryPage'
 import PaymentsPage from './features/payments/PaymentsPage'
 import DebtsPage from './features/debts/DebtsPage'
 import AiRecommendationsPage from './features/ai-recommendations/AiRecommendationsPage'
 import FarmersPage from './features/farmers/FarmersPage'
 import ActivityLogPage from './features/activity-log/ActivityLogPage'
 import SettingsPage from './features/settings/SettingsPage'
-import ContactPage from './features/contact/ContactPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -30,14 +28,12 @@ export const router = createBrowserRouter([
           { path: 'products', element: <ProductsPage /> },
           { path: 'inventory', element: <InventoryPage /> },
           { path: 'orders', element: <OrdersPage /> },
-          { path: 'delivery', element: <DeliveryPage /> },
           { path: 'payments', element: <PaymentsPage /> },
           { path: 'debts', element: <DebtsPage /> },
           { path: 'ai-recommendations', element: <AiRecommendationsPage /> },
           { path: 'farmers', element: <FarmersPage /> },
           { path: 'activity-log', element: <ActivityLogPage /> },
           { path: 'settings', element: <SettingsPage /> },
-          { path: 'contact', element: <ContactPage /> },
         ],
       },
     ],

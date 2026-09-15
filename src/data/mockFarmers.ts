@@ -343,7 +343,7 @@ export const farmers: Farmer[] = [
       riskLabel: 'Đại lý AgriSage (Nguyễn Văn Minh)',
     },
     recentOrders: [
-      { id: '#DH-2024-1076', date: 'Hôm qua', note: 'Giống Sầu Riêng Ri6 Ghép Bầu', amount: '2.550.000 đ', statusLabel: 'Hoàn thành', statusClassName: 'bg-emerald-100 text-emerald-800' },
+      { id: '#DH-2024-1076', date: 'Hôm qua', note: 'Lúa Giống Xác Nhận ST25 Chuẩn F1', amount: '2.550.000 đ', statusLabel: 'Hoàn thành', statusClassName: 'bg-emerald-100 text-emerald-800' },
     ],
     aiLogs: [],
   },
