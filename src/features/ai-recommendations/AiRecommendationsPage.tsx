@@ -369,12 +369,7 @@ export default function AiRecommendationsPage() {
                         </span>
                       </td>
                       <td className="py-3 px-3">
-                        <StatusBadge
-                          label={item.statusBadge.label}
-                          className={item.statusBadge.className}
-                          dotClassName={item.statusBadge.dotClassName}
-                          minWidthClassName="min-w-[158px]"
-                        />
+                        <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[158px]" />
                       </td>
                       <td className="py-3 px-3 text-right">
                         {item.actionsMode === 'menu' ? (
@@ -430,7 +425,7 @@ export default function AiRecommendationsPage() {
               <span className="font-title-md text-title-md text-on-surface font-semibold">Chi tiết đánh giá gợi ý AI</span>
             </div>
             <div className="flex flex-col items-end gap-0.5">
-              <StatusBadge label={selected.panelBadge.label} className={selected.panelBadge.className} dotClassName={selected.panelBadge.dotClassName} />
+              <StatusBadge label={selected.panelBadge.label} className={selected.panelBadge.className} />
               {selected.rejectReasonLabel ? (
                 <span className="text-[11px] text-outline">Lý do: {selected.rejectReasonLabel}</span>
               ) : null}

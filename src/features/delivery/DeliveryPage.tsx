@@ -436,13 +436,7 @@ export default function DeliveryPage() {
                         </span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <StatusBadge
-                          label={trip.statusBadge.label}
-                          className={trip.statusBadge.className}
-                          dotClassName={trip.statusBadge.dotClassName}
-                          dotPulseClassName={trip.statusBadge.dotPulseClassName}
-                          minWidthClassName="min-w-[144px]"
-                        />
+                        <StatusBadge label={trip.statusBadge.label} className={trip.statusBadge.className} minWidthClassName="min-w-[144px]" />
                         {trip.failureNote ? (
                           <div className="text-[11px] text-[#DC2626] mt-0.5 font-medium">{trip.failureNote}</div>
                         ) : null}
@@ -518,10 +512,7 @@ export default function DeliveryPage() {
           <div className="p-4 bg-[#FCFDFE]">
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[11px] font-bold tracking-wider uppercase text-[#64748B]">Chi tiết chuyến giao</span>
-              <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border ${selectedTrip.statusBadge.className}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${selectedTrip.statusBadge.dotClassName} animate-pulse`}></span>
-                {selectedTrip.statusBadge.label}
-              </span>
+              <StatusBadge label={selectedTrip.statusBadge.label} className={selectedTrip.statusBadge.className} />
             </div>
             <div className="flex items-baseline justify-between">
               <h2 className="font-headline-sm text-headline-sm font-bold text-[#0F172A]">#{selectedTrip.id}</h2>

@@ -425,7 +425,7 @@ export default function ProductsPage() {
               <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${selectedProduct.categoryClassName}`}>
                 {selectedProduct.categoryLabel}
               </span>
-              <StatusBadge label={selectedProduct.stockLabel} className={selectedProduct.stockClassName} dotClassName={selectedProduct.stockDotClassName} />
+              <StatusBadge label={selectedProduct.stockLabel} className={selectedProduct.stockClassName} />
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
               <span className="text-body-sm text-outline">Giá bán niêm yết</span>

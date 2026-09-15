@@ -326,12 +326,7 @@ export default function DebtsPage() {
                         <td className={`py-3 px-3 text-center font-mono ${customer.dueDateClassName}`}>{customer.dueDate}</td>
                         <td className={`py-3 px-2 text-center ${customer.overdueDaysClassName}`}>{customer.overdueDays}</td>
                         <td className="py-3 px-3 text-center">
-                          <StatusBadge
-                            label={customer.statusBadge.label}
-                            className={customer.statusBadge.className}
-                            dotClassName={customer.statusBadge.dotClassName}
-                            minWidthClassName="min-w-[128px]"
-                          />
+                          <StatusBadge label={customer.statusBadge.label} className={customer.statusBadge.className} minWidthClassName="min-w-[128px]" />
                         </td>
                         <td className="py-3 px-3 text-center">
                           <div className="flex items-center justify-center">

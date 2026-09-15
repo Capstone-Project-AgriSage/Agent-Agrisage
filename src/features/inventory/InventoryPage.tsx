@@ -330,12 +330,7 @@ export default function InventoryPage() {
                       </div>
                     </td>
                     <td className="py-3 px-3 text-center">
-                      <StatusBadge
-                        label={item.stockLabel}
-                        className={item.stockClassName}
-                        dotClassName={item.stockDotClassName}
-                        minWidthClassName="min-w-[114px]"
-                      />
+                      <StatusBadge label={item.stockLabel} className={item.stockClassName} minWidthClassName="min-w-[114px]" />
                     </td>
                     <td className="py-3 px-3">
                       <div className="flex flex-col text-[11px]">
@@ -533,7 +528,7 @@ export default function InventoryPage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[12px] text-on-surface-variant font-medium px-2 py-0.5 bg-surface-container-low rounded">{selectedItem.sku}</span>
               <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{selectedItem.categoryLabel}</span>
-              <StatusBadge label={selectedItem.stockLabel} className={selectedItem.stockClassName} dotClassName={selectedItem.stockDotClassName} />
+              <StatusBadge label={selectedItem.stockLabel} className={selectedItem.stockClassName} />
             </div>
             <div className="pt-2 border-t border-outline-variant">
               <div className="flex items-center justify-between text-body-sm text-outline mb-1">

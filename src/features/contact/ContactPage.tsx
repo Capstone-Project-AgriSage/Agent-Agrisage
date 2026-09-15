@@ -218,12 +218,7 @@ export default function ContactPage() {
                     </td>
                     <td className="py-3 px-3 text-body-sm text-outline whitespace-nowrap">{request.submittedAgo}</td>
                     <td className="py-3 px-3 text-center">
-                      <StatusBadge
-                        label={request.statusBadge.label}
-                        className={request.statusBadge.className}
-                        dotClassName={request.statusBadge.dotClassName}
-                        minWidthClassName="min-w-[105px]"
-                      />
+                      <StatusBadge label={request.statusBadge.label} className={request.statusBadge.className} minWidthClassName="min-w-[105px]" />
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end">
@@ -261,10 +256,7 @@ export default function ContactPage() {
           <div className="p-space-md space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-mono font-bold text-primary">#{selected.id}</span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold border ${selected.statusBadge.className}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${selected.statusBadge.dotClassName}`}></span>
-                {selected.statusBadge.label}
-              </span>
+              <StatusBadge label={selected.statusBadge.label} className={selected.statusBadge.className} />
             </div>
             <div>
               <h3 className="font-title-md text-title-md font-bold text-on-surface">{selected.senderName}</h3>

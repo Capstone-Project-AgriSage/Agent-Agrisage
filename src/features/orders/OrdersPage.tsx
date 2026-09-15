@@ -438,12 +438,7 @@ export default function OrdersPage() {
                         <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[150px]" />
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge
-                          label={order.statusBadge.label}
-                          className={order.statusBadge.className}
-                          dotPulseClassName={order.statusBadge.pulse ? 'animate-pulse' : ''}
-                          minWidthClassName="min-w-[120px]"
-                        />
+                        <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[120px]" />
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">

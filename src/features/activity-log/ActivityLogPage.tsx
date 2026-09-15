@@ -276,12 +276,7 @@ export default function ActivityLogPage() {
                           <span className="text-[11px] text-outline">{entry.descriptionNote}</span>
                         </td>
                         <td className="py-3 px-2 whitespace-nowrap text-center">
-                          <StatusBadge
-                            label={entry.resultLabel}
-                            className={entry.resultClassName}
-                            dotClassName={entry.resultDotClassName}
-                            minWidthClassName="min-w-[105px]"
-                          />
+                          <StatusBadge label={entry.resultLabel} className={entry.resultClassName} minWidthClassName="min-w-[105px]" />
                         </td>
                         <td className="py-3 px-3 whitespace-nowrap text-right">
                           <button
@@ -355,7 +350,7 @@ export default function ActivityLogPage() {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-mono font-bold text-title-md text-on-surface">#{selected.id}</span>
-                <StatusBadge label={selected.resultLabel} className={selected.resultClassName} dotClassName={selected.resultDotClassName} />
+                <StatusBadge label={selected.resultLabel} className={selected.resultClassName} />
               </div>
               <p className="font-body-sm text-body-sm text-on-surface-variant">
                 Thao tác: <span className="font-semibold text-primary">{selected.actionTypeLabel}</span>

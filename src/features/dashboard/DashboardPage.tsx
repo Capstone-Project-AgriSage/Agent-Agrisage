@@ -226,13 +226,7 @@ export default function DashboardPage() {
                         </td>
                         <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">{order.total}</td>
                         <td className="py-2 px-3 text-center">
-                          <StatusBadge
-                            label={order.statusBadge.label}
-                            className={order.statusBadge.className}
-                            showDot={false}
-                            size="xs"
-                            minWidthClassName="min-w-[96px]"
-                          />
+                          <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} size="xs" minWidthClassName="min-w-[96px]" />
                         </td>
                         <td className="py-2 px-3 text-right">
                           <div className="flex items-center justify-end">
@@ -286,7 +280,7 @@ export default function DashboardPage() {
               ) : null}
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-outline-variant">
-              <StatusBadge label={selectedOrder.statusBadge.label} className={selectedOrder.statusBadge.className} showDot={false} />
+              <StatusBadge label={selectedOrder.statusBadge.label} className={selectedOrder.statusBadge.className} />
               <span className="font-bold text-on-surface tabular-nums">{selectedOrder.total}</span>
             </div>
           </div>

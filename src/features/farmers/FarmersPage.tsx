@@ -293,12 +293,7 @@ export default function FarmersPage() {
                         <span className={`text-[11px] ${farmer.activityNoteClassName}`}>{farmer.activityNote}</span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <StatusBadge
-                          label={farmer.statusBadge.label}
-                          className={farmer.statusBadge.className}
-                          dotClassName={farmer.statusBadge.dotClassName}
-                          minWidthClassName="min-w-[135px]"
-                        />
+                        <StatusBadge label={farmer.statusBadge.label} className={farmer.statusBadge.className} minWidthClassName="min-w-[135px]" />
                       </td>
                       <td className="py-3 px-3 text-right">
                         <button
@@ -355,11 +350,7 @@ export default function FarmersPage() {
                 </div>
               </div>
             </div>
-            <StatusBadge
-              label={selectedFarmer.statusBadge.label}
-              className={selectedFarmer.statusBadge.className}
-              dotClassName={selectedFarmer.statusBadge.dotClassName}
-            />
+            <StatusBadge label={selectedFarmer.statusBadge.label} className={selectedFarmer.statusBadge.className} />
           </div>
           {/* Panel Scrollable Content Body */}
           <div className="p-3.5 space-y-4 overflow-y-auto custom-scrollbar flex-1 text-xs">

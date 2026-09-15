@@ -412,12 +412,7 @@ export default function PaymentsPage() {
                           </span>
                         </td>
                         <td className="py-3 px-space-md text-center whitespace-nowrap">
-                          <StatusBadge
-                            label={payment.statusBadge.label}
-                            className={payment.statusBadge.className}
-                            dotClassName={payment.statusBadge.dotClassName}
-                            minWidthClassName="min-w-[165px]"
-                          />
+                          <StatusBadge label={payment.statusBadge.label} className={payment.statusBadge.className} minWidthClassName="min-w-[165px]" />
                         </td>
                         <td className="py-3 px-space-md text-outline whitespace-nowrap text-[12px] font-mono">{payment.time}</td>
                         <td className="py-3 px-space-md text-center whitespace-nowrap">
