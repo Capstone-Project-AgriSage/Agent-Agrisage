@@ -8,7 +8,6 @@ import { usePagination } from '../../hooks/usePagination'
 import { useToast } from '../../context/ToastContext'
 import { orders as ALL_ORDERS } from '../../data/mockOrders'
 import { debtCustomers as ALL_DEBT_CUSTOMERS } from '../../data/mockDebts'
-import { inventoryItems as ALL_INVENTORY } from '../../data/mockInventory'
 import { payments as ALL_PAYMENTS } from '../../data/mockPayments'
 import { parseVnd, formatVnd } from '../../utils/money'
 import type { Order } from '../../types'
@@ -40,9 +39,6 @@ export default function DashboardPage() {
   const totalDebtRemaining = debtHouseholds.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const dueTodayHouseholds = ALL_DEBT_CUSTOMERS.filter((c) => c.statusBadge.label === 'Đến hạn').length
 
-  const lowStockItems = ALL_INVENTORY.filter((i) => i.stockLabel === 'Sắp hết')
-  const lowStockNames = lowStockItems.slice(0, 2).map((i) => i.name).join(' & ')
-
   const handleOrderAction = (order: Order, label: string) => {
     if (label === 'Xem' || label === 'Xem chi tiết') {
       setSelectedOrder(order)
@@ -53,210 +49,186 @@ export default function DashboardPage() {
 
   return (
     <>
-      {/* 1. TOP METRICS ROW (6 Key Operational Agronomic & Sales KPIs) */}
-      <section aria-label="Key Operational Performance Indicators" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+      {/* 1. TOP METRICS ROW: 4 Core Executive KPIs */}
+      <section aria-label="Key Performance Indicators" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1: Đơn hàng hôm nay */}
-        <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Đơn Hàng Hôm Nay</span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]" data-icon="receipt_long">receipt_long</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs uppercase tracking-wider font-bold">Đơn Hàng Hôm Nay</span>
+            <span className="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px]">receipt_long</span>
             </span>
           </div>
-          <div className="mt-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{ALL_ORDERS.length}</span>
-              <span className="text-xs text-on-surface-variant font-medium">đơn</span>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{ALL_ORDERS.length}</span>
+              <span className="text-xs text-slate-500 font-medium">đơn hàng</span>
             </div>
-            <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex items-center justify-between">
-              <span className="font-medium text-on-surface">{tabCounts[4]} hoàn thành</span>
-              <span className="text-outline tabular-nums">{tabCounts[2]} đang xử lý</span>
+            <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+              <span className="text-emerald-700 font-medium">{tabCounts[4]} hoàn thành</span>
+              <span>{tabCounts[2]} đang giao/xử lý</span>
             </div>
           </div>
         </div>
 
         {/* KPI 2: Doanh thu hôm nay */}
-        <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Doanh Thu Hôm Nay</span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-primary flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]" data-icon="payments">payments</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs uppercase tracking-wider font-bold">Doanh Thu Hôm Nay</span>
+            <span className="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px]">payments</span>
             </span>
           </div>
-          <div className="mt-2">
+          <div className="mt-3">
             <div className="flex items-baseline">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{formatVnd(totalRevenue)}</span>
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{formatVnd(totalRevenue)}</span>
             </div>
-            <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between gap-1">
-              <span>Tiền mặt: <strong className="text-[#15803D] font-semibold tabular-nums">{formatVnd(cashRevenue)}</strong></span>
-              <span>Gối nợ: <strong className="text-secondary font-semibold tabular-nums">{formatVnd(debtRevenue)}</strong></span>
+            <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+              <span>Tiền mặt: <strong className="text-emerald-700">{formatVnd(cashRevenue)}</strong></span>
+              <span>Gối nợ: <strong className="text-slate-700">{formatVnd(debtRevenue)}</strong></span>
             </div>
           </div>
         </div>
 
         {/* KPI 3: VietQR Chờ Khớp */}
-        <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">VietQR Chờ Khớp</span>
-            <span className="w-7 h-7 rounded-lg bg-secondary-fixed/50 flex items-center justify-center text-secondary flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]" data-icon="qr_code_2">qr_code_2</span>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs uppercase tracking-wider font-bold">VietQR Chờ Khớp</span>
+            <span className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px]">qr_code_2</span>
             </span>
           </div>
-          <div className="mt-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-on-surface tabular-nums tracking-tight leading-none">{pendingVietQrPayments.length}</span>
-              <span className="text-xs text-on-surface-variant font-medium">giao dịch</span>
+          <div className="mt-3">
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{pendingVietQrPayments.length}</span>
+              <span className="text-xs text-slate-500 font-medium">chờ xác nhận</span>
             </div>
-            <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between items-center">
-              <span>Chờ duyệt: <strong className="text-on-surface font-semibold tabular-nums">{formatVnd(pendingVietQrAmount)}</strong></span>
+            <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+              <span>Chờ duyệt: <strong className="text-slate-900 font-medium">{formatVnd(pendingVietQrAmount)}</strong></span>
             </div>
           </div>
         </div>
 
-        {/* KPI 4: Công nợ chưa thu */}
-        <div className="bg-white rounded-lg border border-outline-variant/60 p-3 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
-          <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-outline">Công Nợ Chưa Thu</span>
-            <span className="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-secondary flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]" data-icon="pending_actions">pending_actions</span>
+        {/* KPI 4: Công nợ vụ lúa */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 flex flex-col justify-between shadow-2xs hover:border-primary/40 transition-colors">
+          <div className="flex items-center justify-between text-slate-500">
+            <span className="text-xs uppercase tracking-wider font-bold">Công Nợ Cần Thu</span>
+            <span className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+              <span className="material-symbols-outlined text-[18px]">pending_actions</span>
             </span>
           </div>
-          <div className="mt-2">
+          <div className="mt-3">
             <div className="flex items-baseline">
-              <span className="text-[22px] font-bold text-secondary tabular-nums tracking-tight leading-none">{formatVnd(totalDebtRemaining)}</span>
+              <span className="text-2xl font-bold text-purple-900 tabular-nums">{formatVnd(totalDebtRemaining)}</span>
             </div>
-            <div className="mt-1.5 pt-1.5 border-t border-outline-variant/50 text-[11px] text-on-surface-variant flex justify-between">
+            <div className="mt-2 pt-2 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
               <span>{debtHouseholds.length} hộ nông dân</span>
-              <span className="text-error font-medium">{dueTodayHouseholds} hộ đến hạn</span>
-            </div>
-          </div>
-        </div>
-
-        {/* KPI 5: Cảnh báo tồn kho */}
-        <div className="bg-white rounded-lg border border-error/30 p-3 flex flex-col justify-between shadow-2xs hover:border-error/60 transition-colors bg-error-container/10">
-          <div className="flex items-center justify-between text-on-surface-variant">
-            <span className="font-label-sm text-[11px] uppercase tracking-wider font-semibold text-error">Sắp Hết Hàng</span>
-            <span className="w-7 h-7 rounded-lg bg-error-container flex items-center justify-center text-error flex-shrink-0">
-              <span className="material-symbols-outlined text-[16px]" data-icon="warning">warning</span>
-            </span>
-          </div>
-          <div className="mt-2">
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-error tabular-nums tracking-tight leading-none">{lowStockItems.length}</span>
-              <span className="text-xs text-on-surface-variant font-medium">mặt hàng</span>
-            </div>
-            <div className="mt-1.5 pt-1.5 border-t border-error/20 text-[11px] text-on-surface-variant truncate">
-              {lowStockItems.length > 0 ? (
-                <>
-                  <span className="text-error font-semibold">Báo động:</span> {lowStockNames}
-                </>
-              ) : (
-                'Không có mặt hàng nào sắp hết'
-              )}
+              <span className="text-amber-700 font-semibold">{dueTodayHouseholds} hộ đến hạn</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* SECTION A: Recent Orders Enterprise Data Table */}
-      <div className="bg-white rounded-lg border border-outline-variant/60 shadow-2xs overflow-hidden">
-            <div className="px-3 py-2 bg-white border-b border-outline-variant/60 flex flex-col md:flex-row md:items-center justify-between gap-1.5">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="font-title-md text-[14px] text-on-surface font-bold">Đơn Hàng Gần Đây</h2>
-                  <span className="bg-surface-container text-primary font-semibold px-1.5 py-0.5 rounded text-[11px] tabular-nums">{ALL_ORDERS.length} giao dịch hôm nay</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 bg-surface-container-low p-0.5 rounded-lg border border-outline-variant/60 text-xs">
-                {TAB_OPTIONS.map((tab, i) => (
-                  <button
-                    key={tab}
-                    type="button"
-                    onClick={() => setStatusTab(tab)}
-                    className={
-                      tab === statusTab
-                        ? 'px-2 py-0.5 rounded bg-white text-primary font-semibold shadow-2xs border border-outline-variant/40 text-[11px]'
-                        : 'px-2 py-0.5 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors text-[11px]'
-                    }
-                  >
-                    {tab} ({tabCounts[i]})
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface-container-low/60 border-b border-outline-variant/60 font-label-sm text-[11px] text-outline uppercase tracking-wider">
-                    <th className="py-1.5 px-3">Mã Đơn</th>
-                    <th className="py-1.5 px-3">Nông Dân &amp; Địa Bàn</th>
-                    <th className="py-1.5 px-3">Mặt Hàng Nông Nghiệp</th>
-                    <th className="py-1.5 px-3 text-right">Giá Trị</th>
-                    <th className="py-1.5 px-3 text-center">Trạng Thái</th>
-                    <th className="py-1.5 px-3 text-right">Thao Tác</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/40 text-[12px]">
-                  {paginated.map((order) => {
-                    const isSelected = selectedOrder?.id === order.id
-                    return (
-                      <tr
-                        key={order.id}
-                        className={`transition-colors cursor-pointer ${
-                          isSelected ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-surface-container-low/40'
-                        }`}
-                        onClick={() => setSelectedOrder(order)}
-                      >
-                        <td className="py-2 px-3">
-                          <span className="font-semibold text-primary tabular-nums block">#{order.id}</span>
-                          <span className="text-[10px] text-outline">{order.timeBold} {order.timeRest}</span>
-                        </td>
-                        <td className="py-2 px-3 min-w-0">
-                          <div className="font-semibold text-on-surface text-[13px]">{order.customerName}</div>
-                          <div className="text-[11px] text-on-surface-variant flex items-center gap-1 whitespace-nowrap">
-                            <span className="material-symbols-outlined text-[12px] text-outline" data-icon="location_on">location_on</span>
-                            {order.wardAddress}
-                          </div>
-                        </td>
-                        <td className="py-2 px-3">
-                          <div className="font-medium text-on-surface text-[12px] whitespace-nowrap">{order.productTitle}</div>
-                          {order.productNote ? (
-                            <div className="text-[10px] text-outline mt-0.5 whitespace-nowrap">{order.productNote}</div>
-                          ) : null}
-                        </td>
-                        <td className="py-2 px-3 text-right font-bold text-on-surface tabular-nums text-[13px]">{order.total}</td>
-                        <td className="py-2 px-3 text-center">
-                          <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} size="xs" minWidthClassName="min-w-[96px]" />
-                        </td>
-                        <td className="py-2 px-3 text-right">
-                          <div className="flex items-center justify-end">
-                            <RowActionsMenu
-                              triggerLabel={`Thao tác đơn #${order.id}`}
-                              actions={order.actions.map((action) => ({
-                                ...action,
-                                onClick: () => handleOrderAction(order, action.label),
-                              }))}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              startIndex={startIndex}
-              endIndex={endIndex}
-              totalCount={totalCount}
-              unitLabel="đơn hàng"
-              goPrev={goPrev}
-              goNext={goNext}
-              setPage={setPage}
-            />
+      {/* SECTION: Recent Orders Enterprise Data Table */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
+        <div className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-bold text-slate-900">Đơn Hàng Gần Đây</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Tổng cộng {ALL_ORDERS.length} giao dịch hôm nay</p>
           </div>
+          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs overflow-x-auto">
+            {TAB_OPTIONS.map((tab, i) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setStatusTab(tab)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                  tab === statusTab
+                    ? 'bg-white text-primary shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab} ({tabCounts[i]})
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 bg-slate-50/70 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <th className="py-3 px-4">Mã Đơn</th>
+                <th className="py-3 px-4">Khách Hàng</th>
+                <th className="py-3 px-4">Sản Phẩm</th>
+                <th className="py-3 px-4 text-right">Tổng Tiền</th>
+                <th className="py-3 px-4 text-center">Trạng Thái</th>
+                <th className="py-3 px-4 text-right">Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+              {paginated.map((order) => {
+                const isSelected = selectedOrder?.id === order.id
+                return (
+                  <tr
+                    key={order.id}
+                    className={`transition-colors cursor-pointer ${
+                      isSelected ? 'bg-emerald-50/60' : 'hover:bg-slate-50'
+                    }`}
+                    onClick={() => setSelectedOrder(order)}
+                  >
+                    <td className="py-3 px-4">
+                      <span className="font-bold font-mono text-primary">#{order.id}</span>
+                      <span className="text-xs text-slate-400 block mt-0.5">{order.timeRest}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-slate-900">{order.customerName}</div>
+                      <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
+                        <span className="material-symbols-outlined text-[13px] text-slate-400">location_on</span>
+                        {order.wardAddress}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-medium text-slate-900">{order.productTitle}</div>
+                      {order.productNote && (
+                        <div className="text-xs text-slate-500 mt-0.5">{order.productNote}</div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-bold text-slate-900">
+                      {order.total}
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} size="xs" minWidthClassName="min-w-[90px]" />
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="flex items-center justify-end" onClick={(e) => e.stopPropagation()}>
+                        <RowActionsMenu
+                          triggerLabel={`Thao tác đơn #${order.id}`}
+                          actions={order.actions.map((action) => ({
+                            ...action,
+                            onClick: () => handleOrderAction(order, action.label),
+                          }))}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={totalCount}
+          unitLabel="đơn hàng"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
+      </div>
 
       {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
       <DetailModal open={selectedOrder !== null} onClose={() => setSelectedOrder(null)}>

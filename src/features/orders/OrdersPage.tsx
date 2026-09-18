@@ -250,13 +250,13 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* SUMMARY KPI CARDS (5 compact cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-sm">
+      {/* SUMMARY KPI CARDS (4 Clean SaaS Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
         {/* KPI 1: Đơn hàng hôm nay */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đơn hàng hôm nay</span>
-            <span className="material-symbols-outlined text-base text-primary" data-icon="receipt_long">receipt_long</span>
+            <span className="material-symbols-outlined text-xl text-primary" data-icon="receipt_long">receipt_long</span>
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
@@ -264,64 +264,52 @@ export default function OrdersPage() {
               <span className="text-xs font-medium text-outline">đơn</span>
             </div>
           </div>
-          <div className="text-[12px] font-mono text-outline border-t border-outline-variant/60 pt-1">
-            Tổng giá trị: <span className="font-semibold text-on-surface">{formatVnd(totalOrderValue)}</span>
+          <div className="text-xs font-mono text-outline border-t border-outline-variant/60 pt-1.5 flex justify-between">
+            <span>Tổng giá trị:</span>
+            <span className="font-semibold text-on-surface">{formatVnd(totalOrderValue)}</span>
           </div>
         </div>
+
         {/* KPI 2: Chờ xác nhận */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm border-l-4 border-l-amber-500 flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border-2 border-amber-400/80 rounded-xl p-space-md shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Chờ xác nhận</span>
-            <span className="material-symbols-outlined text-base text-amber-600" data-icon="pending_actions">pending_actions</span>
+            <span className="material-symbols-outlined text-xl text-amber-600" data-icon="pending_actions">pending_actions</span>
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
               <span className="font-metric-num text-metric-num text-amber-700 font-semibold">{waitingCount}</span>
-              <span className="text-xs text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded font-medium">Ưu tiên cao</span>
+              <span className="text-xs text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-medium">Cần duyệt</span>
             </div>
           </div>
-          <div className="text-[12px] text-amber-700 border-t border-outline-variant/60 pt-1 flex items-center gap-1">
-            <span className="material-symbols-outlined text-xs" data-icon="schedule">schedule</span>
-            <span>Cần duyệt sớm</span>
+          <div className="text-xs text-amber-700 border-t border-outline-variant/60 pt-1.5 flex items-center gap-1">
+            <span className="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+            <span>Ưu tiên xuất kho trạm</span>
           </div>
         </div>
-        {/* KPI 3: Đang xử lý */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col justify-between">
+
+        {/* KPI 3: Đang vận chuyển */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đang xử lý</span>
-            <span className="material-symbols-outlined text-base text-blue-600" data-icon="move_to_inbox">move_to_inbox</span>
+            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đang giao hàng</span>
+            <span className="material-symbols-outlined text-xl text-blue-600" data-icon="local_shipping">local_shipping</span>
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{processingCount}</span>
-              <span className="text-xs text-outline">đang bốc hàng</span>
-            </div>
-          </div>
-          <div className="text-[12px] text-outline border-t border-outline-variant/60 pt-1 truncate">
-            Kho đang soạn hàng &amp; bốc xếp
-          </div>
-        </div>
-        {/* KPI 4: Đang giao */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đang giao</span>
-            <span className="material-symbols-outlined text-base text-blue-700" data-icon="sailing">sailing</span>
-          </div>
-          <div className="my-space-xs">
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{deliveringCount}</span>
+              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{processingCount + deliveringCount}</span>
               <span className="text-xs text-blue-600 font-medium">đơn</span>
             </div>
           </div>
-          <div className="text-[12px] text-outline border-t border-outline-variant/60 pt-1 truncate">
-            Vận chuyển ghe xuồng &amp; xe lôi Mekong
+          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
+            {deliveringCount} đang giao • {processingCount} đang soạn hàng
           </div>
         </div>
-        {/* KPI 5: Hoàn thành */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col justify-between">
+
+        {/* KPI 4: Hoàn thành */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hoàn thành</span>
-            <span className="material-symbols-outlined text-base text-emerald-600" data-icon="check_circle">check_circle</span>
+            <span className="material-symbols-outlined text-xl text-emerald-600" data-icon="check_circle">check_circle</span>
           </div>
           <div className="my-space-xs">
             <div className="flex items-baseline gap-2">
@@ -329,8 +317,8 @@ export default function OrdersPage() {
               <span className="text-xs text-emerald-600 font-medium">đơn</span>
             </div>
           </div>
-          <div className="text-[12px] text-outline border-t border-outline-variant/60 pt-1 truncate">
-            Đã ký nhận &amp; đối soát VietQR
+          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
+            Đã giao &amp; thanh toán thành công
           </div>
         </div>
       </div>
@@ -386,15 +374,15 @@ export default function OrdersPage() {
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-surface-container-low border-b border-outline-variant text-outline font-label-sm uppercase tracking-wider">
-                  <th className="py-2.5 px-3 font-semibold">Mã đơn</th>
-                  <th className="py-2.5 px-3 font-semibold">Khách hàng &amp; Xã</th>
-                  <th className="py-2.5 px-3 font-semibold">Thời gian</th>
-                  <th className="py-2.5 px-3 font-semibold">Sản phẩm chính</th>
-                  <th className="py-2.5 px-3 font-semibold text-right">Tổng tiền</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Thanh toán</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Trạng thái</th>
-                  <th className="py-2.5 px-3 font-semibold text-center">Thao tác</th>
+                <tr className="bg-surface-container-low/80 border-b border-outline-variant text-outline font-label-sm uppercase tracking-wider">
+                  <th className="py-3 px-3.5 font-semibold">Mã đơn</th>
+                  <th className="py-3 px-3.5 font-semibold">Khách hàng &amp; Xã</th>
+                  <th className="py-3 px-3.5 font-semibold">Thời gian</th>
+                  <th className="py-3 px-3.5 font-semibold">Sản phẩm chính</th>
+                  <th className="py-3 px-3.5 font-semibold text-right">Tổng tiền</th>
+                  <th className="py-3 px-3.5 font-semibold text-center">Thanh toán</th>
+                  <th className="py-3 px-3.5 font-semibold text-center">Trạng thái</th>
+                  <th className="py-3 px-3.5 font-semibold text-center">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/60 font-body-sm">
@@ -413,34 +401,34 @@ export default function OrdersPage() {
                           : `hover:bg-surface-container-low ${order.rowAttentionClassName ?? ''}`
                       }`}
                     >
-                      <td className={`py-3 px-3 font-mono font-semibold ${isSelected ? 'text-primary' : order.idClassName}`}>
+                      <td className={`py-3.5 px-3.5 font-mono font-semibold ${isSelected ? 'text-primary' : order.idClassName}`}>
                         {order.id}
                       </td>
-                      <td className="py-3 px-3">
-                        <div className="font-medium text-on-surface">{order.customerName}</div>
-                        <div className="text-[11px] text-outline">{order.phone} • {order.shortLocation}</div>
+                      <td className="py-3.5 px-3.5">
+                        <div className="font-semibold text-on-surface">{order.customerName}</div>
+                        <div className="text-xs text-outline">{order.phone} • {order.shortLocation}</div>
                       </td>
-                      <td className="py-3 px-3 text-outline whitespace-nowrap">
+                      <td className="py-3.5 px-3.5 text-outline whitespace-nowrap text-xs">
                         {order.timeBold ? <span className="font-medium text-on-surface">{order.timeBold}</span> : null}
                         {order.timeBold ? ' ' : ''}
                         {order.timeRest}
                       </td>
-                      <td className="py-3 px-3 max-w-[190px]">
+                      <td className="py-3.5 px-3.5 max-w-[200px]">
                         <div className="truncate text-on-surface font-medium" title={order.productTitle}>
                           {order.productLine}
                         </div>
-                        <span className="text-[11px] text-outline">{order.productNote}</span>
+                        <span className="text-xs text-outline">{order.productNote}</span>
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-semibold text-on-surface whitespace-nowrap">
+                      <td className="py-3.5 px-3.5 text-right font-mono font-semibold text-on-surface whitespace-nowrap">
                         {order.total}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[150px]" />
+                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[130px]" />
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[120px]" />
+                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                        <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">
                           <RowActionsMenu
                             triggerLabel={`Thao tác đơn #${order.id}`}

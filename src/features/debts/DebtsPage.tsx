@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
-import DetailModal from '../../components/ui/DetailModal'
 import Pagination from '../../components/ui/Pagination'
 import SearchInput from '../../components/ui/SearchInput'
 import FilterSelect from '../../components/ui/FilterSelect'
@@ -37,7 +36,6 @@ export default function DebtsPage() {
   const [creditRequests, setCreditRequests] = useState<CreditRequest[]>(INITIAL_CREDIT_REQUESTS)
   const [paymentRequests, setPaymentRequests] = useState<DebtPaymentRequest[]>(INITIAL_PAYMENT_REQUESTS)
   const { showToast } = useToast()
-  const navigate = useNavigate()
 
   const pendingCreditCount = creditRequests.filter((cr) => cr.status === 'PENDING_APPROVAL').length
   const pendingRepaymentCount = paymentRequests.filter((pr) => pr.status === 'PENDING_AGENT_CONFIRMATION').length
@@ -147,12 +145,7 @@ export default function DebtsPage() {
     window.print()
   }
 
-  const handleViewOriginalOrder = (orderId: string, customerName: string) => {
-    navigate('/orders')
-    showToast(`Đang mở đơn hàng gốc ${orderId} của ${customerName}`)
-  }
-
-  const { selectedId, setSelectedId, selected } = useSelectableList(customers, (c) => c.id)
+  const { selectedId, setSelectedId } = useSelectableList(customers, (c) => c.id)
 
   const [regionFilter, setRegionFilter] = useState(REGION_OPTIONS[0])
 
@@ -186,8 +179,6 @@ export default function DebtsPage() {
   const totalDebtAmount = customers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const dueTodayCustomers = customers.filter((c) => c.statusBadge.label === 'Đến hạn')
   const dueTodayAmount = dueTodayCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
-  const upcomingCustomers = customers.filter((c) => c.statusBadge.label === 'Sắp đến hạn')
-  const upcomingAmount = upcomingCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const overdueCustomers = customers.filter((c) => c.statusBadge.label === 'Quá hạn')
   const overdueAmount = overdueCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const totalCollected = customers.reduce((sum, c) => sum + parseVnd(c.paidAmount), 0)
@@ -286,126 +277,97 @@ export default function DebtsPage() {
 
       {activeTab === 'ledger' && (
         <>
-          {/* 5 THẺ KPI TÓM TẮT CÔNG NỢ */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 shrink-0">
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="font-label-md text-label-md font-medium">Tổng công nợ</span>
-            <span className="material-symbols-outlined text-slate-400 text-[19px]">account_balance</span>
-          </div>
-          <div className="font-metric-num text-metric-num text-slate-900 tracking-tight font-bold my-1">
-            {formatVnd(totalDebtAmount)}
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-            <span className="">Tổng nợ {customers.length} nông hộ</span>
-          </div>
-        </div>
-        <div className="bg-white border border-amber-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 bottom-0 w-1 bg-amber-500"></div>
-          <div className="flex items-center justify-between text-slate-600 mb-1">
-            <span className="font-label-md text-label-md font-medium">Đến hạn hôm nay</span>
-            <span className="material-symbols-outlined text-amber-600 text-[19px]">alarm</span>
-          </div>
-          <div className="font-metric-num text-metric-num text-amber-900 tracking-tight font-bold my-1">
-            {formatVnd(dueTodayAmount)}
-          </div>
-          <div className="text-[11px] text-amber-700 font-medium pt-1 border-t border-amber-100">
-            {dueTodayCustomers.length} khách hàng cần thu trong ngày
-          </div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="font-label-md text-label-md font-medium">Sắp đến hạn</span>
-            <span className="material-symbols-outlined text-amber-500 text-[19px]">calendar_clock</span>
-          </div>
-          <div className="font-metric-num text-metric-num text-slate-900 tracking-tight font-bold my-1">
-            {formatVnd(upcomingAmount)}
-          </div>
-          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-slate-100">
-            <span className="text-slate-500">{upcomingCustomers.length} khách hàng</span>
-            <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-semibold text-[10px]">Cần lưu ý</span>
-          </div>
-        </div>
-        <div className="bg-white border border-rose-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 left-0 bottom-0 w-1 bg-rose-600"></div>
-          <div className="flex items-center justify-between text-slate-600 mb-1">
-            <span className="font-label-md text-label-md font-medium text-rose-900">Quá hạn</span>
-            <span className="material-symbols-outlined text-rose-600 text-[19px]">warning</span>
-          </div>
-          <div className="font-metric-num text-metric-num text-rose-700 tracking-tight font-bold my-1">
-            {formatVnd(overdueAmount)}
-          </div>
-          <div className="flex items-center justify-between text-[11px] pt-1 border-t border-rose-100">
-            <span className="text-rose-700">{overdueCustomers.length} khách hàng quá hạn</span>
-            <span className="px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 font-bold text-[10px]">Cảnh báo</span>
-          </div>
-        </div>
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-2xs flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-500 mb-1">
-            <span className="font-label-md text-label-md font-medium">Đã thu</span>
-            <span className="material-symbols-outlined text-emerald-600 text-[19px]">task_alt</span>
-          </div>
-          <div className="font-metric-num text-metric-num text-emerald-800 tracking-tight font-bold my-1">
-            {formatVnd(totalCollected)}
-          </div>
-          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-100">
-            <span className="">Trên tổng {formatVnd(totalCollected + totalDebtAmount)} đã bán</span>
-            <span className="inline-flex items-center text-emerald-600 font-medium gap-0.5">
-              <span className="material-symbols-outlined text-[13px]">trending_up</span> Tiến độ tốt
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* BỘ LỌC CHUYÊN DỤNG */}
-      <section className="bg-white border border-slate-200 rounded-lg p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[320px]">
-          <SearchInput
-            value={search}
-            onChange={setSearch}
-            placeholder="Tìm khách hàng / số điện thoại / ấp..."
-            className="relative min-w-[240px] flex-1 max-w-sm"
-          />
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
-          <FilterSelect value={regionFilter} onChange={setRegionFilter} options={REGION_OPTIONS} />
-        </div>
-        <button
-          className="inline-flex items-center gap-1 px-2.5 py-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md font-label-md text-label-md transition-colors"
-          type="button"
-          onClick={handleClearFilters}
-        >
-          <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
-          <span className="">Xóa bộ lọc</span>
-        </button>
-      </section>
-
-      {/* BẢNG QUẢN LÝ CÔNG NỢ */}
-      <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-slate-500 text-[18px]">group</span>
-                <h2 className="font-title-md text-title-md text-slate-900 font-semibold">Danh sách công nợ khách hàng</h2>
-                <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold">{filteredCustomers.length} nông hộ</span>
+          {/* 3 THẺ KPI TÓM TẮT CÔNG NỢ */}
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-xs uppercase tracking-wider font-bold">Tổng Công Nợ Cho Vay</span>
+                <span className="material-symbols-outlined text-slate-400 text-[20px]">account_balance</span>
               </div>
-              <div className="text-xs text-slate-500">Đơn vị tính: Việt Nam Đồng (VND)</div>
+              <div className="text-2xl font-bold text-slate-900 font-mono my-1">
+                {formatVnd(totalDebtAmount)}
+              </div>
+              <div className="text-xs text-slate-500 pt-1 border-t border-slate-100">
+                Tổng nợ của {customers.length} nông hộ vụ Đông Xuân
+              </div>
+            </div>
+
+            <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-amber-700 mb-1">
+                <span className="text-xs uppercase tracking-wider font-bold">Đến Hạn &amp; Quá Hạn</span>
+                <span className="material-symbols-outlined text-amber-600 text-[20px]">alarm</span>
+              </div>
+              <div className="text-2xl font-bold text-amber-900 font-mono my-1">
+                {formatVnd(dueTodayAmount + overdueAmount)}
+              </div>
+              <div className="text-xs text-amber-800 pt-1 border-t border-amber-100 flex items-center justify-between">
+                <span>{dueTodayCustomers.length} hộ đến hạn</span>
+                <span className="font-semibold">{overdueCustomers.length} hộ quá hạn</span>
+              </div>
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+              <div className="flex items-center justify-between text-slate-500 mb-1">
+                <span className="text-xs uppercase tracking-wider font-bold">Đã Thu Hồi Nợ</span>
+                <span className="material-symbols-outlined text-emerald-600 text-[20px]">task_alt</span>
+              </div>
+              <div className="text-2xl font-bold text-emerald-800 font-mono my-1">
+                {formatVnd(totalCollected)}
+              </div>
+              <div className="text-xs text-slate-500 pt-1 border-t border-slate-100">
+                Thu hồi từ thu hoạch lúa sớm
+              </div>
+            </div>
+          </section>
+
+          {/* BỘ LỌC CHUYÊN DỤNG */}
+          <section className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[300px]">
+              <SearchInput
+                value={search}
+                onChange={setSearch}
+                placeholder="Tìm tên nông dân, SĐT, ấp..."
+                className="relative min-w-[220px] flex-1 max-w-sm"
+              />
+              <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+              <FilterSelect value={regionFilter} onChange={setRegionFilter} options={REGION_OPTIONS} />
+            </div>
+            <button
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg text-xs font-semibold transition-colors"
+              type="button"
+              onClick={handleClearFilters}
+            >
+              <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+              <span>Xóa bộ lọc</span>
+            </button>
+          </section>
+
+          {/* BẢNG QUẢN LÝ CÔNG NỢ */}
+          <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-bold text-slate-900">Danh sách công nợ khách hàng</h2>
+                <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold">
+                  {filteredCustomers.length} nông hộ
+                </span>
+              </div>
             </div>
             <div className="flex-1 overflow-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-[#F8FAFC] text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                    <th className="py-2.5 px-3">Khách hàng &amp; SĐT &amp; Địa chỉ</th>
-                    <th className="py-2.5 px-3 text-right">Tổng mua</th>
-                    <th className="py-2.5 px-3 text-right">Đã thanh toán</th>
-                    <th className="py-2.5 px-3 text-right font-bold text-slate-800">Còn phải thu</th>
-                    <th className="py-2.5 px-3 text-center">Hạn gần nhất</th>
-                    <th className="py-2.5 px-2 text-center">Quá hạn</th>
-                    <th className="py-2.5 px-3 text-center">Trạng thái</th>
-                    <th className="py-2.5 px-3 text-center">Thao tác</th>
+                  <tr className="border-b border-slate-200 bg-slate-50/50 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="py-3 px-4">Khách Hàng &amp; SĐT</th>
+                    <th className="py-3 px-3 text-right">Tổng Mua</th>
+                    <th className="py-3 px-3 text-right">Đã Trả</th>
+                    <th className="py-3 px-3 text-right font-bold text-slate-900">Còn Nợ</th>
+                    <th className="py-3 px-3 text-center">Hạn Trả</th>
+                    <th className="py-3 px-3 text-center">Trạng Thái</th>
+                    <th className="py-3 px-4 text-center">Thao Tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 font-body-sm text-[13px]">
+                <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
                   {filteredCustomers.length === 0 ? (
-                    <EmptyTableRow colSpan={8} message="Không tìm thấy khách hàng phù hợp với bộ lọc." className="text-slate-400" />
+                    <EmptyTableRow colSpan={7} message="Không tìm thấy khách hàng phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
                   {paginatedCustomers.map((customer) => {
                     const isSelected = customer.id === selectedId
@@ -415,34 +377,32 @@ export default function DebtsPage() {
                         onClick={() => setSelectedId(customer.id)}
                         className={`transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-emerald-50/70 border-l-4 border-l-[#1E5E3A] hover:bg-emerald-50'
-                            : `hover:bg-slate-50 ${customer.rowAttentionClassName ?? ''}`
+                            ? 'bg-emerald-50/70 border-l-4 border-l-[#1E5E3A]'
+                            : 'hover:bg-slate-50'
                         }`}
                       >
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-4">
                           <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                            <span className="">{customer.name}</span>
-                            {customer.cropBadge ? (
+                            <span>{customer.name}</span>
+                            {customer.cropBadge && (
                               <span className="px-1.5 py-0.2 bg-emerald-100 text-[#1E5E3A] text-[10px] rounded font-bold">
                                 {customer.cropBadge}
                               </span>
-                            ) : null}
+                            )}
                           </div>
-                          <div className="text-xs text-slate-500 font-mono">{customer.phone}</div>
-                          <div className="text-[11px] text-slate-500 truncate max-w-[170px]">{customer.addressShort}</div>
+                          <div className="text-xs text-slate-500 font-mono mt-0.5">{customer.phone} · {customer.addressShort}</div>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-700">{customer.totalPurchase}</td>
+                        <td className="py-3 px-3 text-right font-mono text-slate-600">{customer.totalPurchase}</td>
                         <td className="py-3 px-3 text-right font-mono text-emerald-700 font-medium">{customer.paidAmount}</td>
                         <td className={`py-3 px-3 text-right font-mono font-bold ${customer.remainingCellClassName}`}>
                           {customer.remaining}
                         </td>
-                        <td className={`py-3 px-3 text-center font-mono ${customer.dueDateClassName}`}>{customer.dueDate}</td>
-                        <td className={`py-3 px-2 text-center ${customer.overdueDaysClassName}`}>{customer.overdueDays}</td>
+                        <td className={`py-3 px-3 text-center font-mono text-xs ${customer.dueDateClassName}`}>{customer.dueDate}</td>
                         <td className="py-3 px-3 text-center">
-                          <StatusBadge label={customer.statusBadge.label} className={customer.statusBadge.className} minWidthClassName="min-w-[128px]" />
+                          <StatusBadge label={customer.statusBadge.label} className={customer.statusBadge.className} minWidthClassName="min-w-[110px]" />
                         </td>
-                        <td className="py-3 px-3 text-center">
-                          <div className="flex items-center justify-center">
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                             <RowActionsMenu
                               triggerLabel={`Thao tác công nợ ${customer.name}`}
                               actions={customer.actions.map((action) => ({
@@ -470,261 +430,8 @@ export default function DebtsPage() {
               setPage={setPage}
             />
           </div>
-
-      {/* DETAIL MODAL: CHI TIẾT CÔNG NỢ KHÁCH HÀNG */}
-      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
-        {selected ? (
-          <>
-            <div className="p-3.5 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-[#1E5E3A] text-[20px]">person_pin</span>
-                <div>
-                  <h3 className="font-title-md text-title-md text-slate-900 font-bold">Chi tiết công nợ khách hàng</h3>
-                  <div className="text-xs text-slate-500">Mã KH: {selected.customerCode}</div>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-emerald-100 text-[#1E5E3A] font-bold text-[11px]">Đang chọn</span>
-            </div>
-            <div className="p-4 border-b border-slate-100">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="font-headline-sm text-headline-sm text-slate-900 font-bold">{selected.name}</div>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-600 mt-0.5">
-                    <span className="material-symbols-outlined text-[15px] text-slate-400">call</span>
-                    <span className="font-mono font-semibold">{selected.phone}</span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-medium inline-block">{selected.landNote}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
-                <span className="material-symbols-outlined text-[15px] text-slate-400">pin_drop</span>
-                <span className="">{selected.fullAddress}</span>
-              </div>
-            </div>
-            <div className={`p-3.5 border-b ${selected.remainingSectionClassName}`}>
-              <div className="flex items-center justify-between">
-                <span className={`font-label-sm text-label-sm font-bold tracking-wider uppercase ${selected.remainingStatusClassName}`}>CÒN PHẢI THU</span>
-                <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${selected.remainingStatusClassName}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${selected.statusBadge.dotClassName}`}></span>
-                  {selected.statusBadge.label}
-                </span>
-              </div>
-              <div className="text-2xl font-bold font-mono text-slate-900 my-1">
-                {selected.remainingAmount} <span className="text-sm font-normal text-slate-600">VND</span>
-              </div>
-              <div className="w-full bg-white/60 h-2 rounded-full overflow-hidden my-2">
-                <div className="bg-emerald-600 h-full rounded-full" style={{ width: selected.progressBarWidth }}></div>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="">Tổng nợ: <strong className="font-mono">{selected.totalDebtLabel}</strong></span>
-                <span className="">Đã trả: <strong className="font-mono text-emerald-800">{selected.paidLabel}</strong></span>
-              </div>
-              <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                <span className="font-medium">Hạn thanh toán gần nhất:</span>
-                <span className="font-bold font-mono">{selected.dueDetailNote}</span>
-              </div>
-            </div>
-            <div className="p-3.5 border-b border-slate-100 flex flex-col gap-2.5">
-              <div className="flex items-center justify-between">
-                <h4 className="font-title-md text-title-md text-slate-900 font-semibold flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[17px] text-slate-500">receipt</span>
-                  <span className="">Đơn hàng liên quan ({selected.relatedOrders.length} đơn)</span>
-                </h4>
-                <span className="text-[11px] text-slate-500">Niên vụ 2024</span>
-              </div>
-              <div className="space-y-2">
-                {selected.relatedOrders.map((order) => (
-                  <div key={order.id} className={`p-2.5 rounded-md border text-xs flex flex-col gap-1 ${order.cardClassName}`}>
-                    <div className="flex items-center justify-between font-semibold">
-                      <span className="text-slate-900 font-mono">{order.id}</span>
-                      <span className={`px-1.5 py-0.2 rounded font-bold text-[10px] ${order.statusClassName}`}>{order.status}</span>
-                    </div>
-                    {order.dateNote || order.dueNote ? (
-                      <div className="flex items-center justify-between text-slate-500 text-[11px]">
-                        <span className="">{order.dateNote}</span>
-                        <span className="">{order.dueNote}</span>
-                      </div>
-                    ) : null}
-                    <div className="flex items-center justify-between pt-1 border-t border-black/5">
-                      <span className="text-slate-600">{order.totalNote}</span>
-                      <span className={`font-bold font-mono ${order.remainingClassName}`}>{order.remainingLabel}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-3.5 border-b border-slate-100 flex flex-col gap-2">
-              <h4 className="font-title-md text-title-md text-slate-900 font-semibold flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[17px] text-slate-500">history</span>
-                <span className="">Lịch sử thu nợ &amp; thanh toán</span>
-              </h4>
-              <div className="space-y-2 text-xs">
-                {selected.paymentHistory.map((entry, idx) => (
-                  <div key={`${entry.title}-${idx}`} className="flex items-start justify-between">
-                    <div className="flex items-start gap-2">
-                      <span className={`w-2 h-2 rounded-full mt-1 shrink-0 ${entry.dotClassName}`}></span>
-                      <div>
-                        <div className="font-medium text-slate-800">{entry.title}</div>
-                        <div className="text-[11px] text-slate-500">{entry.dateNote}</div>
-                      </div>
-                    </div>
-                    <span className={`font-mono font-bold ${entry.amountClassName}`}>{entry.amountLabel}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="p-3.5 bg-slate-50 flex flex-col gap-2">
-              <button
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-md shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                type="button"
-                disabled={selected.statusBadge.label === 'Đã thanh toán'}
-                onClick={() => markDebtPaid(selected.id)}
-              >
-                <span className="material-symbols-outlined text-[18px]">add</span>
-                <span className="">{selected.statusBadge.label === 'Đã thanh toán' ? 'Đã tất toán' : 'Ghi nhận thu nợ'}</span>
-              </button>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors"
-                  type="button"
-                  onClick={() => showToast(`Đã gửi VietQR/SMS nhắc nợ cho ${selected.name}`)}
-                >
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">sms</span>
-                  <span className="">Gửi VietQR/SMS</span>
-                </button>
-                <button
-                  className="flex items-center justify-center gap-1 py-1.5 px-2 bg-white border border-slate-300 text-slate-700 font-label-md text-label-md rounded-md hover:bg-slate-100 transition-colors"
-                  type="button"
-                  onClick={() => handleViewOriginalOrder(selected.relatedOrders[0]?.id ?? selected.customerCode, selected.name)}
-                >
-                  <span className="material-symbols-outlined text-[16px] text-slate-500">description</span>
-                  <span className="">Xem đơn hàng gốc</span>
-                </button>
-              </div>
-            </div>
-          </>
-        ) : null}
-      </DetailModal>
-
-      {/* KHU VỰC PHỤ PHÍA DƯỚI BẢNG */}
-      <section className="grid grid-cols-1 xl:grid-cols-12 gap-space-lg shrink-0 pb-6">
-        <div className="xl:col-span-7 bg-white border border-slate-200 rounded-lg p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-rose-600 text-[20px]">warning</span>
-              <h3 className="font-title-md text-title-md text-slate-900 font-bold">Công nợ quá hạn cần xử lý</h3>
-              <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[11px] font-bold">{overdueCustomers.length} ca ưu tiên</span>
-            </div>
-          </div>
-          <div className="space-y-2.5">
-            {overdueCustomers.length === 0 ? (
-              <p className="text-sm text-slate-500 text-center py-4">Không có khách hàng quá hạn nào.</p>
-            ) : (
-              overdueCustomers.slice(0, 3).map((customer) => (
-                <div key={customer.id} className="p-3 bg-rose-50/40 border border-rose-200 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 text-sm">{customer.name}</span>
-                      <span className="text-xs font-mono text-slate-500">{customer.phone}</span>
-                      <span className="px-1.5 py-0.2 rounded bg-rose-200 text-rose-900 font-bold text-[10px]">Quá hạn {customer.overdueDays}</span>
-                    </div>
-                    <div className="text-xs text-slate-600 mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
-                      <span className="">Nợ: <strong className="font-mono text-rose-700">{customer.remaining}</strong></span>
-                      {customer.relatedOrders[0] ? (
-                        <span className="">Đơn cũ nhất: <span className="font-mono text-slate-700 font-medium">{customer.relatedOrders[0].id}</span></span>
-                      ) : null}
-                    </div>
-                  </div>
-                  <button
-                    className="shrink-0 flex items-center gap-1 px-3 py-1.5 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 font-label-md text-label-md rounded-md transition-colors shadow-2xs self-start sm:self-auto"
-                    type="button"
-                    onClick={() => showToast(`Đã gửi nhắc nợ tới ${customer.name}`)}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">send</span>
-                    <span className="">Gửi nhắc nợ</span>
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-        <div className="xl:col-span-5 bg-white border border-slate-200 rounded-lg p-4 shadow-2xs flex flex-col gap-3">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-emerald-700 text-[20px]">history_edu</span>
-              <h3 className="font-title-md text-title-md text-slate-900 font-bold">Nhật ký thu nợ gần đây</h3>
-            </div>
-            <span className="text-xs text-slate-400">Trạm Cần Thơ #04</span>
-          </div>
-          <div className="space-y-3">
-            <div className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[17px]">qr_code_2</span>
-                </div>
-                <div>
-                  <div className="font-semibold text-slate-900 text-xs">Trần Văn Hải • <span className="text-slate-600 font-normal">Đã thu VietQR</span></div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                    <span className="">Đại lý Nguyễn Văn Minh</span>
-                    <span className="">•</span>
-                    <span className="">08:45 Hôm nay</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="font-mono font-bold text-emerald-700 text-sm">+5.000.000 đ</span>
-                <div className="text-[10px] text-emerald-600 font-medium">Khớp sổ tự động</div>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[17px]">attach_money</span>
-                </div>
-                <div>
-                  <div className="font-semibold text-slate-900 text-xs">Lê Thị Bảy • <span className="text-slate-600 font-normal">Thu tiền mặt tất toán</span></div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                    <span className="">Thủ quỹ Hồng</span>
-                    <span className="">•</span>
-                    <span className="">16:30 Hôm qua</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="font-mono font-bold text-slate-900 text-sm">+4.800.000 đ</span>
-                <div className="text-[10px] text-slate-500">Đã in biên lai</div>
-              </div>
-            </div>
-            <div className="p-2.5 rounded-lg border border-slate-100 bg-slate-50/70 flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-[17px]">account_balance</span>
-                </div>
-                <div>
-                  <div className="font-semibold text-slate-900 text-xs">Nguyễn Hữu Trí • <span className="text-slate-600 font-normal">Thu chuyển khoản</span></div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1">
-                    <span className="">Đại lý Nguyễn Văn Minh</span>
-                    <span className="">•</span>
-                    <span className="">09:15 03/10</span>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="font-mono font-bold text-emerald-700 text-sm">+2.160.000 đ</span>
-                <div className="text-[10px] text-emerald-600 font-medium">Đã cập nhật đơn</div>
-              </div>
-            </div>
-          </div>
-          <div className="mt-1 pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-            <span className="">Dữ liệu kế toán đồng bộ tức thời với VietQR Mekong Hub</span>
-            <span className="font-mono">Sync: 14:02:18</span>
-          </div>
-        </div>
-      </section>
-    </>
-  )}
+        </>
+      )}
 
   {/* TAB 2: DUYỆT TÍN DỤNG MÙA VỤ (WF-03) */}
   {activeTab === 'credit-requests' && (
