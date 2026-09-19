@@ -14,6 +14,23 @@ import { usePagination } from '../../hooks/usePagination'
 import { logEntries as LOG_ENTRIES } from '../../data/mockActivityLog'
 import { downloadCsv } from '../../utils/csv'
 
+import {
+  Download,
+  History,
+  ShoppingCart,
+  Banknote,
+  BrainCircuit,
+  RotateCcw,
+  Flag,
+  Info,
+  Link as LinkIcon,
+  SlidersHorizontal,
+  ArrowRight,
+  Brain,
+  Contact,
+  Pencil
+} from 'lucide-react'
+
 const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
 const ACTION_OPTIONS = ['Tất cả loại thao tác', 'Tạo mới', 'Cập nhật', 'Xác nhận', 'Phê duyệt', 'Từ chối', 'Đối soát', 'Gửi nhắc', 'Điều chỉnh', 'Xuất kho', 'Nhập kho']
 const ACTOR_OPTIONS = ['Người thực hiện: Tất cả', 'Nguyễn Văn Minh', 'ĐP. Lê Hoàng', 'KT. Trần Thảo', 'Hệ thống VietQR']
@@ -79,9 +96,9 @@ export default function ActivityLogPage() {
   return (
     <>
       {/* Trailing Action: Export Data */}
-      <div className="flex items-center justify-end gap-space-sm">
+      <div className="flex items-center justify-end gap-2 mb-4">
         <button
-          className="inline-flex items-center gap-2 px-4 py-2 bg-surface-container-lowest border border-outline-variant hover:border-outline text-on-surface rounded-lg font-label-md text-label-md font-semibold shadow-sm hover:bg-surface-container-low active:bg-surface-container-high transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition"
           type="button"
           onClick={() => {
             downloadCsv(
@@ -99,111 +116,99 @@ export default function ActivityLogPage() {
             showToast(`Đã xuất dữ liệu nhật ký (${filteredEntries.length} bản ghi)`)
           }}
         >
-          <span className="material-symbols-outlined text-outline" data-icon="download">
-            download
-          </span>
+          <Download size={18} className="text-slate-500" />
           <span className="">Xuất dữ liệu nhật ký</span>
         </button>
       </div>
 
       {/* ==================== 4 SUMMARY KPI CARDS ==================== */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* KPI 1 */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-label-md text-label-md text-on-surface-variant">Tổng thao tác hôm nay</span>
-            <div className="w-8 h-8 rounded-lg bg-surface-container-low text-primary flex items-center justify-center">
-              <span className="material-symbols-outlined" data-icon="history">
-                history
-              </span>
+            <span className="text-sm font-semibold text-slate-500">Tổng thao tác hôm nay</span>
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <History size={18} />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">{totalActionsToday}</span>
-            <span className="font-body-sm text-body-sm text-outline">lượt</span>
+            <span className="text-2xl text-slate-900 font-bold">{totalActionsToday}</span>
+            <span className="text-sm text-slate-500">lượt</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
-            <span className="font-body-sm text-[11px] text-outline">Ghi nhận qua các kênh nghiệp vụ</span>
+          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
+            <span className="text-xs text-slate-500">Ghi nhận qua các kênh nghiệp vụ</span>
           </div>
         </div>
         {/* KPI 2 */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-label-md text-label-md text-on-surface-variant">Đơn hàng cập nhật</span>
+            <span className="text-sm font-semibold text-slate-500">Đơn hàng cập nhật</span>
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
-              <span className="material-symbols-outlined" data-icon="shopping_cart">
-                shopping_cart
-              </span>
+              <ShoppingCart size={18} />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">{orderActionsCount}</span>
-            <span className="font-body-sm text-body-sm text-outline">lượt</span>
+            <span className="text-2xl text-slate-900 font-bold">{orderActionsCount}</span>
+            <span className="text-sm text-slate-500">lượt</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
+          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
-            <span className="font-body-sm text-[11px] text-on-surface-variant">Đã duyệt &amp; xuất kho</span>
+            <span className="text-xs text-slate-500">Đã duyệt &amp; xuất kho</span>
           </div>
         </div>
         {/* KPI 3 */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-label-md text-label-md text-on-surface-variant">Thanh toán ghi nhận</span>
+            <span className="text-sm font-semibold text-slate-500">Thanh toán ghi nhận</span>
             <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <span className="material-symbols-outlined" data-icon="payments">
-                payments
-              </span>
+              <Banknote size={18} />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">{paymentActionsCount}</span>
-            <span className="font-body-sm text-body-sm text-outline">lượt</span>
+            <span className="text-2xl text-slate-900 font-bold">{paymentActionsCount}</span>
+            <span className="text-sm text-slate-500">lượt</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-1.5">
+          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-            <span className="font-body-sm text-[11px] text-on-surface-variant">Khớp lệnh VietQR &amp; tiền mặt</span>
+            <span className="text-xs text-slate-500">Khớp lệnh VietQR &amp; tiền mặt</span>
           </div>
         </div>
         {/* KPI 4 */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <span className="font-label-md text-label-md text-on-surface-variant">Gợi ý AI đã xử lý</span>
+            <span className="text-sm font-semibold text-slate-500">Gợi ý AI đã xử lý</span>
             <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-800 flex items-center justify-center">
-              <span className="material-symbols-outlined" data-icon="psychology">
-                psychology
-              </span>
+              <BrainCircuit size={18} />
             </div>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-on-surface font-bold">{aiActions.length}</span>
-            <span className="font-body-sm text-body-sm text-outline">lượt</span>
+            <span className="text-2xl text-slate-900 font-bold">{aiActions.length}</span>
+            <span className="text-sm text-slate-500">lượt</span>
           </div>
-          <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center gap-2">
-            <span className="inline-flex items-center text-primary-container font-semibold text-[11px]">{aiApprovedCount} phê duyệt</span>
-            <span className="text-outline">•</span>
-            <span className="inline-flex items-center text-error font-semibold text-[11px]">{aiRejectedCount} từ chối</span>
+          <div className="mt-2 pt-2 border-t border-slate-100 flex items-center gap-2">
+            <span className="inline-flex items-center text-emerald-600 font-semibold text-xs">{aiApprovedCount} phê duyệt</span>
+            <span className="text-slate-300">•</span>
+            <span className="inline-flex items-center text-rose-600 font-semibold text-xs">{aiRejectedCount} từ chối</span>
           </div>
         </div>
       </section>
 
       {/* ==================== FILTER TOOLBAR ==================== */}
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm">
-        <div className="flex flex-wrap items-center gap-space-sm justify-between">
-          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm theo mã, nội dung, người thực hiện..." />
+      <section className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm mt-4">
+        <div className="flex flex-wrap items-center gap-3 justify-between">
+          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm theo mã, nội dung, người thực hiện..." className="flex-1 min-w-[280px]" />
           {/* Dropdowns Group */}
-          <div className="flex flex-wrap items-center gap-space-sm">
+          <div className="flex flex-wrap items-center gap-3">
             <FilterSelect value={moduleFilter} onChange={setModuleFilter} options={MODULE_OPTIONS} />
             <FilterSelect value={actionFilter} onChange={setActionFilter} options={ACTION_OPTIONS} />
             <FilterSelect value={actorFilter} onChange={setActorFilter} options={ACTOR_OPTIONS} />
             {/* Xóa bộ lọc */}
             <button
-              className="flex items-center gap-1 text-outline hover:text-error px-2.5 py-1.5 rounded-lg hover:bg-error-container/20 font-label-md text-label-md transition"
+              className="flex items-center gap-1.5 text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg hover:bg-rose-50 text-sm font-semibold transition-colors"
               type="button"
               onClick={handleClearFilters}
             >
-              <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">
-                restart_alt
-              </span>
+              <RotateCcw size={16} />
               <span className="">Xóa bộ lọc</span>
             </button>
           </div>
@@ -211,26 +216,26 @@ export default function ActivityLogPage() {
       </section>
 
       {/* ACTIVITY LOG TABLE & RECENT EVENTS */}
-      <div className="space-y-space-md">
+      <div className="space-y-4 mt-4">
           {/* Table Container */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
-                    <th className="py-2.5 px-3">Thời gian</th>
-                    <th className="py-2.5 px-3">Người thực hiện</th>
-                    <th className="py-2.5 px-2">Phân hệ</th>
-                    <th className="py-2.5 px-2">Thao tác</th>
-                    <th className="py-2.5 px-2">Đối tượng</th>
-                    <th className="py-2.5 px-3 min-w-[200px]">Mô tả nghiệp vụ</th>
-                    <th className="py-2.5 px-2 text-center">Kết quả</th>
-                    <th className="py-2.5 px-3 text-right">Chi tiết</th>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
+                    <th className="py-3 px-4">Thời gian</th>
+                    <th className="py-3 px-4">Người thực hiện</th>
+                    <th className="py-3 px-3">Phân hệ</th>
+                    <th className="py-3 px-3">Thao tác</th>
+                    <th className="py-3 px-3">Đối tượng</th>
+                    <th className="py-3 px-4 min-w-[200px]">Mô tả nghiệp vụ</th>
+                    <th className="py-3 px-3 text-center">Kết quả</th>
+                    <th className="py-3 px-4 text-right">Chi tiết</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline-variant text-body-sm font-body-sm">
+                <tbody className="divide-y divide-slate-100 text-sm">
                   {filteredEntries.length === 0 ? (
-                    <EmptyTableRow colSpan={8} message="Không tìm thấy nhật ký phù hợp với bộ lọc." />
+                    <EmptyTableRow colSpan={8} message="Không tìm thấy nhật ký phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
                   {paginatedEntries.map((entry) => {
                     const isSelected = entry.id === selectedId
@@ -239,51 +244,51 @@ export default function ActivityLogPage() {
                         key={entry.id}
                         onClick={() => setSelectedId(entry.id)}
                         className={`transition-colors cursor-pointer ${
-                          isSelected ? 'bg-emerald-50/70 border-l-4 border-primary-container' : 'hover:bg-surface-container-low'
+                          isSelected ? 'bg-emerald-50 border-l-4 border-emerald-600' : 'hover:bg-slate-50'
                         }`}
                       >
                         <td
-                          className={`py-3 px-3 whitespace-nowrap font-mono text-[12px] ${
-                            isSelected ? 'font-medium text-on-surface' : 'text-outline'
+                          className={`py-3 px-4 whitespace-nowrap font-mono text-[12px] ${
+                            isSelected ? 'font-semibold text-slate-900' : 'text-slate-500'
                           }`}
                         >
                           {entry.time}
-                          {entry.timeNote ? <div className="text-[10px] text-outline">{entry.timeNote}</div> : null}
+                          {entry.timeNote ? <div className="text-[10px] text-slate-400">{entry.timeNote}</div> : null}
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2.5">
                             <div
-                              className={`w-6 h-6 rounded-full text-white text-[10px] font-bold flex items-center justify-center ${entry.actorAvatarClassName}`}
+                              className={`w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center ${entry.actorAvatarClassName}`}
                             >
                               {entry.actorInitials}
                             </div>
-                            <span className="font-medium text-on-surface">{entry.actorName}</span>
+                            <span className="font-semibold text-slate-900">{entry.actorName}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-2 whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold border ${entry.moduleClassName}`}>
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${entry.moduleClassName}`}>
                             {entry.moduleLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-2 whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-medium ${entry.actionClassName}`}>
+                        <td className="py-3 px-3 whitespace-nowrap">
+                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${entry.actionClassName}`}>
                             {entry.actionLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-2 whitespace-nowrap font-mono font-bold text-primary">{entry.objectId}</td>
-                        <td className="py-3 px-3 text-on-surface">
-                          <p className="line-clamp-1 font-medium text-on-surface">{entry.description}</p>
-                          <span className="text-[11px] text-outline">{entry.descriptionNote}</span>
+                        <td className="py-3 px-3 whitespace-nowrap font-mono font-bold text-emerald-700">{entry.objectId}</td>
+                        <td className="py-3 px-4 text-slate-900">
+                          <p className="line-clamp-1 font-medium">{entry.description}</p>
+                          <span className="text-[11px] text-slate-500">{entry.descriptionNote}</span>
                         </td>
-                        <td className="py-3 px-2 whitespace-nowrap text-center">
+                        <td className="py-3 px-3 whitespace-nowrap text-center">
                           <StatusBadge label={entry.resultLabel} className={entry.resultClassName} minWidthClassName="min-w-[105px]" />
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap text-right">
+                        <td className="py-3 px-4 whitespace-nowrap text-right">
                           <button
                             className={
                               isSelected
-                                ? 'px-2.5 py-1 rounded bg-primary-container text-white text-label-sm font-semibold hover:bg-primary transition shadow-2xs'
-                                : 'px-2.5 py-1 rounded bg-surface-container-low hover:bg-surface-container border border-outline-variant text-on-surface text-label-sm font-semibold transition'
+                                ? 'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition shadow-sm'
+                                : 'px-3 py-1 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold transition shadow-sm'
                             }
                           >
                             {isSelected ? 'Đang chọn' : 'Chi tiết'}
@@ -308,32 +313,30 @@ export default function ActivityLogPage() {
             />
           </div>
           {/* COMPACT SECTION: SỰ KIỆN QUAN TRỌNG GẦN ĐÂY */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm">
-            <div className="flex items-center justify-between pb-3 mb-2 border-b border-outline-variant">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary-container" data-icon="flag">
-                  flag
-                </span>
-                <h3 className="font-title-lg text-title-lg font-bold text-on-surface">Sự kiện quan trọng gần đây</h3>
+          <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2 text-emerald-700">
+                <Flag size={20} />
+                <h3 className="text-base font-bold text-slate-900">Sự kiện quan trọng gần đây</h3>
               </div>
-              <span className="font-label-sm text-label-sm text-outline">Ghi nhận qua kênh nghiệp vụ chính thức</span>
+              <span className="text-xs text-slate-500">Ghi nhận qua kênh nghiệp vụ chính thức</span>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {LOG_ENTRIES.length === 0 ? (
-                <p className="text-body-sm text-outline text-center py-4">Không có sự kiện nào gần đây.</p>
+                <p className="text-sm text-slate-500 text-center py-4">Không có sự kiện nào gần đây.</p>
               ) : (
                 LOG_ENTRIES.slice(0, 4).map((entry) => (
-                  <div key={entry.id} className="flex items-start gap-3 p-2 rounded-lg bg-surface-container-low hover:bg-surface-container transition">
+                  <div key={entry.id} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors border border-slate-100">
                     <span
                       className={`px-2 py-0.5 rounded text-[10px] font-bold border mt-0.5 whitespace-nowrap ${entry.moduleClassName}`}
                     >
                       {entry.moduleLabel}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-body-sm text-body-sm text-on-surface font-medium leading-snug">{entry.description}</p>
-                      <p className="font-body-sm text-[11px] text-outline">{entry.descriptionNote}</p>
+                      <p className="text-sm text-slate-900 font-medium leading-snug">{entry.description}</p>
+                      <p className="text-[11px] text-slate-500 mt-1">{entry.descriptionNote}</p>
                     </div>
-                    <span className="font-mono text-outline text-[11px] whitespace-nowrap">{entry.time}</span>
+                    <span className="font-mono text-slate-500 text-[11px] whitespace-nowrap font-medium">{entry.time}</span>
                   </div>
                 ))
               )}
@@ -344,72 +347,68 @@ export default function ActivityLogPage() {
       {/* DETAIL MODAL: NHẬT KÝ THAO TÁC ĐÃ CHỌN */}
       <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
         {selected ? (
-          <div className="flex flex-col overflow-hidden">
+          <div className="flex flex-col overflow-hidden max-h-[85vh]">
           {/* Detail Header */}
-          <div className="p-space-md bg-surface-container-low border-b border-outline-variant flex items-start justify-between">
+          <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-mono font-bold text-title-md text-on-surface">#{selected.id}</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="font-mono font-bold text-lg text-slate-900">#{selected.id}</span>
                 <StatusBadge label={selected.resultLabel} className={selected.resultClassName} />
               </div>
-              <p className="font-body-sm text-body-sm text-on-surface-variant">
-                Thao tác: <span className="font-semibold text-primary">{selected.actionTypeLabel}</span>
+              <p className="text-sm text-slate-600">
+                Thao tác: <span className="font-bold text-emerald-700">{selected.actionTypeLabel}</span>
               </p>
             </div>
           </div>
           {/* Body Content Zones */}
-          <div className="flex-1 min-h-0 p-space-md space-y-space-md text-body-sm font-body-sm overflow-y-auto">
+          <div className="flex-1 min-h-0 p-4 space-y-5 text-sm overflow-y-auto">
             {/* 1. THÔNG TIN CHUNG */}
             <div>
-              <div className="flex items-center gap-1.5 text-outline font-label-sm uppercase tracking-wider mb-2">
-                <span className="material-symbols-outlined text-[14px]" data-icon="info">
-                  info
-                </span>
+              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold uppercase tracking-wider mb-2.5">
+                <Info size={16} />
                 <span className="">1. THÔNG TIN CHUNG</span>
               </div>
-              <div className="bg-surface-container-low/60 rounded-lg p-2.5 border border-outline-variant/60 space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-outline">Thời gian:</span>
-                  <span className="font-medium text-on-surface font-mono">
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Thời gian:</span>
+                  <span className="font-medium text-slate-900 font-mono">
                     {selected.time} - {selected.timeNote ?? 'Hôm nay'} (04/12/2024)
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-outline">Người thực hiện:</span>
-                  <span className="font-medium text-on-surface text-right">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Người thực hiện:</span>
+                  <span className="font-semibold text-slate-900 text-right">
                     {selected.actorName}
                     <br />
-                    <span className="text-[11px] text-outline">{selected.actorRole}</span>
+                    <span className="text-[11px] text-slate-500 font-normal">{selected.actorRole}</span>
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-outline">Phân hệ:</span>
-                  <span className="font-medium text-primary font-semibold">{selected.moduleLabel}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Phân hệ:</span>
+                  <span className="font-bold text-emerald-700">{selected.moduleLabel}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-outline">Địa chỉ IP / Thiết bị:</span>
-                  <span className="font-mono text-on-surface text-[11px]">{selected.ipDevice}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Địa chỉ IP / Thiết bị:</span>
+                  <span className="font-mono text-slate-900 text-[11px]">{selected.ipDevice}</span>
                 </div>
               </div>
             </div>
             {/* 2. ĐỐI TƯỢNG LIÊN QUAN */}
             <div>
-              <div className="flex items-center gap-1.5 text-outline font-label-sm uppercase tracking-wider mb-2">
-                <span className="material-symbols-outlined text-[14px]" data-icon="link">
-                  link
-                </span>
+              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold uppercase tracking-wider mb-2.5">
+                <LinkIcon size={16} />
                 <span className="">2. ĐỐI TƯỢNG LIÊN QUAN</span>
               </div>
-              <div className="bg-surface-container-low/60 rounded-lg p-2.5 border border-outline-variant/60 space-y-2">
+              <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 space-y-2.5">
                 {selected.relatedObjects.map((field) => (
                   <div key={field.label} className="flex justify-between items-start">
-                    <span className="text-outline">{field.label}</span>
-                    <span className="font-medium text-on-surface text-right">
+                    <span className="text-slate-500">{field.label}</span>
+                    <span className="font-semibold text-slate-900 text-right">
                       {field.value}
                       {field.sub ? (
                         <>
                           <br />
-                          <span className="text-[11px] text-outline">{field.sub}</span>
+                          <span className="text-[11px] text-slate-500 font-normal">{field.sub}</span>
                         </>
                       ) : null}
                     </span>
@@ -419,37 +418,33 @@ export default function ActivityLogPage() {
             </div>
             {/* 3. MÔ TẢ CHI TIẾT & BIẾN ĐỘNG TRẠNG THÁI */}
             <div>
-              <div className="flex items-center gap-1.5 text-outline font-label-sm uppercase tracking-wider mb-2">
-                <span className="material-symbols-outlined text-[14px]" data-icon="tune">
-                  tune
-                </span>
+              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold uppercase tracking-wider mb-2.5">
+                <SlidersHorizontal size={16} />
                 <span className="">3. CHI TIẾT &amp; BIẾN ĐỘNG TRẠNG THÁI</span>
               </div>
-              <div className="space-y-2">
-                <div className="p-2.5 rounded-lg border border-outline-variant bg-white">
-                  <span className="text-[11px] font-semibold text-outline uppercase block mb-1">Nội dung thao tác</span>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg border border-slate-200 bg-white shadow-sm">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block mb-1.5">Nội dung thao tác</span>
                   <p
-                    className="text-on-surface leading-relaxed text-body-sm"
+                    className="text-slate-900 leading-relaxed text-sm"
                     dangerouslySetInnerHTML={{ __html: selected.operationContentHtml }}
                   />
                 </div>
                 {/* State transition flow */}
-                <div className="p-2.5 rounded-lg border border-outline-variant bg-surface-container-low/50 flex items-center justify-between">
+                <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between shadow-sm">
                   <div>
-                    <span className="text-[10px] uppercase text-outline block">Trước thao tác</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Trước thao tác</span>
                     <span
-                      className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border ${selected.beforeStateClassName}`}
+                      className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded border ${selected.beforeStateClassName}`}
                     >
                       {selected.beforeStateLabel}
                     </span>
                   </div>
-                  <span className="material-symbols-outlined text-outline" data-icon="arrow_forward">
-                    arrow_forward
-                  </span>
+                  <ArrowRight size={18} className="text-slate-400" />
                   <div className="text-right">
-                    <span className="text-[10px] uppercase text-outline block">Sau thao tác</span>
+                    <span className="text-[10px] font-bold uppercase text-slate-500 block mb-1">Sau thao tác</span>
                     <span
-                      className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded border ${selected.afterStateClassName}`}
+                      className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded border ${selected.afterStateClassName}`}
                     >
                       {selected.afterStateLabel}
                     </span>
@@ -457,11 +452,9 @@ export default function ActivityLogPage() {
                 </div>
                 {/* Technical Note */}
                 {selected.technicalNote ? (
-                  <div className="p-2 rounded-lg bg-emerald-50/50 border border-emerald-200 text-[11px] text-tertiary">
-                    <div className="font-semibold text-primary mb-0.5 flex items-center gap-1">
-                      <span className="material-symbols-outlined text-[14px]" data-icon="edit_note">
-                        edit_note
-                      </span>{' '}
+                  <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-slate-700 shadow-sm">
+                    <div className="font-bold text-emerald-800 mb-1 flex items-center gap-1.5">
+                      <Pencil size={14} />
                       Ghi chú chuyên môn:
                     </div>
                     {selected.technicalNote}
@@ -471,38 +464,31 @@ export default function ActivityLogPage() {
             </div>
             {/* 4. LIÊN KẾT NGỮ CẢNH */}
             <div>
-              <div className="flex items-center gap-1.5 text-outline font-label-sm uppercase tracking-wider mb-2">
-                <span className="material-symbols-outlined text-[14px]" data-icon="hub">
-                  hub
-                </span>
+              <div className="flex items-center gap-1.5 text-slate-500 text-xs font-bold uppercase tracking-wider mb-2.5">
+                <LinkIcon size={16} />
                 <span className="">4. LIÊN KẾT NGỮ CẢNH</span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-2">
                 {selected.relatedLinks.map((link) => (
                   <a
                     key={link.label}
-                    className="flex items-center justify-between p-2 rounded-lg border border-outline-variant hover:border-primary bg-white hover:bg-surface-container-low transition group"
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50 transition-colors group shadow-sm"
                     href="#"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-outline group-hover:text-primary" data-icon={link.icon}>
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-slate-400 group-hover:text-emerald-600 transition-colors" data-icon={link.icon}>
                         {link.icon}
                       </span>
-                      <span className="text-body-sm font-medium text-on-surface">{link.label}</span>
+                      <span className="text-sm font-semibold text-slate-900 group-hover:text-emerald-800 transition-colors">{link.label}</span>
                     </div>
                     {link.badgeLabel ? (
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${link.badgeClassName ?? 'bg-surface-container text-primary'}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded ${link.badgeClassName ?? 'bg-slate-100 text-slate-700'}`}
                       >
                         {link.badgeLabel}
                       </span>
                     ) : (
-                      <span
-                        className="material-symbols-outlined text-[14px] text-outline group-hover:text-primary"
-                        data-icon="chevron_right"
-                      >
-                        chevron_right
-                      </span>
+                      <ChevronRight size={16} className="text-slate-400 group-hover:text-emerald-600 transition-colors" />
                     )}
                   </a>
                 ))}
@@ -510,31 +496,27 @@ export default function ActivityLogPage() {
             </div>
           </div>
           {/* 5. THAO TÁC NGỮ CẢNH (FOOTER ACTIONS) */}
-          <div className="p-space-md bg-surface-container-low border-t border-outline-variant space-y-2">
+          <div className="p-4 bg-slate-50 border-t border-slate-200 space-y-2.5">
             <button
-              className="w-full py-2 px-3 bg-primary-container hover:bg-primary text-white font-label-md text-label-md font-semibold rounded-lg shadow-sm flex items-center justify-center gap-2 transition active:scale-[0.99]"
+              className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-sm flex items-center justify-center gap-2 transition-colors"
               type="button"
               onClick={() => {
                 navigate('/ai-recommendations')
                 showToast(`Đang mở phân tích AI gốc cho ${selected.objectId}`)
               }}
             >
-              <span className="material-symbols-outlined text-[18px]" data-icon="psychology">
-                psychology
-              </span>
+              <Brain size={18} />
               <span className="">Xem phân tích AI gốc</span>
             </button>
             <button
-              className="w-full py-2 px-3 bg-white border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-lg flex items-center justify-center gap-2 transition"
+              className="w-full py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
               type="button"
               onClick={() => {
                 navigate('/farmers')
                 showToast(`Đang mở hồ sơ liên quan đến ${selected.actorName}`)
               }}
             >
-              <span className="material-symbols-outlined text-[18px] text-outline" data-icon="contact_page">
-                contact_page
-              </span>
+              <Contact size={18} className="text-slate-500" />
               <span className="">Xem hồ sơ khách hàng</span>
             </button>
           </div>

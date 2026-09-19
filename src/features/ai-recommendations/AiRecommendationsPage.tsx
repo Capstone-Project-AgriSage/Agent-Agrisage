@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import React, { useRef, useState, useMemo } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
@@ -15,6 +15,21 @@ import { usePagination } from '../../hooks/usePagination'
 import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
 import { products as STORE_PRODUCTS } from '../../data/mockProducts'
 import { downloadCsv } from '../../utils/csv'
+
+import {
+  Download,
+  AlertTriangle,
+  RotateCcw,
+  RefreshCw,
+  ZoomIn,
+  Pencil,
+  X,
+  Check,
+  CheckCircle,
+  Package,
+  ChevronRight,
+  BrainCircuit
+} from 'lucide-react'
 
 const STATUS_LABELS: Record<string, string> = {
   'cho-duyet': 'Chờ duyệt',
@@ -53,7 +68,7 @@ const CONFIDENCE_RANGES: Record<string, (percent: number) => boolean> = {
 }
 
 const DISEASE_OPTIONS = [
-  { value: '', label: 'Tất cả bệnh (5 lớp lúa P0)' },
+  { value: '', label: 'Tất cả bệnh' },
   { value: 'dao-on', label: 'Đạo ôn lá' },
   { value: 'bac-la', label: 'Bạc lá vi khuẩn' },
   { value: 'kho-van', label: 'Khô vằn' },
@@ -65,26 +80,28 @@ const AI_STATUS_OPTIONS = [
   { value: 'cho-duyet', label: 'Chờ duyệt' },
   { value: 'da-duyet', label: 'Đã phê duyệt' },
   { value: 'da-tu-choi', label: 'Đã từ chối' },
-  { value: 'chua-chac-chan', label: 'Chưa đủ chắc chắn (<70%)' },
+  { value: 'chua-chac-chan', label: 'Cần khảo sát (<70%)' },
 ]
 
 const CONFIDENCE_OPTIONS = [
   { value: '', label: 'Tất cả độ tin cậy' },
-  { value: 'high', label: '>90% (Độ tin cậy cao)' },
+  { value: 'high', label: '>90% (Cao)' },
   { value: 'med', label: '75-90% (Phù hợp)' },
-  { value: 'low', label: '<75% (Thấp / Chưa chắc chắn)' },
+  { value: 'low', label: '<75% (Thấp)' },
 ]
 
+type TabKey = 'all' | 'pending' | 'approved' | 'rejected'
+
 export default function AiRecommendationsPage() {
-  usePageHeader({
-    title: 'Quản lý thẩm định AI',
-  })
+  usePageHeader({ title: '' }) // Flat layout doesn't use global page header background
 
   const { user } = useAuth()
   const [cases, setCases] = useState(INITIAL_AI_CASES)
   const { showToast } = useToast()
   const agentNoteRef = useRef<HTMLTextAreaElement>(null)
   const rejectReasonRef = useRef<HTMLSelectElement>(null)
+
+  const [activeTab, setActiveTab] = useState<TabKey>('all')
 
   // Correction Mode State
   const [isCorrecting, setIsCorrecting] = useState(false)
@@ -93,7 +110,7 @@ export default function AiRecommendationsPage() {
 
   const approveCase = (id: string) => {
     if (!user.can_review_ai) {
-      showToast('Tài khoản của bạn không có quyền Thẩm định viên AI (can_review_ai: false)')
+      showToast('Tài khoản của bạn không có quyền Thẩm định viên AI')
       return
     }
     const note = agentNoteRef.current?.value.trim()
@@ -112,7 +129,7 @@ export default function AiRecommendationsPage() {
           : c,
       ),
     )
-    showToast(`Đã phê duyệt gợi ý #${id} - đã gửi đến nông dân${note ? ` kèm ghi chú` : ''}`)
+    showToast(`Đã phê duyệt gợi ý #${id} - đã gửi đến nông dân`)
   }
 
   const approveWithCorrection = (id: string) => {
@@ -174,7 +191,7 @@ export default function AiRecommendationsPage() {
           : c,
       ),
     )
-    showToast(`Đã từ chối gợi ý #${id}${reasonLabel ? ` - Lý do: ${reasonLabel}` : ''}`)
+    showToast(`Đã từ chối gợi ý #${id}`)
   }
 
   const requestFieldSurvey = (id: string, farmerName: string) => {
@@ -190,25 +207,31 @@ export default function AiRecommendationsPage() {
 
   const [diseaseFilter, setDiseaseFilter] = useState('')
   const [confidenceFilter, setConfidenceFilter] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
 
   const {
     search,
     setSearch,
-    statusFilter,
-    setStatusFilter,
     filtered: filteredCases,
     clearFilters: handleClearFiltersBase,
   } = useFilteredList(
     cases,
-    'cho-duyet',
-    (item, keyword, status) =>
-      (!keyword ||
-        item.id.toLowerCase().includes(keyword) ||
-        item.farmerName.toLowerCase().includes(keyword) ||
-        item.field.farmerPhone.toLowerCase().includes(keyword)) &&
-      (!status || item.statusBadge.label === STATUS_LABELS[status]) &&
-      (!diseaseFilter || item.diseaseLabel.includes(DISEASE_KEYWORDS[diseaseFilter])) &&
-      (!confidenceFilter || CONFIDENCE_RANGES[confidenceFilter](item.confidencePercent)),
+    'all',
+    (item, keyword) => {
+      // 1. Text Search
+      const matchKey = !keyword || item.id.toLowerCase().includes(keyword) || item.farmerName.toLowerCase().includes(keyword) || item.field.farmerPhone.toLowerCase().includes(keyword)
+      // 2. Tab Filter
+      const matchTab = activeTab === 'all' || 
+                       (activeTab === 'pending' && item.statusBadge.label === 'Chờ duyệt') ||
+                       (activeTab === 'approved' && item.statusBadge.label === 'Đã phê duyệt') ||
+                       (activeTab === 'rejected' && item.statusBadge.label === 'Đã từ chối')
+      // 3. Dropdowns
+      const matchStatus = !statusFilter || item.statusBadge.label === STATUS_LABELS[statusFilter]
+      const matchDisease = !diseaseFilter || item.diseaseLabel.includes(DISEASE_KEYWORDS[diseaseFilter])
+      const matchConf = !confidenceFilter || CONFIDENCE_RANGES[confidenceFilter](item.confidencePercent)
+      
+      return matchKey && matchTab && matchStatus && matchDisease && matchConf
+    },
     '',
   )
 
@@ -216,6 +239,7 @@ export default function AiRecommendationsPage() {
     handleClearFiltersBase()
     setDiseaseFilter('')
     setConfidenceFilter('')
+    setStatusFilter('')
   }
 
   const {
@@ -228,276 +252,262 @@ export default function AiRecommendationsPage() {
     goPrev,
     goNext,
     setPage,
-  } = usePagination(filteredCases, 10)
+  } = usePagination(filteredCases, 20)
 
-  const totalCasesToday = cases.length
-  const pendingCount = cases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
-  const approvedCount = cases.filter((c) => c.statusBadge.label === 'Đã phê duyệt').length
-  const rejectedCount = cases.filter((c) => c.statusBadge.label === 'Đã từ chối').length
+  // GROUP THE DATA
+  const groupedCases = useMemo(() => {
+    const groups: Record<string, typeof paginatedCases> = {}
+    paginatedCases.forEach((c) => {
+      const groupName = c.diseaseLabel || 'Bệnh khác'
+      if (!groups[groupName]) groups[groupName] = []
+      groups[groupName].push(c)
+    })
+    return groups
+  }, [paginatedCases])
+
   const uncertainCount = cases.filter((c) => c.statusBadge.label === 'Chưa đủ chắc chắn').length
 
+  const TABS: { key: TabKey, label: string }[] = [
+    { key: 'all', label: 'Tất cả ca' },
+    { key: 'pending', label: 'Chờ duyệt' },
+    { key: 'approved', label: 'Đã phê duyệt' },
+    { key: 'rejected', label: 'Đã từ chối' }
+  ]
+
   return (
-    <>
-      {/* 1. HEADER CONTROL BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200">
-            <span className="material-symbols-outlined text-[24px]">psychology</span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-on-surface text-base">Thẩm định chẩn đoán bệnh lúa AI</h1>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold text-[11px]">Mô hình v2.1</span>
-            </div>
-            <p className="text-xs text-outline mt-0.5">
-              5 bệnh lúa ĐBSCL • Thẩm định viên: <strong className="text-on-surface font-semibold">{user.name}</strong> ({user.hub})
-            </p>
-          </div>
+    <div className="bg-white -m-4 lg:-m-6 p-4 lg:p-8 min-h-[calc(100vh-4rem)] text-slate-900">
+      
+      {/* Title & Actions */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Thẩm định chẩn đoán bệnh lúa</h1>
+          <p className="text-sm text-slate-500 mt-1">Quản lý và phê duyệt các phác đồ điều trị do AI đề xuất từ ảnh chụp của nông dân.</p>
         </div>
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+        <div className="flex items-center gap-2">
           <button
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md shadow-sm transition-colors"
-            onClick={() => {
-              downloadCsv(
-                `phan-tich-ai-${Date.now()}.csv`,
-                filteredCases.map((c) => ({
-                  'Mã ca': c.id,
-                  'Nông dân': c.farmerName,
-                  'Khu vực': c.farmerLocationLine,
-                  'Bệnh nhận diện': c.diseaseLabel,
-                  'Độ tin cậy': `${c.confidencePercent}%`,
-                  'Trạng thái': c.statusBadge.label,
-                })),
-              )
-              showToast(`Đã xuất báo cáo ${filteredCases.length} kết quả phân tích`)
-            }}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md text-[13px] font-semibold transition-colors shadow-sm"
+            onClick={() => showToast('Đang xuất báo cáo JSON')}
           >
-            <span className="material-symbols-outlined text-[18px] text-outline">file_download</span>
-            <span>Xuất CSV</span>
+            <Download size={15} />
+            <span>Xuất JSON</span>
+          </button>
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-[13px] font-semibold transition-colors shadow-sm border border-slate-900"
+            onClick={() => showToast('Đã đồng bộ ca mới nhất từ App nông dân')}
+          >
+            <RefreshCw size={14} />
+            <span>Đồng bộ từ App</span>
           </button>
         </div>
       </div>
 
-      {/* 2. 4 CLEAN KPI SUMMARY CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        {/* Card 1: Chờ thẩm định */}
-        <div className="p-4 rounded-xl bg-surface-container-lowest border-2 border-amber-400/80 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Chờ thẩm định</span>
-            <span className="p-1 rounded bg-amber-50 text-amber-700 material-symbols-outlined text-[20px]">hourglass_top</span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface font-semibold">{pendingCount} <span className="text-sm font-normal text-outline">ca</span></div>
-            <div className="text-xs text-amber-700 font-medium mt-1 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-              <span>Cần duyệt phác đồ</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Đã phê duyệt */}
-        <div className="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đã phê duyệt</span>
-            <span className="p-1 rounded bg-emerald-50 text-emerald-700 material-symbols-outlined text-[20px]">check_circle</span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-primary font-semibold">{approvedCount} <span className="text-sm font-normal text-outline">ca</span></div>
-            <div className="text-xs text-emerald-700 font-medium mt-1">Đã mở bán thuốc cho nông dân</div>
-          </div>
-        </div>
-
-        {/* Card 3: Cần khảo sát / Chưa chắc chắn */}
-        <div className="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Cần khảo sát (&lt;70%)</span>
-            <span className="p-1 rounded bg-orange-50 text-orange-700 material-symbols-outlined text-[20px]">warning</span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-orange-700 font-semibold">{uncertainCount} <span className="text-sm font-normal text-outline">ca</span></div>
-            <div className="text-xs text-outline mt-1">Đã từ chối: {rejectedCount} ca</div>
-          </div>
-        </div>
-
-        {/* Card 4: Tổng ca tiếp nhận */}
-        <div className="p-4 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Tổng ca hôm nay</span>
-            <span className="p-1 rounded bg-blue-50 text-blue-700 material-symbols-outlined text-[20px]">analytics</span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface font-semibold">{totalCasesToday} <span className="text-sm font-normal text-outline">lượt</span></div>
-            <div className="text-xs text-outline mt-1">Trạm Thới Lai • Cần Thơ</div>
-          </div>
-        </div>
+      {/* Tabs */}
+      <div className="mt-8 border-b border-slate-200 flex items-center gap-6 overflow-x-auto scrollbar-hide">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => { setActiveTab(tab.key); setPage(1) }}
+            className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* 3. FILTER BAR */}
-      <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-wrap items-center justify-between gap-space-md">
-        <div className="flex flex-wrap items-center gap-space-sm flex-1">
+      {/* Warning Alert (if needed) */}
+      {uncertainCount > 0 && activeTab === 'all' && (
+        <div className="bg-amber-50 border border-amber-200 rounded-md p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 shadow-sm">
+          <div className="flex items-start gap-2.5">
+            <AlertTriangle size={18} className="text-amber-600 mt-0.5 shrink-0" />
+            <div>
+              <h3 className="text-[13px] font-bold text-amber-900">Cần xem xét kỹ ({uncertainCount} ca)</h3>
+              <p className="text-[13px] text-amber-700 mt-0.5">Có {uncertainCount} ca thẩm định chưa đủ độ tin cậy (dưới 70%), kỹ sư cần kiểm tra kỹ lại ảnh hoặc yêu cầu khảo sát thực địa trước khi duyệt.</p>
+            </div>
+          </div>
+          <button 
+            className="shrink-0 text-[13px] font-semibold text-amber-900 hover:text-amber-700 flex items-center gap-1"
+            onClick={() => { setStatusFilter('chua-chac-chan'); setActiveTab('all') }}
+          >
+            Lọc ca này <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* Filter Bar */}
+      <div className="flex flex-wrap items-center gap-3 mt-6">
+        <div className="relative max-w-sm flex-1 min-w-[240px]">
           <SearchInput
             value={search}
             onChange={setSearch}
-            placeholder="Tìm mã AI / tên nông dân / SĐT..."
-            className="relative min-w-[240px] flex-1 max-w-sm"
+            placeholder="Tìm kiếm mã AI, nông dân..."
+            className="w-full bg-white border-slate-300"
           />
-          <FilterSelect value={diseaseFilter} onChange={setDiseaseFilter} options={DISEASE_OPTIONS} />
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={AI_STATUS_OPTIONS} />
-          <FilterSelect value={confidenceFilter} onChange={setConfidenceFilter} options={CONFIDENCE_OPTIONS} />
         </div>
-        <button
-          className="px-3 py-1.5 rounded-lg text-outline hover:text-on-surface hover:bg-surface-container-low font-label-md text-label-md flex items-center gap-1 transition-colors"
-          onClick={handleClearFilters}
-        >
-          <span className="material-symbols-outlined text-[16px]">restart_alt</span>
-          <span>Xóa bộ lọc</span>
-        </button>
+        <FilterSelect value={diseaseFilter} onChange={setDiseaseFilter} options={DISEASE_OPTIONS} className="w-auto" />
+        <FilterSelect value={statusFilter} onChange={setStatusFilter} options={AI_STATUS_OPTIONS} className="w-auto" />
+        <FilterSelect value={confidenceFilter} onChange={setConfidenceFilter} options={CONFIDENCE_OPTIONS} className="w-auto" />
+        
+        {(search || diseaseFilter || statusFilter || confidenceFilter) && (
+          <button
+            className="px-3 py-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 font-semibold text-[13px] flex items-center gap-1.5 transition-colors"
+            onClick={handleClearFilters}
+          >
+            <RotateCcw size={14} />
+            <span>Xóa lọc</span>
+          </button>
+        )}
       </div>
 
-      {/* 4. MAIN EVALUATION TABLE */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
-        <div className="px-space-md py-space-sm border-b border-outline-variant flex items-center justify-between bg-surface-container-low/40">
-          <div className="flex items-center gap-2">
-            <span className="font-title-md text-title-md text-on-surface font-semibold">Hàng đợi thẩm định bệnh lúa</span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">{filteredCases.length} ca</span>
-          </div>
-          <div className="font-body-sm text-body-sm text-outline flex items-center gap-1">
-            <span>Đồng bộ từ app nông dân</span>
-            <span className="material-symbols-outlined text-[16px] text-emerald-600">sync</span>
-          </div>
-        </div>
-        <div className="flex-1 overflow-auto">
-          <table className="w-full text-left border-collapse">
+      {/* Grouped Table */}
+      <div className="mt-6 border border-slate-200 rounded-md overflow-hidden bg-white shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="bg-surface-container-low/80 border-b border-outline-variant">
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Mã AI</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Nông dân &amp; Thửa</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Ảnh lá</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Bệnh nhận diện</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Độ tin cậy</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Sản phẩm gợi ý</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Kho Thới Lai</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider">Trạng thái</th>
-                <th className="py-2.5 px-3 font-label-sm text-label-sm text-outline uppercase tracking-wider text-right">Thao tác</th>
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                <th className="py-3 px-4 w-28">Mã ca</th>
+                <th className="py-3 px-4">Nông dân & Thửa</th>
+                <th className="py-3 px-3">Ảnh lá</th>
+                <th className="py-3 px-3">Độ tin cậy</th>
+                <th className="py-3 px-3">Sản phẩm gợi ý</th>
+                <th className="py-3 px-3">Kho Thới Lai</th>
+                <th className="py-3 px-3 w-40">Trạng thái</th>
+                <th className="py-3 px-4 w-20 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/60 font-body-sm text-body-sm">
-              {filteredCases.length === 0 ? (
-                <EmptyTableRow colSpan={9} message="Không tìm thấy kết quả phù hợp với bộ lọc." />
-              ) : null}
-              {paginatedCases.map((item) => {
-                const isSelected = item.id === selectedId
-                return (
-                  <tr
-                    key={item.id}
-                    onClick={() => {
-                      setSelectedId(item.id)
-                      setIsCorrecting(false)
-                    }}
-                    className={`transition-colors cursor-pointer ${
-                      isSelected
-                        ? 'border-l-4 border-l-primary bg-primary/5 hover:bg-primary/10'
-                        : `hover:bg-surface-container-low ${item.rowClassName ?? ''}`
-                    }`}
-                  >
-                    <td className={`py-3 px-3 font-mono font-semibold ${isSelected ? 'text-primary' : item.idClassName}`}>#{item.id}</td>
-                    <td className="py-3 px-3">
-                      <div className="font-medium text-on-surface">{item.farmerName}</div>
-                      <div className="text-[11px] text-outline">{item.farmerLocationLine}</div>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className={`w-10 h-10 rounded border overflow-hidden relative group ${item.imageBorderClassName}`}>
-                        <img className={`w-full h-full object-cover ${item.imageBlurred ? 'blur-[1px] opacity-80' : ''}`} data-alt={item.imageAlt} src={item.imageSrc} />
-                        <span className="absolute inset-0 bg-black/20 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="material-symbols-outlined text-[14px]">zoom_in</span>
+            
+            {filteredCases.length === 0 && (
+               <tbody className="divide-y divide-slate-100 text-[13px]">
+                  <EmptyTableRow colSpan={8} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
+               </tbody>
+            )}
+
+            {Object.entries(groupedCases).map(([groupName, groupCases]) => (
+              <tbody key={groupName} className="divide-y divide-slate-100 text-[13px]">
+                {/* GROUP SUBHEADER */}
+                <tr className="bg-slate-50/80 border-b border-slate-200">
+                  <td colSpan={8} className="py-2 px-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] font-bold text-slate-700">{groupName}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold">{groupCases.length} ca</span>
+                    </div>
+                  </td>
+                </tr>
+
+                {/* GROUP ITEMS */}
+                {groupCases.map((item) => {
+                  const isSelected = item.id === selectedId
+                  return (
+                    <tr
+                      key={item.id}
+                      onClick={() => { setSelectedId(item.id); setIsCorrecting(false) }}
+                      className={`transition-colors cursor-pointer group ${
+                        isSelected
+                          ? 'border-l-2 border-l-emerald-600 bg-emerald-50 hover:bg-emerald-50'
+                          : `hover:bg-slate-50 border-l-2 border-l-transparent ${item.rowClassName ?? ''}`
+                      }`}
+                    >
+                      <td className="py-3 px-4">
+                        <span className={`font-mono font-bold ${isSelected ? 'text-emerald-700' : item.idClassName}`}>#{item.id}</span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="font-semibold text-slate-900">{item.farmerName}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{item.farmerLocationLine}</div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className={`w-10 h-10 rounded-md border overflow-hidden relative group-hover:border-emerald-300 transition-colors ${item.imageBorderClassName}`}>
+                          <img className={`w-full h-full object-cover ${item.imageBlurred ? 'blur-[1px] opacity-80' : ''}`} data-alt={item.imageAlt} src={item.imageSrc} />
+                        </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div className={`${item.confidenceBarClassName} h-full rounded-full`} style={{ width: `${item.confidencePercent}%` }}></div>
+                          </div>
+                          <span className={`font-bold text-[11px] tabular-nums ${item.confidenceTextClassName}`}>{item.confidencePercent}%</span>
+                        </div>
+                        <span className={`text-[11px] block mt-1 font-medium ${item.confidenceNoteClassName}`}>{item.confidenceNote}</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        {item.productLine ? (
+                          <>
+                            <div className="font-semibold text-slate-900">{item.productLine}</div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">{item.productSubLine}</div>
+                          </>
+                        ) : (
+                          <span className="text-slate-400 font-medium">—</span>
+                        )}
+                        {!item.productLine ? <div className="text-[11px] text-amber-700 font-bold mt-1">Chưa đủ tin cậy</div> : null}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center text-[11px] font-bold ${item.stockLabelClassName}`}>
+                          {item.productLine ? item.stockLabel : '—'}
                         </span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className={`font-medium ${item.diseaseLabelClassName}`}>{item.diseaseLabel}</span>
-                      <div className={`text-[11px] ${item.id === 'AI-2404' ? 'text-orange-700' : 'text-outline'}`}>{item.diseaseSubLabel}</div>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-12 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                          <div className={`${item.confidenceBarClassName} h-full rounded-full`} style={{ width: `${item.confidencePercent}%` }}></div>
-                        </div>
-                        <span className={`font-semibold text-[11px] ${item.confidenceTextClassName}`}>{item.confidencePercent}%</span>
-                      </div>
-                      <span className={`text-[10px] ${item.confidenceNoteClassName}`}>{item.confidenceNote}</span>
-                    </td>
-                    <td className="py-3 px-3">
-                      {item.productLine ? (
-                        <>
-                          <div className="font-medium text-on-surface">{item.productLine}</div>
-                          <div className="text-[10px] text-outline">{item.productSubLine}</div>
-                        </>
-                      ) : (
-                        <span className="text-outline font-medium">—</span>
-                      )}
-                      {!item.productLine ? <div className="text-[10px] text-orange-700">Chưa đủ tin cậy</div> : null}
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className={`inline-flex items-center text-[11px] font-medium ${item.stockLabelClassName}`}>
-                        {item.productLine ? item.stockLabel : '—'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[140px]" />
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      {item.actionsMode === 'menu' ? (
-                        <div className="flex items-center justify-end">
-                          <RowActionsMenu
-                            triggerLabel={`Thao tác #${item.id}`}
-                            actions={(item.actions ?? []).map((action) => ({
-                              ...action,
-                              onClick: () => handleCaseAction(item.id, action.label),
-                            }))}
-                          />
-                        </div>
-                      ) : item.actionsMode === 'sent' ? (
-                        <span className="text-[11px] text-emerald-700 font-medium">Đã duyệt</span>
-                      ) : (
-                        <button
-                          className="px-2 py-1 rounded bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface text-[11px] font-medium"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            requestFieldSurvey(item.id, item.farmerName)
-                          }}
-                        >
-                          Khảo sát
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
+                      </td>
+                      <td className="py-3 px-3">
+                        <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {item.actionsMode === 'menu' ? (
+                          <div className="flex justify-center" onClick={e => e.stopPropagation()}>
+                            <RowActionsMenu
+                              triggerLabel={`Thao tác`}
+                              actions={(item.actions ?? []).map((action) => ({
+                                ...action,
+                                onClick: () => handleCaseAction(item.id, action.label),
+                              }))}
+                            />
+                          </div>
+                        ) : item.actionsMode === 'sent' ? (
+                          <span className="text-[11px] text-emerald-700 font-bold">Đã duyệt</span>
+                        ) : (
+                          <button
+                            className="px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-bold transition-colors shadow-sm"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              requestFieldSurvey(item.id, item.farmerName)
+                            }}
+                          >
+                            Khảo sát
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            ))}
           </table>
         </div>
-        <Pagination
-          page={page}
-          totalPages={totalPages}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          totalCount={totalCount}
-          unitLabel="ca thẩm định lúa"
-          goPrev={goPrev}
-          goNext={goNext}
-          setPage={setPage}
-        />
+        
+        {/* Pagination */}
+        <div className="border-t border-slate-200 bg-white">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            startIndex={startIndex}
+            endIndex={endIndex}
+            totalCount={totalCount}
+            unitLabel="ca"
+            goPrev={goPrev}
+            goNext={goNext}
+            setPage={setPage}
+          />
+        </div>
       </div>
 
-      {/* 5. DETAIL MODAL: 2-COLUMN ERGONOMIC LAYOUT */}
+      {/* DETAIL MODAL (No changes to internal layout, keeps its excellent ergonomic design) */}
       <DetailModal open={selected !== null} onClose={() => setSelectedId(null)} widthClassName="max-w-3xl">
         {selected ? (
-          <div className="flex flex-col bg-surface-container-lowest rounded-xl overflow-hidden shadow-xl">
+          <div className="flex flex-col bg-white rounded-xl overflow-hidden shadow-xl">
             {/* Modal Header */}
-            <div className="p-4 bg-surface-container-low/60 border-b border-outline-variant flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <span className="px-2.5 py-1 rounded font-mono font-bold text-xs bg-primary/10 text-primary">#{selected.id}</span>
-                <span className="font-semibold text-on-surface text-base">Thẩm định chẩn đoán bệnh lúa</span>
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="px-2.5 py-1 rounded font-mono font-bold text-xs bg-emerald-100 text-emerald-800">#{selected.id}</span>
+                <span className="font-bold text-slate-900 text-lg">Chi tiết ca thẩm định</span>
               </div>
               <div className="flex items-center gap-2">
                 <StatusBadge label={selected.panelBadge.label} className={selected.panelBadge.className} />
@@ -505,54 +515,54 @@ export default function AiRecommendationsPage() {
             </div>
 
             {/* Modal 2-Column Body */}
-            <div className="p-4 grid grid-cols-1 md:grid-cols-12 gap-5">
+            <div className="p-5 grid grid-cols-1 md:grid-cols-12 gap-5">
               {/* Left Column: Leaf Image & AI Result */}
-              <div className="md:col-span-5 flex flex-col gap-3">
-                <div className="relative w-full h-56 rounded-xl overflow-hidden border border-outline-variant bg-slate-900">
+              <div className="md:col-span-5 flex flex-col gap-4">
+                <div className="relative w-full h-56 rounded-xl overflow-hidden border border-slate-200 bg-slate-900">
                   <img
                     className={`w-full h-full object-contain ${selected.imageBlurred ? 'blur-sm' : ''}`}
                     data-alt={selected.imageAlt}
                     src={selected.imageSrc}
                   />
-                  <div className="absolute bottom-2 right-2 bg-black/75 text-white text-[10px] px-2 py-0.5 rounded-md backdrop-blur-sm">
+                  <div className="absolute bottom-2 right-2 bg-black/75 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm font-semibold">
                     Mô hình Rice v2.1
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant/60">
-                  <div className="text-[11px] text-outline">Bệnh AI phân loại</div>
-                  <div className="font-bold text-on-surface text-sm mt-0.5">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bệnh AI phân loại</div>
+                  <div className="font-bold text-slate-900 text-base mt-1">
                     {selected.diseaseFullLabel}
                   </div>
                   {selected.diseaseLatin ? (
-                    <div className="text-xs text-outline italic">{selected.diseaseLatin}</div>
+                    <div className="text-xs text-slate-500 italic mt-0.5">{selected.diseaseLatin}</div>
                   ) : null}
 
-                  <div className="mt-2.5 pt-2 border-t border-outline-variant/60 flex items-center justify-between">
-                    <span className="text-xs text-outline">Độ tin cậy:</span>
-                    <span className={`font-bold text-sm ${selected.confidenceFullClassName}`}>
+                  <div className="mt-3 pt-3 border-t border-slate-200 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-500">Độ tin cậy:</span>
+                    <span className={`font-bold text-sm tabular-nums ${selected.confidenceFullClassName}`}>
                       {selected.confidenceFullLabel}
                     </span>
                   </div>
                 </div>
 
                 {/* Farmer quick metadata */}
-                <div className="p-3 rounded-xl bg-surface-container-lowest border border-outline-variant/60 space-y-1.5 text-xs">
+                <div className="p-4 rounded-xl bg-white border border-slate-200 space-y-2 text-[13px] shadow-sm">
                   <div className="flex justify-between">
-                    <span className="text-outline">Nông dân:</span>
-                    <span className="font-semibold text-on-surface">{selected.field.farmerName}</span>
+                    <span className="text-slate-500">Nông dân:</span>
+                    <span className="font-semibold text-slate-900">{selected.field.farmerName}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-outline">SĐT:</span>
-                    <span className="font-mono text-primary font-medium">{selected.field.farmerPhone}</span>
+                    <span className="text-slate-500">SĐT:</span>
+                    <span className="font-mono text-emerald-700 font-semibold">{selected.field.farmerPhone}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-outline">Thửa ruộng:</span>
-                    <span className="text-on-surface">{selected.field.plotLabel}</span>
+                    <span className="text-slate-500">Thửa ruộng:</span>
+                    <span className="text-slate-900 font-medium">{selected.field.plotLabel}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-outline">Giống lúa:</span>
-                    <span className="text-on-surface">{selected.field.varietyLabel}</span>
+                    <span className="text-slate-500">Giống lúa:</span>
+                    <span className="text-slate-900 font-medium">{selected.field.varietyLabel}</span>
                   </div>
                 </div>
               </div>
@@ -561,65 +571,65 @@ export default function AiRecommendationsPage() {
               <div className="md:col-span-7 flex flex-col gap-4">
                 {/* Proposed Medication Card */}
                 <div>
-                  <span className="text-xs font-semibold text-outline uppercase tracking-wider block mb-1.5">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
                     Phác đồ thuốc đề xuất
                   </span>
                   {selected.product ? (
-                    <div className="p-3 rounded-xl border border-outline-variant bg-surface-container-lowest space-y-2">
+                    <div className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
-                          <div className="font-bold text-primary text-base">{selected.product.name}</div>
-                          <div className="text-xs text-outline">{selected.product.activeIngredient}</div>
+                          <div className="font-bold text-emerald-700 text-lg">{selected.product.name}</div>
+                          <div className="text-[13px] text-slate-500 mt-1">{selected.product.activeIngredient}</div>
                         </div>
-                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="px-2.5 py-1 rounded-md text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                           {selected.product.fitTag}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 pt-2 border-t border-outline-variant/60 text-xs">
+                      <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100 text-[13px]">
                         <div>
-                          <span className="text-outline block">Giá niêm yết</span>
-                          <span className="font-semibold text-on-surface">{selected.product.price} {selected.product.priceUnit}</span>
+                          <span className="text-slate-500 block mb-1">Giá niêm yết</span>
+                          <span className="font-semibold text-slate-900">{selected.product.price} <span className="text-xs text-slate-500">{selected.product.priceUnit}</span></span>
                         </div>
                         <div>
-                          <span className="text-outline block">Kho Thới Lai</span>
-                          <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">inventory</span>
+                          <span className="text-slate-500 block mb-1">Kho Thới Lai</span>
+                          <span className="font-semibold text-emerald-700 flex items-center gap-1.5">
+                            <Package size={14} />
                             <span>{selected.product.stockLabel}</span>
                           </span>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="p-3 rounded-xl border border-orange-200 bg-orange-50/60 text-orange-800 text-xs">
+                    <div className="p-4 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 text-[13px] font-medium">
                       {selected.noProductNote}
                     </div>
                   )}
                 </div>
 
                 {/* Agent Decision Panel */}
-                <div className="p-3.5 rounded-xl bg-surface-container-low/40 border border-outline-variant space-y-3">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-on-surface">Đại lý phê duyệt</span>
+                    <span className="text-[13px] font-bold text-slate-900">Đại lý phê duyệt</span>
                     <button
                       type="button"
                       onClick={() => setIsCorrecting(!isCorrecting)}
-                      className="text-xs font-medium text-primary hover:underline flex items-center gap-1"
+                      className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1.5 transition-colors"
                     >
-                      <span className="material-symbols-outlined text-[14px]">edit_note</span>
+                      <Pencil size={12} />
                       <span>{isCorrecting ? 'Hủy hiệu chỉnh' : 'Đổi bệnh / thuốc khác'}</span>
                     </button>
                   </div>
 
                   {isCorrecting && (
-                    <div className="p-3 rounded-lg border border-primary/30 bg-primary/5 space-y-2.5">
+                    <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50 space-y-3">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-800 mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
                           Chọn lại bệnh chính xác:
                         </label>
                         <select
                           value={correctedDisease}
                           onChange={(e) => setCorrectedDisease(e.target.value)}
-                          className="w-full p-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-medium"
+                          className="w-full p-2.5 text-[13px] bg-white border border-slate-300 rounded-md text-slate-900 font-semibold focus:border-emerald-500 outline-none"
                         >
                           {CANONICAL_RICE_DISEASES.map((d) => (
                             <option key={d.id} value={d.label}>
@@ -630,13 +640,13 @@ export default function AiRecommendationsPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-800 mb-1">
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
                           Chỉ định thuốc từ kho:
                         </label>
                         <select
                           value={correctedProductId}
                           onChange={(e) => setCorrectedProductId(e.target.value)}
-                          className="w-full p-2 text-xs bg-white border border-slate-300 rounded-lg text-slate-800 font-medium"
+                          className="w-full p-2.5 text-[13px] bg-white border border-slate-300 rounded-md text-slate-900 font-semibold focus:border-emerald-500 outline-none"
                         >
                           {STORE_PRODUCTS.map((p) => (
                             <option key={p.id} value={p.id}>
@@ -649,26 +659,26 @@ export default function AiRecommendationsPage() {
                   )}
 
                   <div>
-                    <label className="block text-xs font-medium text-on-surface mb-1">
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1.5">
                       Ghi chú chuyên môn gửi nông dân:
                     </label>
                     <textarea
                       key={selected.id}
                       ref={agentNoteRef}
-                      className="w-full p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-xs text-on-surface focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-outline resize-none"
+                      className="w-full p-3 bg-white border border-slate-300 rounded-lg text-[13px] text-slate-900 focus:border-emerald-500 outline-none placeholder:text-slate-400 resize-none shadow-sm"
                       placeholder="Ghi chú thêm về liều lượng phun xịt hoặc cách xử lý nước ruộng..."
-                      rows={2}
+                      rows={3}
                       defaultValue={selected.agentNote ?? selected.defaultAgentNote}
                     />
                   </div>
 
                   {!isCorrecting && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-outline shrink-0">Lý do từ chối:</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[11px] font-bold text-slate-500 shrink-0">Lý do từ chối:</span>
                       <select
                         key={selected.id}
                         ref={rejectReasonRef}
-                        className="py-1 px-2 text-xs bg-surface-container-lowest border border-outline-variant rounded text-on-surface-variant flex-1"
+                        className="p-2 text-[13px] bg-white border border-slate-300 rounded-md text-slate-700 font-medium flex-1 focus:border-emerald-500 outline-none shadow-sm"
                         defaultValue=""
                       >
                         <option value="">-- Nếu từ chối, chọn lý do --</option>
@@ -682,31 +692,31 @@ export default function AiRecommendationsPage() {
                   )}
 
                   {/* Actions */}
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                  <div className="grid grid-cols-2 gap-3 pt-2">
                     <button
-                      className="py-2 px-3 rounded-lg bg-surface-container-lowest border border-error/40 hover:bg-error/5 text-error text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="py-2.5 px-4 rounded-lg bg-white border border-rose-300 hover:bg-rose-50 text-rose-700 text-[13px] font-bold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={selected.actionsMode === 'sent'}
                       onClick={() => rejectCase(selected.id)}
                     >
-                      <span className="material-symbols-outlined text-[16px]">close</span>
+                      <X size={16} />
                       <span>Từ chối</span>
                     </button>
 
                     {isCorrecting ? (
                       <button
-                        className="py-2 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-sm"
+                        className="py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                         onClick={() => approveWithCorrection(selected.id)}
                       >
-                        <span className="material-symbols-outlined text-[16px]">done_all</span>
+                        <CheckCircle size={16} />
                         <span>Hiệu chỉnh &amp; Duyệt</span>
                       </button>
                     ) : (
                       <button
-                        className="py-2 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold flex items-center justify-center gap-1 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={selected.actionsMode === 'sent'}
                         onClick={() => approveCase(selected.id)}
                       >
-                        <span className="material-symbols-outlined text-[16px]">check</span>
+                        <Check size={16} />
                         <span>{selected.actionsMode === 'sent' ? 'Đã duyệt' : 'Phê duyệt phác đồ'}</span>
                       </button>
                     )}
@@ -717,6 +727,6 @@ export default function AiRecommendationsPage() {
           </div>
         ) : null}
       </DetailModal>
-    </>
+    </div>
   )
 }

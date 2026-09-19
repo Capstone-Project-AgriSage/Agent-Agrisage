@@ -16,6 +16,22 @@ import { usePagination } from '../../hooks/usePagination'
 import { contactRequests as INITIAL_REQUESTS } from '../../data/mockContactRequests'
 import type { ContactRequestStatus } from '../../types'
 
+import {
+  ChevronRight,
+  MessageSquare,
+  AlertCircle,
+  RefreshCcw,
+  CheckCircle2,
+  FilterX,
+  MapPin,
+  Phone,
+  MessageCircle,
+  UserCheck,
+  CheckCircle,
+  MessageSquareWarning,
+  Smartphone
+} from 'lucide-react'
+
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa xử lý', 'Đang xử lý', 'Đã xử lý']
 const REQUEST_TYPE_OPTIONS = ['Tất cả loại yêu cầu', 'Kỹ thuật canh tác', 'Đặt vật tư', 'Sổ nợ mùa vụ', 'Khác']
 
@@ -47,10 +63,10 @@ export default function ContactPage() {
               assignedTo: label === 'Chưa xử lý' ? undefined : `${user.name} (${user.role})`,
               actions:
                 label === 'Đã xử lý'
-                  ? [{ label: 'Xem chi tiết', icon: 'visibility' }]
+                  ? [{ label: 'Xem chi tiết', icon: 'Eye' }]
                   : [
-                      { label: 'Xem chi tiết', icon: 'visibility' },
-                      { label: 'Đánh dấu đã xử lý', icon: 'task_alt', tone: 'primary' },
+                      { label: 'Xem chi tiết', icon: 'Eye' },
+                      { label: 'Đánh dấu đã xử lý', icon: 'CheckCircle', tone: 'primary' },
                     ],
             }
           : r,
@@ -105,78 +121,84 @@ export default function ContactPage() {
   const inProgressCount = requests.filter((r) => r.statusBadge.label === 'Đang xử lý').length
   const resolvedCount = requests.filter((r) => r.statusBadge.label === 'Đã xử lý').length
 
+  const getChannelIcon = (iconName: string) => {
+    if (iconName === 'chat' || iconName === 'sms') return <MessageSquareWarning size={14} className="text-slate-500" />
+    if (iconName === 'phone_android') return <Smartphone size={14} className="text-slate-500" />
+    return <MessageCircle size={14} className="text-slate-500" />
+  }
+
   return (
     <>
       {/* BREADCRUMB */}
-      <nav className="flex items-center gap-2 text-body-sm font-body-sm text-outline">
-        <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
-        <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
-        <span className="text-on-surface font-medium">Yêu cầu hỗ trợ</span>
+      <nav className="flex items-center gap-1.5 text-sm text-slate-500 mb-4">
+        <Link className="hover:text-emerald-700 transition-colors" to="/">Bảng điều khiển</Link>
+        <ChevronRight size={14} />
+        <span className="text-emerald-700 font-medium">Yêu cầu hỗ trợ</span>
       </nav>
 
       {/* KPI CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-base shadow-sm flex items-start justify-between">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-start justify-between hover:border-slate-300 transition-colors">
           <div>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Tổng yêu cầu</span>
-            <div className="font-metric-num text-metric-num text-on-surface mt-1">{requests.length}</div>
+            <span className="text-xs uppercase tracking-wider text-slate-500 font-semibold">Tổng yêu cầu</span>
+            <div className="text-2xl text-slate-900 font-bold mt-1">{requests.length}</div>
           </div>
-          <div className="p-2.5 bg-surface-container rounded-lg text-primary">
-            <span className="material-symbols-outlined text-2xl">forum</span>
+          <div className="p-2.5 bg-slate-50 rounded-xl text-slate-600">
+            <MessageSquare size={24} />
           </div>
         </div>
-        <div className="bg-surface-container-lowest border-2 border-amber-300 rounded-xl p-space-base shadow-sm flex items-start justify-between">
+        <div className="bg-white border-2 border-amber-300 rounded-xl p-4 shadow-sm flex items-start justify-between">
           <div>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-amber-700">Chưa xử lý</span>
-            <div className="font-metric-num text-metric-num text-amber-700 mt-1">{pendingCount}</div>
+            <span className="text-xs uppercase tracking-wider text-amber-700 font-semibold">Chưa xử lý</span>
+            <div className="text-2xl text-amber-700 font-bold mt-1">{pendingCount}</div>
           </div>
-          <div className="p-2.5 bg-amber-100 rounded-lg text-amber-700">
-            <span className="material-symbols-outlined text-2xl">priority_high</span>
+          <div className="p-2.5 bg-amber-100 rounded-xl text-amber-700">
+            <AlertCircle size={24} />
           </div>
         </div>
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-base shadow-sm flex items-start justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-start justify-between hover:border-slate-300 transition-colors">
           <div>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Đang xử lý</span>
-            <div className="font-metric-num text-metric-num text-sky-700 mt-1">{inProgressCount}</div>
+            <span className="text-xs uppercase tracking-wider text-slate-500 font-semibold">Đang xử lý</span>
+            <div className="text-2xl text-sky-700 font-bold mt-1">{inProgressCount}</div>
           </div>
-          <div className="p-2.5 bg-sky-100 rounded-lg text-sky-700">
-            <span className="material-symbols-outlined text-2xl">sync</span>
+          <div className="p-2.5 bg-sky-50 rounded-xl text-sky-700">
+            <RefreshCcw size={24} />
           </div>
         </div>
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-base shadow-sm flex items-start justify-between">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex items-start justify-between hover:border-slate-300 transition-colors">
           <div>
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Đã xử lý</span>
-            <div className="font-metric-num text-metric-num text-emerald-700 mt-1">{resolvedCount}</div>
+            <span className="text-xs uppercase tracking-wider text-slate-500 font-semibold">Đã xử lý</span>
+            <div className="text-2xl text-emerald-700 font-bold mt-1">{resolvedCount}</div>
           </div>
-          <div className="p-2.5 bg-emerald-100 rounded-lg text-emerald-700">
-            <span className="material-symbols-outlined text-2xl">task_alt</span>
+          <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-700">
+            <CheckCircle2 size={24} />
           </div>
         </div>
       </div>
 
       {/* FILTERS & SEARCH */}
-      <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+      <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 mt-4">
         <SearchInput value={search} onChange={setSearch} placeholder="Tìm theo tên, số điện thoại, nội dung..." className="relative flex-1" />
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-3">
           <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} className="relative min-w-[160px]" />
           <FilterSelect value={requestTypeFilter} onChange={setRequestTypeFilter} options={REQUEST_TYPE_OPTIONS} className="relative min-w-[180px]" />
           <button
-            className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
+            className="px-3 py-2 rounded-xl text-sm font-semibold text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-colors flex items-center gap-1.5"
             type="button"
             onClick={handleClearFilters}
           >
-            <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
+            <FilterX size={16} />
             <span>Xóa lọc</span>
           </button>
         </div>
       </div>
 
       {/* TABLE */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col mt-4">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
+              <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 select-none">
                 <th className="py-3 px-4 font-semibold" scope="col">Người gửi &amp; Liên hệ</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Loại yêu cầu</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Nội dung</th>
@@ -185,9 +207,9 @@ export default function ContactPage() {
                 <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant text-body-md">
+            <tbody className="divide-y divide-slate-100 text-sm">
               {paginated.length === 0 ? (
-                <EmptyTableRow colSpan={6} message="Không tìm thấy yêu cầu phù hợp với bộ lọc." />
+                <EmptyTableRow colSpan={6} message="Không tìm thấy yêu cầu phù hợp với bộ lọc." className="text-slate-400" />
               ) : null}
               {paginated.map((request) => {
                 const isSelected = request.id === selectedId
@@ -196,27 +218,27 @@ export default function ContactPage() {
                     key={request.id}
                     onClick={() => setSelectedId(request.id)}
                     className={`transition-colors cursor-pointer group ${
-                      isSelected ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary' : 'hover:bg-surface-container-low'
+                      isSelected ? 'bg-emerald-50 hover:bg-emerald-50 border-l-4 border-l-emerald-600' : 'hover:bg-slate-50/80'
                     }`}
                   >
                     <td className="py-3 px-4">
-                      <div className="font-title-md text-title-md font-semibold text-on-surface group-hover:text-primary">
+                      <div className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">
                         {request.senderName}
                       </div>
-                      <div className="text-body-sm text-outline flex items-center gap-1 mt-0.5">
-                        <span className="material-symbols-outlined text-[13px]">{request.channelIcon}</span>
+                      <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-1">
+                        {getChannelIcon(request.channelIcon)}
                         {request.senderPhone} · {request.channel}
                       </div>
                     </td>
                     <td className="py-3 px-3">
-                      <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">
+                      <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">
                         {request.requestType}
                       </span>
                     </td>
                     <td className="py-3 px-3 max-w-[280px]">
-                      <div className="text-body-sm text-on-surface-variant truncate" title={request.message}>{request.message}</div>
+                      <div className="text-sm text-slate-700 truncate" title={request.message}>{request.message}</div>
                     </td>
-                    <td className="py-3 px-3 text-body-sm text-outline whitespace-nowrap">{request.submittedAgo}</td>
+                    <td className="py-3 px-3 text-sm text-slate-500 whitespace-nowrap">{request.submittedAgo}</td>
                     <td className="py-3 px-3 text-center">
                       <StatusBadge label={request.statusBadge.label} className={request.statusBadge.className} minWidthClassName="min-w-[105px]" />
                     </td>
@@ -253,69 +275,69 @@ export default function ContactPage() {
       {/* DETAIL MODAL */}
       <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
         {selected ? (
-          <div className="p-space-md space-y-3">
+          <div className="p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <span className="font-mono font-bold text-primary">#{selected.id}</span>
+              <span className="font-mono font-bold text-emerald-700 text-lg">#{selected.id}</span>
               <StatusBadge label={selected.statusBadge.label} className={selected.statusBadge.className} />
             </div>
             <div>
-              <h3 className="font-title-md text-title-md font-bold text-on-surface">{selected.senderName}</h3>
-              <div className="text-body-sm text-outline flex items-center gap-1 mt-0.5">
-                <span className="material-symbols-outlined text-[14px]">location_on</span>
+              <h3 className="text-lg font-bold text-slate-900">{selected.senderName}</h3>
+              <div className="text-sm text-slate-500 flex items-center gap-1.5 mt-1.5">
+                <MapPin size={16} />
                 {selected.senderArea}
               </div>
-              <div className="text-body-sm text-outline flex items-center gap-1 mt-0.5">
-                <span className="material-symbols-outlined text-[14px]">{selected.channelIcon}</span>
+              <div className="text-sm text-slate-500 flex items-center gap-1.5 mt-1">
+                {getChannelIcon(selected.channelIcon)}
                 {selected.senderPhone} · Gửi qua {selected.channel} · {selected.submittedAgo}
               </div>
             </div>
-            <div className="p-space-sm bg-surface-container-low rounded border border-outline-variant">
-              <span className="font-label-sm text-[11px] text-outline uppercase tracking-wider block mb-1">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2">
                 {selected.requestType}
               </span>
-              <p className="text-body-sm text-on-surface">{selected.message}</p>
+              <p className="text-sm text-slate-800 leading-relaxed">{selected.message}</p>
             </div>
             {selected.assignedTo ? (
-              <div className="text-body-sm text-on-surface-variant">
-                Người phụ trách: <strong className="text-on-surface">{selected.assignedTo}</strong>
+              <div className="text-sm text-slate-600">
+                Người phụ trách: <strong className="text-slate-900">{selected.assignedTo}</strong>
               </div>
             ) : null}
-            <div className="flex flex-col gap-2 pt-2 border-t border-outline-variant">
+            <div className="flex flex-col gap-2.5 pt-3 border-t border-slate-100">
               <a
                 href={`tel:${selected.senderPhone.replace(/\./g, '')}`}
-                className="w-full flex items-center justify-center gap-1.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-lg text-body-sm font-semibold transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold transition-colors shadow-sm"
               >
-                <span className="material-symbols-outlined text-[18px] text-primary">call</span>
+                <Phone size={18} className="text-emerald-700" />
                 Gọi cho nông dân
               </a>
               <button
-                className="w-full flex items-center justify-center gap-1.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-lg text-body-sm font-semibold transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold transition-colors shadow-sm"
                 type="button"
                 onClick={() => showToast(`Đã gửi phản hồi qua Zalo/SMS cho ${selected.senderName}`)}
               >
-                <span className="material-symbols-outlined text-[18px] text-blue-600">chat</span>
+                <MessageCircle size={18} className="text-blue-600" />
                 Gửi phản hồi qua Zalo/SMS
               </button>
               {selected.statusBadge.label === 'Chưa xử lý' ? (
                 <button
-                  className="w-full flex items-center justify-center gap-1.5 py-2 bg-primary hover:bg-[#17482D] text-on-primary rounded-lg text-body-sm font-semibold transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                   type="button"
                   onClick={() => {
                     handleRequestAction(selected.id, 'Nhận xử lý')
                   }}
                 >
-                  <span className="material-symbols-outlined text-[18px]">assignment_ind</span>
+                  <UserCheck size={18} />
                   Nhận xử lý
                 </button>
               ) : selected.statusBadge.label === 'Đang xử lý' ? (
                 <button
-                  className="w-full flex items-center justify-center gap-1.5 py-2 bg-primary hover:bg-[#17482D] text-on-primary rounded-lg text-body-sm font-semibold transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-sm"
                   type="button"
                   onClick={() => {
                     handleRequestAction(selected.id, 'Đánh dấu đã xử lý')
                   }}
                 >
-                  <span className="material-symbols-outlined text-[18px]">task_alt</span>
+                  <CheckCircle size={18} />
                   Đánh dấu đã xử lý
                 </button>
               ) : null}

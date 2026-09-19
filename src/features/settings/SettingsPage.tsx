@@ -1,4 +1,19 @@
 import { useState } from 'react'
+import {
+  Mail,
+  Pencil,
+  MoreHorizontal,
+  CheckCircle2,
+  CalendarDays,
+  Network,
+  Clock,
+  Save,
+  Check,
+  Settings2,
+  Key,
+  Eye,
+  EyeOff
+} from 'lucide-react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 
@@ -19,29 +34,39 @@ const DEFAULT_NOTIFICATIONS = {
 type NotificationKey = keyof typeof DEFAULT_NOTIFICATIONS
 
 const NOTIFICATION_ROWS: { key: NotificationKey; title: string; description: string }[] = [
-  { key: 'newOrder', title: 'Đơn hàng mới', description: 'Nhận thông báo khi nông dân hoặc HTX đặt vật tư' },
-  { key: 'pendingPayment', title: 'Thanh toán chờ xác nhận', description: 'Biến động số dư VietQR và giao dịch tiền mặt chờ khớp' },
-  { key: 'debtDue', title: 'Công nợ sắp đến hạn', description: 'Cảnh báo nông dân có nợ gối đầu sắp quá hạn 7 ngày' },
-  { key: 'lowStock', title: 'Sản phẩm sắp hết hàng', description: 'Cảnh báo tồn kho dưới ngưỡng an toàn tại trạm' },
-  { key: 'aiPending', title: 'Gợi ý AI chờ duyệt', description: 'Gợi ý sản phẩm thương mại cho sâu bệnh mới tải lên chờ xác nhận' },
+  { key: 'newOrder', title: 'Đơn hàng mới', description: 'Nhận thông báo khi nông dân đặt vật tư' },
+  { key: 'pendingPayment', title: 'Thanh toán chờ xác nhận', description: 'Giao dịch tiền mặt chờ khớp' },
+  { key: 'debtDue', title: 'Công nợ sắp đến hạn', description: 'Cảnh báo nợ gối đầu sắp quá hạn' },
+  { key: 'lowStock', title: 'Sản phẩm sắp hết', description: 'Tồn kho dưới ngưỡng tại trạm' },
+  { key: 'aiPending', title: 'Gợi ý AI chờ duyệt', description: 'Ảnh bệnh mới tải lên chờ xác nhận' },
+]
+
+type TabKey = 'overview' | 'personal' | 'employment' | 'compensation' | 'timeoff' | 'documents'
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'overview', label: 'Tổng quan' },
+  { key: 'personal', label: 'Cá nhân' },
+  { key: 'employment', label: 'Công tác' },
+  { key: 'compensation', label: 'Thu nhập' },
+  { key: 'timeoff', label: 'Nghỉ phép' },
+  { key: 'documents', label: 'Tài liệu' },
 ]
 
 function NotificationToggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
-    <label className="inline-flex items-center cursor-pointer">
+    <label className="inline-flex items-center cursor-pointer relative">
       <input checked={checked} onChange={onChange} className="sr-only peer" type="checkbox" />
-      <div className="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container"></div>
+      <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
     </label>
   )
 }
 
 export default function SettingsPage() {
-  usePageHeader({
-    title: 'Cài đặt',
-  })
+  // Clear the global header since we are doing a full-page custom layout
+  usePageHeader({ title: '' })
 
   const { showToast } = useToast()
-  const [activeSection, setActiveSection] = useState<'profile' | 'notifications' | 'display' | 'security'>('profile')
+  const [activeTab, setActiveTab] = useState<TabKey>('overview')
 
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [profileDraft, setProfileDraft] = useState(DEFAULT_PROFILE)
@@ -87,515 +112,268 @@ export default function SettingsPage() {
     setConfirmPassword('')
   }
 
-  const navItems: {
-    key: 'profile' | 'notifications' | 'display' | 'security'
-    label: string
-    icon: string
-    badge?: string
-    verified?: boolean
-  }[] = [
-    { key: 'profile', label: 'Hồ sơ cá nhân', icon: 'person' },
-    { key: 'notifications', label: 'Thông báo', icon: 'notifications_active', badge: '5 mục' },
-    { key: 'display', label: 'Hiển thị', icon: 'palette' },
-    { key: 'security', label: 'Bảo mật tài khoản', icon: 'shield', verified: true },
-  ]
-
   return (
-    <>
-      {/* Quick status stamp */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant font-label-md text-label-md shadow-sm self-start md:self-auto">
-          <span className="material-symbols-outlined text-[18px] text-primary">verified_user</span>
-          <span className="">
-            Trạng thái tài khoản: <strong className="text-primary font-semibold">Đã xác thực đại lý</strong>
-          </span>
+    <div className="bg-white -m-4 lg:-m-6 p-4 lg:p-8 min-h-[calc(100vh-4rem)] text-slate-900">
+      
+      {/* Breadcrumb */}
+      <div className="text-[13px] text-slate-500 font-medium mb-6">
+        Trang chủ <span className="mx-1.5">›</span> Hệ thống <span className="mx-1.5">›</span> Danh bạ đại lý <span className="mx-1.5">›</span> Nguyễn Văn Minh <span className="mx-1.5">›</span> <span className="text-slate-900 font-semibold">Hồ sơ chi tiết</span>
+      </div>
+
+      {/* Header Row */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5">
+          <div className="relative shrink-0">
+            <div className="w-[84px] h-[84px] rounded-full border-[3px] border-emerald-500 p-0.5">
+              <div className="w-full h-full rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 text-2xl font-bold overflow-hidden">
+                <img src="/agent_avatar.jpg" alt="Avatar" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+          <div className="pt-1">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">{profile.name}</h1>
+            <p className="text-sm text-slate-500 mt-1.5">
+              {profile.email} · Đại lý vật tư nông nghiệp
+            </p>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-orange-50 text-orange-600 text-xs font-semibold">
+                92% Hoàn chỉnh
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-500 text-white text-xs font-semibold">
+                <CheckCircle2 size={14} />
+                Đã xác thực
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold">
+                Đại lý chính thức
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold">
+                Cần Thơ
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold">
+                UTC+7
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:pt-2">
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md text-[13px] font-semibold transition-colors shadow-sm"
+            onClick={() => showToast('Mở trình soạn email')}
+          >
+            <Mail size={15} />
+            <span>Email</span>
+          </button>
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-[13px] font-semibold transition-colors shadow-sm border border-slate-900"
+            onClick={() => setActiveTab('personal')}
+          >
+            <Pencil size={14} />
+            <span>Chỉnh sửa hồ sơ</span>
+          </button>
+          <button className="w-8 h-8 flex items-center justify-center bg-white border border-slate-200 hover:bg-slate-50 rounded-md text-slate-600 shadow-sm transition-colors">
+            <MoreHorizontal size={16} />
+          </button>
         </div>
       </div>
 
-      {/* TWO-COLUMN ENTERPRISE SETTINGS LAYOUT */}
-      <div className="flex flex-col lg:flex-row items-start gap-space-xl">
-        {/* LEFT SUB-NAVIGATION COLUMN (w-64 = 16rem) */}
-        <nav className="w-full lg:w-64 bg-surface-container-lowest border border-outline-variant rounded-lg p-space-sm shadow-sm shrink-0">
-          <div className="px-space-sm py-space-xs font-label-sm text-label-sm uppercase text-outline tracking-wider">
-            Phân mục cấu hình
-          </div>
-          <ul className="mt-1 space-y-1">
-            {navItems.map((item) => {
-              const isActive = activeSection === item.key
-              return (
-                <li key={item.key}>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection(item.key)}
-                    className={`w-full flex items-center justify-between px-space-md py-2.5 rounded-lg font-label-md text-label-md transition-all ${
-                      isActive
-                        ? 'bg-surface-container border-l-4 border-primary-container font-title-md text-title-md text-primary font-semibold'
-                        : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className={`material-symbols-outlined text-[20px] ${isActive ? 'text-primary' : ''}`}>
-                        {item.icon}
-                      </span>
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge ? (
-                      <span className="px-1.5 py-0.2 bg-surface-container-high rounded text-[10px] font-medium text-on-surface">
-                        {item.badge}
-                      </span>
-                    ) : item.verified ? (
-                      <span className="material-symbols-outlined text-[16px] text-primary">check_circle</span>
-                    ) : isActive ? (
-                      <span className="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
-                    ) : null}
-                  </button>
-                </li>
-              )
-            })}
-          </ul>
-          {/* Information card inside nav column */}
-          <div className="mt-space-lg p-space-md bg-surface-container-low rounded-lg border border-outline-variant/60">
-            <div className="flex items-center gap-1.5 text-primary font-label-sm text-label-sm font-semibold">
-              <span className="material-symbols-outlined text-[16px]">info</span>
-              <span className="">Lưu ý kỹ thuật</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Các thông tin mã nhân sự và phân quyền được cố định bởi Quản trị viên Trung tâm Mekong Delta Hub.
-            </p>
-          </div>
-        </nav>
+      {/* Tabs Row */}
+      <div className="mt-10 border-b border-slate-200 flex items-center gap-6 overflow-x-auto scrollbar-hide">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
+              activeTab === tab.key
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        {/* RIGHT MAIN CONTENT AREA */}
-        <div className="flex-1 w-full space-y-space-xl">
-          {/* ================= SECTION 1: HỒ SƠ CÁ NHÂN ================= */}
-          {activeSection === 'profile' && (
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
-            {/* Card Header */}
-            <div className="p-space-lg border-b border-outline-variant bg-surface-container-low/40 flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-8 h-8 rounded bg-primary-container/10 border border-primary-container/20 flex items-center justify-center text-primary-container">
-                  <span className="material-symbols-outlined text-[20px]">badge</span>
-                </div>
-                <div>
-                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Hồ sơ cá nhân</h2>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">Thông tin cá nhân &amp; Đơn vị công tác</p>
-                </div>
+      {/* Main Content Area */}
+      <div className="flex flex-col lg:flex-row mt-8">
+        
+        {/* LEFT COLUMN */}
+        <div className="flex-1 lg:pr-10 space-y-8 pb-10">
+          
+          {/* --- TAB: TỔNG QUAN --- */}
+          {activeTab === 'overview' && (
+            <>
+              {/* About section */}
+              <div className="pb-8 border-b border-slate-200">
+                <h3 className="text-[15px] font-bold text-slate-900 mb-3">Giới thiệu</h3>
+                <p className="text-[13px] text-slate-500 leading-relaxed max-w-4xl">
+                  Nguyễn Văn Minh là Đại lý vật tư nông nghiệp thuộc phân hệ Mekong Delta Hub. 
+                  Trực tiếp cung cấp thuốc BVTV, phân bón và tư vấn phác đồ điều trị sâu bệnh (hỗ trợ bởi AI) cho hơn 240 hộ nông dân tại khu vực Cần Thơ. 
+                  Tập trung vào việc chuyển đổi quy trình bán hàng truyền thống sang mô hình cung ứng số hóa, giúp nông dân tiếp cận vật tư nhanh chóng và theo dõi dư nợ minh bạch.
+                </p>
               </div>
-              <span className="px-2.5 py-1 bg-surface-container text-on-surface font-label-sm text-label-sm rounded border border-outline-variant">
-                ID: AGT-8804-CT
-              </span>
-            </div>
-            <div className="p-space-lg space-y-space-lg">
-              {/* Avatar Block */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-space-md bg-surface-container-low rounded-lg border border-outline-variant">
-                <div className="flex items-center gap-space-md">
-                  {/* Initials NM Avatar */}
-                  <div className="w-16 h-16 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-display text-[20px] font-bold shadow-sm border-2 border-surface-container-lowest">
-                    NM
+              
+              {/* Work details section */}
+              <div className="pb-8 border-b border-slate-200">
+                <h3 className="text-[15px] font-bold text-slate-900 mb-5">Chi tiết công tác</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-y-6 gap-x-4">
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Mã đại lý</p>
+                    <p className="text-[13px] font-medium text-slate-900">#AGT-8804</p>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-title-lg text-title-lg font-bold text-on-surface">{profile.name}</span>
-                      <span className="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm rounded-full font-medium border border-primary-fixed-dim">
-                        Đại lý
-                      </span>
-                    </div>
-                    <p className="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
-                      Đại lý vật tư nông nghiệp • AgriSage - Chi nhánh Cần Thơ
-                    </p>
-                    <p className="font-label-sm text-label-sm text-outline">Đăng nhập gần nhất: Hôm nay lúc 07:45 từ Cần Thơ</p>
+                    <p className="text-xs text-slate-400 mb-1">Phân hệ</p>
+                    <p className="text-[13px] font-medium text-slate-900">Mekong Delta Hub</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Ngày bắt đầu</p>
+                    <p className="text-[13px] font-medium text-slate-900">18 tháng 3, 2022</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Trạng thái</p>
+                    <p className="text-[13px] font-medium text-slate-900">Đang hoạt động</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Nhóm khu vực</p>
+                    <p className="text-[13px] font-medium text-slate-900">Cần Thơ</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Thời gian công tác</p>
+                    <p className="text-[13px] font-medium text-slate-900">4 năm, 4 tháng</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 mb-1">Cấp độ</p>
+                    <p className="text-[13px] font-medium text-slate-900">Cao cấp (Senior)</p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-xs text-slate-400 mb-1">Dự án / Vụ mùa hiện tại</p>
+                    <p className="text-[13px] font-medium text-slate-900">Vụ Thu Đông 2024</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    className="px-3.5 py-1.5 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors flex items-center gap-1.5 shadow-sm"
-                    type="button"
-                    onClick={() => showToast('Chức năng đổi ảnh đại diện đang được phát triển')}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">upload</span>
-                    <span className="">Đổi ảnh đại diện</span>
+              </div>
+
+              {/* Reporting line */}
+              <div className="pb-8 border-b border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-[15px] font-bold text-slate-900">Tuyến báo cáo</h3>
+                  <button className="inline-flex items-center gap-1.5 px-3 py-1 border border-slate-200 rounded-md text-[13px] font-semibold text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">
+                    <Network size={14} />
+                    <span>Sơ đồ tổ chức</span>
                   </button>
                 </div>
-              </div>
-              {/* Form Grid (2 columns) */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-space-base">
-                {/* Họ và tên (editable) */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">
-                    Họ và tên <span className="text-error">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      type="text"
-                      value={profileDraft.name}
-                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, name: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                {/* Số điện thoại (editable) */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">
-                    Số điện thoại liên lạc <span className="text-error">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      type="text"
-                      value={profileDraft.phone}
-                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, phone: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                {/* Email liên hệ (editable) */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">
-                    Email liên hệ công vụ <span className="text-error">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      type="email"
-                      value={profileDraft.email}
-                      onChange={(e) => setProfileDraft((prev) => ({ ...prev, email: e.target.value }))}
-                    />
-                  </div>
-                </div>
-                {/* Mã nhân sự (Read-only badge field) */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">Mã nhân sự trạm</label>
-                  <div className="flex items-center h-[38px] px-3 bg-surface-container border border-outline-variant rounded text-on-surface font-mono font-semibold">
-                    <span className="material-symbols-outlined text-[18px] text-outline mr-2">tag</span>
-                    #AGT-8804
-                  </div>
-                </div>
-                {/* Vai trò hệ thống (Read-only with locked icon) */}
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center justify-between gap-1">
-                    <label className="block font-label-md text-label-md font-medium text-on-surface">Vai trò hệ thống</label>
-                    <span className="text-[11px] text-outline italic">Phân quyền do Quản trị viên cấp</span>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-between gap-2 min-h-[38px] px-3 py-2 bg-surface-container border border-outline-variant rounded text-on-surface font-body-md text-body-md">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[18px] text-outline">lock</span>
-                      <span className="font-medium text-on-surface">Đại lý / Kỹ sư phụ trách trạm</span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-surface-container-highest text-on-surface font-label-sm text-[10px] rounded shrink-0">
-                      Cố định
-                    </span>
-                  </div>
-                </div>
-                {/* Chi nhánh / Khu vực làm việc (Read-only) */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">
-                    Chi nhánh / Khu vực làm việc
-                  </label>
-                  <div
-                    className="flex items-center h-[38px] px-3 bg-surface-container border border-outline-variant rounded text-on-surface font-body-sm text-body-sm truncate"
-                    title="Mekong Delta Hub - Chi nhánh Cần Thơ #04 (Quận Thới Lai, Cờ Đỏ, Ô Môn)"
-                  >
-                    <span className="material-symbols-outlined text-[18px] text-outline mr-2 shrink-0">hub</span>
-                    <span className="truncate">Mekong Delta Hub - Chi nhánh Cần Thơ #04 (Quận Thới Lai, Cờ Đỏ, Ô Môn)</span>
+                <p className="text-xs text-slate-400 mb-4">Quản lý trực tiếp</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-semibold text-slate-500 border border-slate-200">PK</div>
+                  <div>
+                    <p className="text-[13px] font-semibold text-slate-900">Phạm Kiệt</p>
+                    <p className="text-xs text-slate-400">Giám đốc vùng</p>
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Card Actions */}
-            <div className="px-space-lg py-space-md bg-surface-container-low border-t border-outline-variant flex items-center justify-between rounded-b-lg">
-              <div className="text-[12px] text-outline">Cập nhật lần cuối: 12/10/2024 bởi Hệ thống trung tâm</div>
-              <div className="flex items-center gap-space-sm">
-                <button
-                  className="px-4 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container transition-colors"
-                  type="button"
-                  onClick={handleCancelProfile}
-                >
-                  Hủy
-                </button>
-                <button
-                  className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] active:bg-[#113622] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
-                  type="button"
-                  onClick={handleSaveProfile}
-                >
-                  <span className="material-symbols-outlined text-[18px]">save</span>
-                  <span className="">Lưu thay đổi</span>
-                </button>
-              </div>
-            </div>
-          </section>
+            </>
           )}
 
-          {/* ================= SECTION 2: THÔNG BÁO ================= */}
-          {activeSection === 'notifications' && (
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
-            {/* Card Header */}
-            <div className="p-space-lg border-b border-outline-variant bg-surface-container-low/40 flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-8 h-8 rounded bg-primary-container/10 border border-primary-container/20 flex items-center justify-center text-primary-container">
-                  <span className="material-symbols-outlined text-[20px]">notifications_active</span>
+          {/* --- TAB: CÁ NHÂN --- */}
+          {activeTab === 'personal' && (
+            <div className="max-w-2xl">
+              <div className="pb-8 border-b border-slate-200">
+                <h3 className="text-[15px] font-bold text-slate-900 mb-5">Thông tin cơ bản</h3>
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5">Họ và tên</label>
+                      <input type="text" className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={profileDraft.name} onChange={e => setProfileDraft(p => ({...p, name: e.target.value}))}/>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5">Số điện thoại</label>
+                      <input type="text" className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={profileDraft.phone} onChange={e => setProfileDraft(p => ({...p, phone: e.target.value}))}/>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs font-semibold text-slate-500 mb-1.5">Email liên hệ</label>
+                      <input type="email" className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={profileDraft.email} onChange={e => setProfileDraft(p => ({...p, email: e.target.value}))}/>
+                    </div>
+                  </div>
+                  <div className="pt-4">
+                    <button className="px-4 py-2 bg-slate-900 text-white rounded-md text-[13px] font-semibold hover:bg-slate-800" onClick={handleSaveProfile}>Lưu thay đổi</button>
+                    <button className="px-4 py-2 bg-transparent text-slate-600 rounded-md text-[13px] font-semibold ml-2 hover:bg-slate-50" onClick={handleCancelProfile}>Hủy</button>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Thông báo</h2>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">Tùy chọn nhận thông báo tác vụ</p>
+              </div>
+
+              <div className="py-8 border-b border-slate-200">
+                <h3 className="text-[15px] font-bold text-slate-900 mb-5">Đổi mật khẩu</h3>
+                <div className="space-y-4 max-w-sm">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">Mật khẩu hiện tại</label>
+                    <input type="password" placeholder="Nhập mật khẩu cũ..." className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">Mật khẩu mới</label>
+                    <input type="password" placeholder="Nhập mật khẩu mới..." className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-500 mb-1.5">Xác nhận mật khẩu</label>
+                    <input type="password" placeholder="Nhập lại mật khẩu mới..." className="w-full text-[13px] border border-slate-300 rounded-md px-3 py-2 outline-none focus:border-slate-500" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+                  </div>
+                  <div className="pt-2">
+                    <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-md text-[13px] font-semibold hover:bg-slate-50 shadow-sm" onClick={handleChangePassword}>Cập nhật mật khẩu</button>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="p-space-lg space-y-space-md">
-              <p className="font-body-md text-body-md text-on-surface-variant">
-                Lựa chọn thông báo đẩy trong bảng điều khiển và thư điện tử để không bỏ lỡ tiến độ mùa vụ.
-              </p>
-              {/* Toggle Matrix Table */}
-              <div className="overflow-x-auto border border-outline-variant rounded-lg">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-surface-container-low border-b border-outline-variant text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
-                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Loại sự kiện</th>
-                      <th className="py-3 px-4 text-center font-semibold w-40 whitespace-nowrap">Thông báo trong hệ thống</th>
-                      <th className="py-3 px-4 text-center font-semibold w-32 whitespace-nowrap">Email</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
-                    {NOTIFICATION_ROWS.map((row) => (
-                      <tr key={row.key} className="hover:bg-surface-container-low/50 transition-colors">
-                        <td className="py-3.5 px-4 min-w-[220px]">
-                          <div className="font-title-md text-title-md font-semibold text-on-surface">{row.title}</div>
-                          <div className="text-on-surface-variant text-[13px]">{row.description}</div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <NotificationToggle
-                            checked={notifications[row.key].inApp}
-                            onChange={() => toggleNotification(row.key, 'inApp')}
-                          />
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <NotificationToggle
-                            checked={notifications[row.key].email}
-                            onChange={() => toggleNotification(row.key, 'email')}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            {/* Card Actions */}
-            <div className="px-space-lg py-space-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end rounded-b-lg">
-              <button
-                className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
-                type="button"
-                onClick={() => showToast('Đã cập nhật tùy chọn thông báo')}
-              >
-                <span className="material-symbols-outlined text-[18px]">check</span>
-                <span className="">Cập nhật thông báo</span>
-              </button>
-            </div>
-          </section>
           )}
 
-          {/* ================= SECTION 3: HIỂN THỊ ================= */}
-          {activeSection === 'display' && (
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
-            {/* Card Header */}
-            <div className="p-space-lg border-b border-outline-variant bg-surface-container-low/40 flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-8 h-8 rounded bg-primary-container/10 border border-primary-container/20 flex items-center justify-center text-primary-container">
-                  <span className="material-symbols-outlined text-[20px]">palette</span>
-                </div>
-                <div>
-                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Hiển thị</h2>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">Tùy chọn giao diện &amp; bảng dữ liệu</p>
-                </div>
-              </div>
-            </div>
-            <div className="p-space-lg space-y-space-xl">
-              {/* Item 1: Chủ đề giao diện */}
-              <div className="space-y-space-sm">
-                <label className="block font-title-md text-title-md font-semibold text-on-surface">Chủ đề giao diện</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-space-base">
-                  {/* Option 1: Sáng */}
-                  <div
-                    className={`relative p-space-md rounded-lg bg-surface-container-lowest shadow-sm flex flex-col justify-between cursor-pointer ${
-                      theme === 'light' ? 'border-2 border-primary-container' : 'border border-outline-variant hover:border-outline'
-                    }`}
-                    onClick={() => setTheme('light')}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-label-md text-label-md font-semibold text-on-surface">Giao diện sáng</span>
-                      {theme === 'light' ? (
-                        <span className="material-symbols-outlined text-primary-container text-[20px] material-symbols-filled">
-                          check_circle
-                        </span>
-                      ) : (
-                        <span className="w-4 h-4 rounded-full border border-outline-variant"></span>
-                      )}
-                    </div>
-                    <div className="h-16 rounded bg-slate-100 border border-outline-variant/60 p-2 flex flex-col gap-1">
-                      <div className="h-2 w-1/3 bg-primary-container rounded"></div>
-                      <div className="h-2 w-full bg-slate-300 rounded"></div>
-                      <div className="h-2 w-2/3 bg-slate-200 rounded"></div>
-                    </div>
-                    <div className="mt-2 text-[11px] text-primary-container font-semibold">(Mặc định tối ưu ngoài trời)</div>
-                  </div>
-                  {/* Option 2: Tối (Sắp ra mắt) */}
-                  <div
-                    className="relative p-space-md rounded-lg border border-outline-variant bg-surface-container-low opacity-75 cursor-not-allowed flex flex-col justify-between"
-                    onClick={() => showToast('Giao diện tối sắp ra mắt')}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-label-md text-label-md font-medium text-on-surface">Giao diện tối</span>
-                      <span className="px-1.5 py-0.5 bg-surface-container text-on-surface-variant font-label-sm text-[10px] rounded">
-                        Sắp ra mắt
-                      </span>
-                    </div>
-                    <div className="h-16 rounded bg-slate-900 border border-slate-700 p-2 flex flex-col gap-1">
-                      <div className="h-2 w-1/3 bg-emerald-600 rounded"></div>
-                      <div className="h-2 w-full bg-slate-700 rounded"></div>
-                      <div className="h-2 w-2/3 bg-slate-800 rounded"></div>
-                    </div>
-                    <div className="mt-2 text-[11px] text-outline">Chế độ làm việc ban đêm</div>
-                  </div>
-                  {/* Option 3: Theo hệ thống */}
-                  <div
-                    className={`relative p-space-md rounded-lg bg-surface-container-lowest cursor-pointer flex flex-col justify-between ${
-                      theme === 'system' ? 'border-2 border-primary-container' : 'border border-outline-variant hover:border-outline'
-                    }`}
-                    onClick={() => setTheme('system')}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="font-label-md text-label-md font-medium text-on-surface">Theo hệ thống</span>
-                      {theme === 'system' ? (
-                        <span className="material-symbols-outlined text-primary-container text-[20px] material-symbols-filled">
-                          check_circle
-                        </span>
-                      ) : (
-                        <span className="w-4 h-4 rounded-full border border-outline-variant"></span>
-                      )}
-                    </div>
-                    <div className="h-16 rounded bg-gradient-to-r from-slate-100 to-slate-800 border border-outline-variant/60 p-2 flex flex-col gap-1">
-                      <div className="h-2 w-1/3 bg-primary-container rounded"></div>
-                      <div className="h-2 w-full bg-slate-400 rounded"></div>
-                    </div>
-                    <div className="mt-2 text-[11px] text-outline">Tự động theo thiết bị Agent</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* Card Actions */}
-            <div className="px-space-lg py-space-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end rounded-b-lg">
-              <button
-                className="px-4 py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-[#17482D] transition-colors flex items-center gap-1.5 shadow-sm font-semibold"
-                type="button"
-                onClick={() => showToast(`Đã áp dụng giao diện: ${theme === 'light' ? 'Sáng' : 'Theo hệ thống'}`)}
-              >
-                <span className="material-symbols-outlined text-[18px]">tune</span>
-                <span className="">Áp dụng hiển thị</span>
-              </button>
-            </div>
-          </section>
+          {/* Fallback for other tabs */}
+          {['employment', 'compensation', 'timeoff', 'documents'].includes(activeTab) && (
+             <div className="pb-8">
+               <h3 className="text-[15px] font-bold text-slate-900 mb-2">Chưa có dữ liệu</h3>
+               <p className="text-[13px] text-slate-500">Thông tin ở phân mục này đang được cập nhật từ hệ thống nhân sự.</p>
+             </div>
           )}
 
-          {/* ================= SECTION 4: BẢO MẬT TÀI KHOẢN ================= */}
-          {activeSection === 'security' && (
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm">
-            {/* Card Header */}
-            <div className="p-space-lg border-b border-outline-variant bg-surface-container-low/40 flex items-center justify-between">
-              <div className="flex items-center gap-space-sm">
-                <div className="w-8 h-8 rounded bg-primary-container/10 border border-primary-container/20 flex items-center justify-center text-primary-container">
-                  <span className="material-symbols-outlined text-[20px]">shield</span>
-                </div>
-                <div>
-                  <h2 className="font-title-lg text-title-lg text-on-surface font-semibold">Bảo mật tài khoản</h2>
-                  <p className="font-body-sm text-body-sm text-on-surface-variant">Bảo mật tài khoản &amp; Đổi mật khẩu</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1.5 text-primary font-label-sm text-label-sm font-semibold">
-                <span className="material-symbols-outlined text-[18px]">verified</span>
-                <span className="">Bảo vệ 2 lớp hoạt động</span>
-              </div>
-            </div>
-            <div className="p-space-lg space-y-space-xl">
-              {/* Form Change Password */}
-              <div className="space-y-space-base max-w-xl">
-                <h3 className="font-title-md text-title-md font-semibold text-on-surface">Đổi mật khẩu truy cập</h3>
-                {/* Mật khẩu hiện tại */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">Mật khẩu hiện tại</label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      type={showCurrentPassword ? 'text' : 'password'}
-                      placeholder="Nhập mật khẩu hiện tại..."
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                    />
-                    <button
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
-                      type="button"
-                      onClick={() => setShowCurrentPassword((prev) => !prev)}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{showCurrentPassword ? 'visibility_off' : 'visibility'}</span>
-                    </button>
-                  </div>
-                </div>
-                {/* Mật khẩu mới */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">Mật khẩu mới</label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      placeholder="Nhập mật khẩu mới..."
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                    />
-                    <button
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface"
-                      type="button"
-                      onClick={() => setShowNewPassword((prev) => !prev)}
-                    >
-                      <span className="material-symbols-outlined text-[18px]">{showNewPassword ? 'visibility_off' : 'visibility'}</span>
-                    </button>
-                  </div>
-                  <p className="font-body-sm text-body-sm text-outline">
-                    Yêu cầu: Tối thiểu 8 ký tự, bao gồm số và ký tự đặc biệt (!@#$%).
-                  </p>
-                </div>
-                {/* Xác nhận mật khẩu mới */}
-                <div className="space-y-1">
-                  <label className="block font-label-md text-label-md font-medium text-on-surface">Xác nhận mật khẩu mới</label>
-                  <div className="relative">
-                    <input
-                      className="w-full h-[38px] px-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded text-on-surface font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container"
-                      placeholder="Nhập lại mật khẩu mới..."
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <button
-                    className="px-4 py-2 bg-surface-container-lowest border-2 border-primary-container text-primary-container font-label-md text-label-md rounded hover:bg-primary-container hover:text-on-primary transition-all font-semibold flex items-center gap-1.5 shadow-sm"
-                    type="button"
-                    onClick={handleChangePassword}
-                  >
-                    <span className="material-symbols-outlined text-[18px]">key</span>
-                    <span className="">Đổi mật khẩu</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-            {/* Card Footer Note */}
-            <div className="px-space-lg py-space-sm bg-surface-container-low border-t border-outline-variant rounded-b-lg font-body-sm text-body-sm text-outline flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">lock_clock</span>
-              <span className="">
-                Phiên đăng nhập tự động gia hạn an toàn theo giao thức OAuth2 &amp; JWT của Trung tâm AgriSage Mekong.
-              </span>
-            </div>
-          </section>
-          )}
         </div>
+
+        {/* RIGHT COLUMN (SIDEBAR) */}
+        <div className="lg:w-[320px] shrink-0 lg:pl-10 lg:border-l lg:border-slate-200 space-y-8 pt-8 lg:pt-0">
+          
+          <div>
+             <h3 className="text-[13px] font-bold text-slate-900 mb-4">Trạng thái hồ sơ</h3>
+             <div className="flex items-start gap-2">
+               <CheckCircle2 size={16} className="text-slate-500 mt-0.5 shrink-0" />
+               <div>
+                 <p className="text-[13px] font-semibold text-slate-900">Đại lý đang hoạt động</p>
+                 <p className="text-[11px] text-slate-400 mt-1">Hợp đồng và quyền truy cập khả dụng</p>
+               </div>
+             </div>
+             <div className="mt-4 pt-3 border-t border-slate-100">
+               <p className="text-[11px] text-slate-400">Cập nhật ngày 08 tháng 08, 2026 bởi Hệ thống</p>
+             </div>
+          </div>
+
+          <div className="pt-2">
+             <h3 className="text-[13px] font-bold text-slate-900 mb-4">Sự kiện sắp tới</h3>
+             <div className="space-y-5">
+               <div className="flex items-start gap-2">
+                 <CalendarDays size={16} className="text-slate-400 mt-0.5 shrink-0" />
+                 <div>
+                   <p className="text-[13px] font-semibold text-slate-900">Nghỉ phép thường niên</p>
+                   <p className="text-[11px] text-slate-400 mt-1">24–28 tháng 08, 2026</p>
+                 </div>
+               </div>
+               <div className="flex items-start gap-2">
+                 <Clock size={16} className="text-slate-400 mt-0.5 shrink-0" />
+                 <div>
+                   <p className="text-[13px] font-semibold text-slate-900">Ngày làm việc cuối năm</p>
+                   <p className="text-[11px] text-slate-400 mt-1">03 tháng 10, 2026</p>
+                 </div>
+               </div>
+             </div>
+          </div>
+
+        </div>
+
       </div>
-    </>
+
+    </div>
   )
 }

@@ -45,14 +45,14 @@ function groupFields(fields: FormFieldSpec[]) {
 }
 
 const inputClassName =
-  'w-full h-10 px-3 rounded-lg border border-outline-variant text-body-md focus:border-primary focus:ring-1 focus:ring-primary'
+  'w-full h-10 px-3 rounded-lg border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors'
 
 /** Shared create/edit modal: renders a title, a list of labeled text/number/select fields (or note content), and Hủy/submit buttons. */
 export default function FormModal({ open, onClose, title, fields, values, onChange, onSubmit, submitLabel, cancelLabel = 'Hủy' }: FormModalProps) {
   return (
     <DetailModal open={open} onClose={onClose}>
-      <div className="p-space-md space-y-3">
-        <h3 className="font-title-md text-title-md text-on-surface font-bold">{title}</h3>
+      <div className="p-5 space-y-4">
+        <h3 className="text-lg text-slate-900 font-bold">{title}</h3>
         {groupFields(fields).map((row, i) => (
           <div key={i} className={row.length > 1 ? 'grid grid-cols-2 gap-3' : undefined}>
             {row.map((field) =>
@@ -60,7 +60,7 @@ export default function FormModal({ open, onClose, title, fields, values, onChan
                 <div key={field.key}>{field.content}</div>
               ) : (
                 <div key={field.key} className="space-y-1">
-                  {field.label ? <label className="text-body-sm font-medium text-on-surface-variant">{field.label}</label> : null}
+                  {field.label ? <label className="text-sm font-medium text-slate-700">{field.label}</label> : null}
                   {field.type === 'select' ? (
                     <select className={inputClassName} value={values[field.key]} onChange={(e) => onChange(field.key, e.target.value)}>
                       {(field.options ?? []).map((option) => {
@@ -88,16 +88,16 @@ export default function FormModal({ open, onClose, title, fields, values, onChan
             )}
           </div>
         ))}
-        <div className="flex items-center justify-end gap-2 pt-2">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
           <button
-            className="px-4 py-2 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container-low transition-colors font-medium"
+            className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors font-medium text-sm shadow-sm"
             type="button"
             onClick={onClose}
           >
             {cancelLabel}
           </button>
           <button
-            className="px-4 py-2 rounded-lg bg-primary hover:bg-[#17482D] text-on-primary font-medium transition-colors"
+            className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors text-sm shadow-sm"
             type="button"
             onClick={onSubmit}
           >

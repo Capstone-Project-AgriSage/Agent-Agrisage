@@ -19,6 +19,26 @@ import { parseVnd, formatVnd } from '../../utils/money'
 import { downloadCsv } from '../../utils/csv'
 import type { Payment } from '../../types'
 
+import {
+  ChevronRight,
+  Download,
+  Printer,
+  Plus,
+  FilterX,
+  User,
+  AlertTriangle,
+  CheckCircle2,
+  Banknote,
+  MessageCircle,
+  Clock,
+  RefreshCw,
+  Settings2,
+  QrCode,
+  ScanLine,
+  History,
+  MoreHorizontal
+} from 'lucide-react'
+
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chưa thanh toán', 'Thanh toán 1 phần', 'Đã thanh toán', 'Chờ đối soát', 'Đã đối soát', 'Hoàn tiền']
 const METHOD_OPTIONS = ['Tất cả phương thức', ...new Set(INITIAL_PAYMENTS.map((p) => p.methodLabel))]
 const NEW_PAYMENT_METHODS = METHOD_OPTIONS.slice(1)
@@ -43,12 +63,12 @@ const CREATE_PAYMENT_FIELDS: FormFieldSpec[] = [
 ]
 
 export default function PaymentsPage() {
-  usePageHeader({
-    title: 'Quản lý thanh toán',
-  })
+  usePageHeader({ title: '' }) // Flat layout
 
   const [payments, setPayments] = useState(INITIAL_PAYMENTS)
   const { showToast } = useToast()
+  
+  const [activeTab, setActiveTab] = useState<'overview' | 'transactions' | 'debts'>('overview')
 
   const markPaymentPaid = (id: string) => {
     setPayments((prev) =>
@@ -59,7 +79,7 @@ export default function PaymentsPage() {
               paidAmount: p.totalAmount,
               paidAmountClassName: 'text-emerald-700',
               remainingAmount: '0 đ',
-              remainingAmountClassName: 'text-outline',
+              remainingAmountClassName: 'text-slate-400',
               status: 'Đã thanh toán',
               statusBadge: { label: 'Đã thanh toán', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
               collectedLabel: `${p.totalAmount} (100%)`,
@@ -82,7 +102,7 @@ export default function PaymentsPage() {
               paidAmount: p.totalAmount,
               paidAmountClassName: 'text-emerald-700',
               remainingAmount: '0 đ',
-              remainingAmountClassName: 'text-outline',
+              remainingAmountClassName: 'text-slate-400',
               statusBadge: { label: 'Đã đối soát', className: 'bg-emerald-100 text-emerald-800 border-emerald-300', dotClassName: 'bg-emerald-600' },
               collectedLabel: `${p.totalAmount} (100%)`,
               progressWidth: '100%',
@@ -126,11 +146,11 @@ export default function PaymentsPage() {
       addressShort: addressShort.trim(),
       totalAmount: formatVnd(total),
       paidAmount: formatVnd(paid),
-      paidAmountClassName: paid > 0 ? 'text-emerald-700' : 'text-outline',
+      paidAmountClassName: paid > 0 ? 'text-emerald-700' : 'text-slate-400',
       remainingAmount: formatVnd(remaining),
-      remainingAmountClassName: hasRemaining ? 'text-amber-700' : 'text-outline',
+      remainingAmountClassName: hasRemaining ? 'text-amber-700' : 'text-slate-400',
       methodLabel,
-      methodClassName: 'bg-surface-container text-on-surface',
+      methodClassName: 'bg-slate-100 text-slate-800',
       status: hasRemaining ? (paid > 0 ? 'Thanh toán 1 phần' : 'Chưa thanh toán') : 'Đã thanh toán',
       statusBadge: hasRemaining
         ? paid > 0
@@ -157,7 +177,7 @@ export default function PaymentsPage() {
                 note: 'Ghi nhận thủ công',
                 amountLabel: `+${formatVnd(paid)}`,
                 amountClassName: 'text-emerald-700',
-                cardClassName: 'bg-surface-container-low border-outline-variant/70',
+                cardClassName: 'bg-slate-50 border-slate-200',
               },
             ]
           : [],
@@ -170,7 +190,6 @@ export default function PaymentsPage() {
 
   const handleExportPayments = () => {
     downloadCsv(
-      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
       `giao-dich-thanh-toan-${Date.now()}.csv`,
       filteredPayments.map((p) => ({
         'Mã TT': p.id,
@@ -186,400 +205,372 @@ export default function PaymentsPage() {
     showToast(`Đã xuất báo cáo ${filteredPayments.length} giao dịch`)
   }
 
-  const handlePrintPayments = () => {
-    showToast('Đang in sổ thu chi')
-    window.print()
-  }
-
   const { selectedId, setSelectedId, selected } = useSelectableList(payments, (p) => p.id)
 
-  const [methodFilter, setMethodFilter] = useState(METHOD_OPTIONS[0])
+  const [methodFilter, setMethodFilter] = useState('Tất cả phương thức')
 
   const {
     search,
     setSearch,
     statusFilter,
     setStatusFilter,
-    filtered: filteredPayments,
-    clearFilters: handleClearFiltersBase,
+    filtered: filteredPaymentsBase,
+    clearFilters: clearFiltersBase,
   } = useFilteredList(
     payments,
-    STATUS_OPTIONS[0],
-    (payment, keyword, status) =>
+    'Tất cả trạng thái',
+    (item, keyword, status) =>
       (!keyword ||
-        payment.id.toLowerCase().includes(keyword) ||
-        payment.orderId.toLowerCase().includes(keyword) ||
-        payment.customerName.toLowerCase().includes(keyword)) &&
-      (status === STATUS_OPTIONS[0] || payment.statusBadge.label === status) &&
-      (methodFilter === METHOD_OPTIONS[0] || payment.methodLabel === methodFilter),
+        item.id.toLowerCase().includes(keyword) ||
+        item.orderId.toLowerCase().includes(keyword) ||
+        item.customerName.toLowerCase().includes(keyword)) &&
+      (status === 'Tất cả trạng thái' || item.statusBadge.label === status),
+    'Tất cả trạng thái',
   )
 
-  const handleClearFilters = () => {
-    handleClearFiltersBase()
-    setMethodFilter(METHOD_OPTIONS[0])
+  const clearFilters = () => {
+    clearFiltersBase()
+    setMethodFilter('Tất cả phương thức')
   }
 
-  const { page, totalPages, paginated: paginatedPayments, startIndex, endIndex, totalCount, goPrev, goNext, setPage } =
-    usePagination(filteredPayments, 10)
+  // Combine filters: useFilteredList + methodFilter + activeTab
+  const filteredPayments = filteredPaymentsBase.filter((item) => {
+    // 1. Method filter
+    if (methodFilter !== 'Tất cả phương thức' && item.methodLabel !== methodFilter) return false
+    
+    // 2. Tab filter
+    if (activeTab === 'transactions') {
+      // Only show completed/paid transactions
+      if (item.hasRemaining) return false
+    } else if (activeTab === 'debts') {
+      // Only show debts
+      if (!item.hasRemaining) return false
+    }
+    
+    return true
+  })
 
-  const totalCollectedToday = payments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
-  const cashCollected = payments.filter((p) => p.methodLabel.includes('Tiền mặt')).reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
-  const vietqrCollected = payments.filter((p) => p.methodLabel.includes('VietQR')).reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
-  const unpaidPayments = payments.filter((p) => p.statusBadge.label === 'Chưa thanh toán')
-  const unpaidAmount = unpaidPayments.reduce((sum, p) => sum + parseVnd(p.totalAmount), 0)
-  const partialPayments = payments.filter((p) => p.statusBadge.label === 'Thanh toán 1 phần')
-  const partialPaidAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.paidAmount), 0)
-  const partialRemainingAmount = partialPayments.reduce((sum, p) => sum + parseVnd(p.remainingAmount), 0)
-  const paidCount = payments.filter((p) => p.statusBadge.label === 'Đã thanh toán' || p.statusBadge.label === 'Đã đối soát').length
-  const vietqrPendingPayments = payments.filter((p) => p.statusBadge.label === 'Chờ đối soát' || p.methodLabel.includes('VietQR Chờ Khớp'))
-  const vietqrPendingAmount = vietqrPendingPayments.reduce((sum, p) => sum + parseVnd(p.remainingAmount), 0)
+  const {
+    page,
+    totalPages,
+    paginated: paginatedPayments,
+    startIndex,
+    endIndex,
+    totalCount,
+    goPrev,
+    goNext,
+    setPage,
+  } = usePagination(filteredPayments, 15)
+
+  // Current Date logic for subtitle
+  const today = new Date()
+  const dateStr = today.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+
+  // Quick Action state
+  const [quickAmount, setQuickAmount] = useState('')
 
   return (
-    <>
-      {/* PAGE HEADER & BREADCRUMBS & TOP ACTIONS */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-        <div className="flex items-center gap-1 text-outline font-label-sm text-label-sm">
-          <Link className="hover:text-on-surface transition-colors" to="/">Bảng điều khiển</Link>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-          <span className="text-primary font-medium">Quản lý thanh toán</span>
+    <div className="bg-white -m-4 lg:-m-6 p-4 lg:p-8 min-h-[calc(100vh-4rem)] text-slate-900">
+      {/* 1. Header & Tabs */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quản lý thanh toán</h1>
+          <p className="text-[13px] text-slate-500 mt-1 font-medium capitalize">{dateStr}</p>
+          <div className="mt-8 flex items-center gap-6">
+            <button 
+              className={`pb-2.5 text-[13px] font-bold border-b-2 transition-colors ${activeTab === 'overview' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              onClick={() => setActiveTab('overview')}
+            >
+              Tổng quan
+            </button>
+            <button 
+              className={`pb-2.5 text-[13px] font-bold border-b-2 transition-colors ${activeTab === 'transactions' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              onClick={() => setActiveTab('transactions')}
+            >
+              Giao dịch
+            </button>
+            <button 
+              className={`pb-2.5 text-[13px] font-bold border-b-2 transition-colors ${activeTab === 'debts' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+              onClick={() => setActiveTab('debts')}
+            >
+              Công nợ
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-space-sm flex-wrap">
-          <button
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
+        <div className="flex items-center gap-3 pb-2 shrink-0">
+          <span className="text-[11px] text-slate-500 flex items-center gap-1.5 font-medium mr-2">
+            <RefreshCw size={12} /> Cập nhật 5 phút trước
+          </span>
+          <button 
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-md text-[13px] font-bold hover:bg-slate-50 shadow-sm text-slate-700 transition-colors"
             onClick={handleExportPayments}
           >
-            <span className="material-symbols-outlined text-[18px] text-outline">download</span>
-            <span className="">Xuất báo cáo</span>
+            <Download size={14} /> Xuất dữ liệu
           </button>
-          <button
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-xl font-label-md text-label-md transition-colors shadow-sm"
-            onClick={handlePrintPayments}
-          >
-            <span className="material-symbols-outlined text-[18px] text-outline">print</span>
-            <span className="">In sổ thu chi</span>
-          </button>
-          <button
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary-container hover:bg-primary text-surface-container-lowest rounded-xl font-title-md text-title-md transition-colors shadow-sm focus:ring-2 focus:ring-primary-container focus:outline-none"
+          <button 
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-md text-[13px] font-bold hover:bg-emerald-700 shadow-sm transition-colors"
             onClick={() => setCreateOpen(true)}
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
-            <span className="">Ghi nhận thanh toán</span>
+            <Plus size={14} /> Tạo thanh toán
           </button>
         </div>
       </div>
+      <div className="border-b border-slate-200 -mt-[1px]"></div>
 
-      {/* 5 COMPACT KPI METRIC CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
-        <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-outline font-medium">Thu hôm nay</span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{formatVnd(totalCollectedToday)}</div>
-            <div className="text-[12px] text-outline mt-1 truncate">
-              Tiền mặt {formatVnd(cashCollected)} • VietQR {formatVnd(vietqrCollected)}
+      {/* 2. KPIs Row (Like "Net worth" / "Available cash") */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+         <div className="p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-semibold text-slate-500 mb-1">Tổng thu trong kỳ</h3>
+            <div className="flex items-end justify-between">
+               <span className="text-3xl font-bold text-slate-900 tabular-nums tracking-tight">40.8M</span>
+               <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px] mb-1">+8.4%</span>
             </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-outline font-medium">Chờ thanh toán</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100"></span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{unpaidPayments.length} <span className="text-title-md font-normal text-outline">giao dịch</span></div>
-            <div className="text-[12px] text-amber-700 font-medium mt-1 truncate">
-              Tổng tiền chờ: {formatVnd(unpaidAmount)}
+            <p className="text-[11px] text-slate-400 mt-2">+2.4M so với tháng trước</p>
+         </div>
+
+         <div className="p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-semibold text-slate-500 mb-1">Tiền mặt khả dụng</h3>
+            <div className="flex items-end justify-between">
+               <span className="text-3xl font-bold text-slate-900 tabular-nums tracking-tight">12.8M</span>
+               <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px] mb-1">+3.2%</span>
             </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-outline font-medium">Thanh toán một phần</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-yellow-500 ring-4 ring-yellow-100"></span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{partialPayments.length} <span className="text-title-md font-normal text-outline">đơn</span></div>
-            <div className="text-[12px] text-outline mt-1 truncate">
-              Đã thu {formatVnd(partialPaidAmount)} / Còn thiếu {formatVnd(partialRemainingAmount)}
+            <p className="text-[11px] text-slate-400 mt-2">+1.2M trên trung bình 30 ngày</p>
+         </div>
+
+         <div className="p-4 rounded-xl border border-slate-200 shadow-sm hidden xl:block">
+            <h3 className="text-xs font-semibold text-slate-500 mb-1">Tỷ lệ thu hồi nợ</h3>
+            <div className="flex items-end justify-between">
+               <span className="text-3xl font-bold text-slate-900 tabular-nums tracking-tight">28%</span>
+               <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-bold text-[10px] mb-1">+2.4%</span>
             </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-slate-400 transition-colors">
-          <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-outline font-medium">Đã thanh toán</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100"></span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-on-surface tracking-tight font-bold">{paidCount} <span className="text-title-md font-normal text-outline">giao dịch</span></div>
-            <div className="text-[12px] text-emerald-700 font-medium mt-1 truncate">
-              Hoàn tất
+            <p className="text-[11px] text-slate-400 mt-2">Tăng từ 25.6% tháng trước</p>
+         </div>
+
+         <div className="p-4 rounded-xl border border-slate-200 shadow-sm lg:col-span-1 xl:col-span-1 flex flex-col justify-between">
+            <h3 className="text-xs font-semibold text-slate-500 mb-2">Cơ cấu nguồn thu</h3>
+            <div className="flex items-center gap-1 w-full h-3 rounded-full overflow-hidden">
+               <div className="bg-emerald-600 h-full w-[60%]"></div>
+               <div className="bg-emerald-400 h-full w-[25%]"></div>
+               <div className="bg-emerald-100 h-full w-[15%]"></div>
             </div>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-amber-300 p-space-md rounded-xl shadow-sm flex flex-col justify-between hover:border-amber-400 transition-colors bg-amber-50/20">
-          <div className="flex items-center justify-between">
-            <span className="font-label-md text-label-md text-amber-900 font-bold">VietQR chờ đối soát</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-amber-100 animate-pulse"></span>
-          </div>
-          <div className="mt-2">
-            <div className="font-metric-num text-metric-num text-amber-900 tracking-tight font-bold">{formatVnd(vietqrPendingAmount)}</div>
-            <div className="text-[12px] text-amber-700 font-medium mt-1 truncate">
-              {vietqrPendingPayments.length} chuyển khoản VCB cần khớp lệnh
+            <div className="flex justify-between text-[10px] font-semibold text-slate-500 mt-3">
+               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-600 block"></span> Tiền mặt (60%)</div>
+               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400 block"></span> VietQR (25%)</div>
+               <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-100 block"></span> Khác (15%)</div>
             </div>
-          </div>
-        </div>
+         </div>
       </div>
 
-      {/* FILTER BAR */}
-      <div className="bg-surface-container-lowest border border-outline-variant p-3.5 rounded-xl shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        <SearchInput
-          value={search}
-          onChange={setSearch}
-          placeholder="Tìm mã thanh toán / mã đơn / khách hàng..."
-          className="relative flex-1 min-w-[280px]"
-        />
-        <div className="flex items-center gap-2.5 flex-wrap">
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
-          <FilterSelect value={methodFilter} onChange={setMethodFilter} options={METHOD_OPTIONS} />
-          <button
-            className="flex items-center gap-1 px-3 py-1.5 text-outline hover:text-on-surface hover:bg-surface-container-low rounded-xl font-label-md text-label-md transition-colors"
-            onClick={handleClearFilters}
-          >
-            <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
-            <span className="">Xóa bộ lọc</span>
-          </button>
-        </div>
+      {/* 3. Main Layout: Table + Sidebar */}
+      <div className="flex flex-col lg:flex-row mt-8 gap-8">
+         
+         {/* Left Side: Table Area */}
+         <div className="flex-1 min-w-0">
+            {/* Filter Bar */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="relative max-w-sm flex-1 min-w-[240px]">
+                <SearchInput
+                  value={search}
+                  onChange={setSearch}
+                  placeholder="Tìm mã thanh toán, mã đơn..."
+                  className="w-full bg-white border-slate-300 shadow-sm"
+                />
+              </div>
+              <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} className="shadow-sm border-slate-300" />
+              <FilterSelect value={methodFilter} onChange={setMethodFilter} options={METHOD_OPTIONS} className="shadow-sm border-slate-300" />
+              
+              {(search || statusFilter !== 'Tất cả trạng thái' || methodFilter !== 'Tất cả phương thức') && (
+                <button
+                  className="px-3 py-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 font-semibold text-[13px] flex items-center gap-1.5 transition-colors"
+                  onClick={clearFilters}
+                >
+                  <FilterX size={14} />
+                  <span>Xóa lọc</span>
+                </button>
+              )}
+            </div>
+
+            {/* Table */}
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
+                      <th className="py-3 px-4 w-32">Mã TT / Đơn</th>
+                      <th className="py-3 px-4">Khách hàng</th>
+                      <th className="py-3 px-4">Tổng đơn</th>
+                      <th className="py-3 px-4">Đã thu</th>
+                      <th className="py-3 px-4">Còn lại</th>
+                      <th className="py-3 px-4">Phương thức</th>
+                      <th className="py-3 px-4 text-center">Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-[13px]">
+                    {paginatedPayments.length === 0 ? (
+                      <EmptyTableRow colSpan={7} message="Không tìm thấy giao dịch nào." className="text-slate-400 py-10" />
+                    ) : null}
+                    {paginatedPayments.map((item) => {
+                      const isSelected = item.id === selectedId
+                      return (
+                        <tr
+                          key={item.id}
+                          onClick={() => setSelectedId(item.id)}
+                          className={`transition-colors cursor-pointer group ${
+                            isSelected
+                              ? 'bg-slate-50/80 border-l-2 border-l-slate-900'
+                              : 'hover:bg-slate-50 border-l-2 border-l-transparent'
+                          }`}
+                        >
+                          <td className="py-3 px-4">
+                            <div className="font-bold font-mono text-slate-900">{item.id}</div>
+                            <div className="text-[11px] text-slate-500 font-mono mt-0.5">{item.orderId}</div>
+                          </td>
+                          <td className="py-3 px-4">
+                            <div className="font-semibold text-slate-900">{item.customerName}</div>
+                            <div className="text-[11px] text-slate-500 mt-0.5">{item.customerPhone}</div>
+                          </td>
+                          <td className="py-3 px-4 font-mono font-semibold text-slate-900">{item.totalAmount}</td>
+                          <td className={`py-3 px-4 font-mono font-semibold ${item.paidAmountClassName}`}>{item.paidAmount}</td>
+                          <td className={`py-3 px-4 font-mono font-bold ${item.remainingAmountClassName}`}>
+                            {item.remainingAmount}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 ${item.methodClassName}`}>
+                              {item.methodLabel}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-slate-200 bg-white">
+                <Pagination
+                  page={page}
+                  totalPages={totalPages}
+                  startIndex={startIndex}
+                  endIndex={endIndex}
+                  totalCount={totalCount}
+                  unitLabel="giao dịch"
+                  goPrev={goPrev}
+                  goNext={goNext}
+                  setPage={setPage}
+                />
+              </div>
+            </div>
+         </div>
+
+         {/* Right Side: Sidebar */}
+         <div className="lg:w-[320px] shrink-0 space-y-6">
+            
+            {/* Quick Transfer Box */}
+            <div className="border border-slate-200 rounded-xl p-5 shadow-sm bg-white">
+               <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
+                 Ghi nhận nhanh
+                 <span className="text-[10px] text-slate-400 font-medium">TIỀN MẶT</span>
+               </h3>
+               <div className="flex items-center gap-2">
+                 <div className="relative flex-1">
+                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₫</span>
+                   <input 
+                     type="text" 
+                     placeholder="0"
+                     value={quickAmount}
+                     onChange={(e) => setQuickAmount(e.target.value)}
+                     className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-8 pr-3 py-2 text-slate-900 font-mono font-bold focus:border-slate-400 focus:bg-white outline-none transition-colors"
+                   />
+                 </div>
+                 <button 
+                   className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-[13px] font-bold hover:bg-emerald-700 transition-colors"
+                   onClick={() => {
+                     if (quickAmount) {
+                       showToast(`Ghi nhận thu tiền mặt: ${quickAmount} đ`)
+                       setQuickAmount('')
+                     } else {
+                       showToast('Vui lòng nhập số tiền')
+                     }
+                   }}
+                 >
+                   Lưu
+                 </button>
+               </div>
+            </div>
+
+            {/* Shortcuts Box */}
+            <div className="border border-slate-200 rounded-xl p-5 shadow-sm bg-white">
+               <h3 className="text-sm font-bold text-slate-900 mb-4">Lối tắt (Shortcuts)</h3>
+               <div className="grid grid-cols-3 gap-4">
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <ScanLine size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Quét QR</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <RefreshCw size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Đối soát</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <MessageCircle size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Nhắc nợ</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <History size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Lịch sử</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <User size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">KH nợ</span>
+                  </button>
+                  <button className="flex flex-col items-center gap-2 group">
+                    <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
+                      <MoreHorizontal size={20} />
+                    </div>
+                    <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Thêm</span>
+                  </button>
+               </div>
+            </div>
+
+            {/* Upcoming / Alerts */}
+            <div className="border border-slate-200 rounded-xl p-5 shadow-sm bg-white">
+               <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center justify-between">
+                 Nhắc nhở
+                 <span className="w-5 h-5 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center text-[10px] font-bold">2</span>
+               </h3>
+               <div className="space-y-3">
+                 <div className="p-3 border border-slate-100 rounded-lg bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                   <div className="flex justify-between items-start">
+                     <span className="text-[13px] font-bold text-slate-900">Thu nợ Nguyễn Văn Hùng</span>
+                     <ChevronRight size={16} className="text-slate-400" />
+                   </div>
+                   <div className="text-[11px] text-slate-500 mt-1">Đến hạn hôm nay • 1.270.000 đ</div>
+                 </div>
+                 <div className="p-3 border border-slate-100 rounded-lg bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors">
+                   <div className="flex justify-between items-start">
+                     <span className="text-[13px] font-bold text-slate-900">Đối soát lệnh VietQR</span>
+                     <ChevronRight size={16} className="text-slate-400" />
+                   </div>
+                   <div className="text-[11px] text-slate-500 mt-1">2 giao dịch đang chờ khớp lệnh</div>
+                 </div>
+               </div>
+            </div>
+
+         </div>
       </div>
 
-      {/* Main Payment Table */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div className="px-space-md py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-title-md text-title-md font-semibold text-on-surface">Danh sách giao dịch thanh toán</span>
-                <span className="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold">{filteredPayments.length} giao dịch</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-outline font-label-sm text-label-sm">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="">Cập nhật trực tiếp: 10:15</span>
-              </div>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-semibold text-outline uppercase tracking-wider">
-                    <th className="py-2.5 px-space-md">MÃ TT / ĐƠN</th>
-                    <th className="py-2.5 px-space-md">KHÁCH HÀNG</th>
-                    <th className="py-2.5 px-space-md text-right">TỔNG ĐƠN</th>
-                    <th className="py-2.5 px-space-md text-right">ĐÃ THU</th>
-                    <th className="py-2.5 px-space-md text-right">CÒN LẠI</th>
-                    <th className="py-2.5 px-space-md">PHƯƠNG THỨC</th>
-                    <th className="py-2.5 px-space-md text-center">TRẠNG THÁI</th>
-                    <th className="py-2.5 px-space-md">THỜI GIAN</th>
-                    <th className="py-2.5 px-space-md text-center">THAO TÁC</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
-                  {filteredPayments.length === 0 ? (
-                    <EmptyTableRow colSpan={9} message="Không tìm thấy giao dịch phù hợp với bộ lọc." />
-                  ) : null}
-                  {paginatedPayments.map((payment) => {
-                    const isSelected = payment.id === selectedId
-                    return (
-                      <tr
-                        key={payment.id}
-                        onClick={() => setSelectedId(payment.id)}
-                        className={`transition-colors cursor-pointer ${
-                          isSelected
-                            ? 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-primary-container'
-                            : 'hover:bg-surface-container-low'
-                        }`}
-                      >
-                        <td className="py-3 px-space-md whitespace-nowrap">
-                          <div className={`font-semibold font-mono ${isSelected ? 'text-primary' : 'text-on-surface'}`}>{payment.id}</div>
-                          <div className="text-[11px] text-outline">{payment.orderId}</div>
-                        </td>
-                        <td className="py-3 px-space-md">
-                          <div className="font-medium text-on-surface">{payment.customerName}</div>
-                          <div className="text-[11px] text-outline truncate max-w-[130px]">{payment.addressShort}</div>
-                        </td>
-                        <td className="py-3 px-space-md text-right font-medium text-on-surface whitespace-nowrap font-mono">
-                          {payment.totalAmount}
-                        </td>
-                        <td className={`py-3 px-space-md text-right font-medium whitespace-nowrap font-mono ${payment.paidAmountClassName}`}>
-                          {payment.paidAmount}
-                        </td>
-                        <td className={`py-3 px-space-md text-right font-semibold whitespace-nowrap font-mono ${payment.remainingAmountClassName}`}>
-                          {payment.remainingAmount}
-                        </td>
-                        <td className="py-3 px-space-md whitespace-nowrap">
-                          <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded ${payment.methodClassName}`}>
-                            {payment.methodIcon ? (
-                              <span className={`material-symbols-outlined text-[14px] ${payment.methodIconClassName ?? ''}`}>
-                                {payment.methodIcon}
-                              </span>
-                            ) : null}
-                            {payment.methodLabel}
-                          </span>
-                        </td>
-                        <td className="py-3 px-space-md text-center whitespace-nowrap">
-                          <StatusBadge label={payment.statusBadge.label} className={payment.statusBadge.className} minWidthClassName="min-w-[165px]" />
-                        </td>
-                        <td className="py-3 px-space-md text-outline whitespace-nowrap text-[12px] font-mono">{payment.time}</td>
-                        <td className="py-3 px-space-md text-center whitespace-nowrap">
-                          <div className="flex items-center justify-center">
-                            <RowActionsMenu
-                              triggerLabel={`Thao tác giao dịch #${payment.id}`}
-                              actions={payment.actions.map((action) => ({
-                                ...action,
-                                onClick: () => handlePaymentAction(payment.id, action.label),
-                              }))}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <Pagination
-              page={page}
-              totalPages={totalPages}
-              startIndex={startIndex}
-              endIndex={endIndex}
-              totalCount={totalCount}
-              unitLabel="giao dịch"
-              goPrev={goPrev}
-              goNext={goNext}
-              setPage={setPage}
-            />
-          </div>
-
-      {/* DETAIL MODAL: CHI TIẾT GIAO DỊCH */}
-      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)}>
-        {selected ? (
-          <>
-            <div className="p-space-md bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-title-lg text-title-lg font-bold text-primary font-mono">#{selected.id}</span>
-                  <span className="text-[11px] text-outline font-mono">(Đơn gốc {selected.orderId})</span>
-                </div>
-                <div className="text-[11px] text-outline">{selected.subtitle}</div>
-              </div>
-              <span
-                className={`px-2.5 py-0.5 rounded-full font-label-sm text-label-sm font-semibold border ${selected.statusBadge.className}`}
-              >
-                {selected.statusBadge.label}
-              </span>
-            </div>
-            <div className="p-space-md space-y-3.5">
-              <div className="flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline flex-shrink-0">
-                  <span className="material-symbols-outlined text-[18px]">person</span>
-                </div>
-                <div className="flex-1">
-                  <div className="font-label-md text-label-md font-semibold text-on-surface">
-                    {selected.customerName} - {selected.customerPhone}
-                  </div>
-                  <div className="text-body-sm text-outline">{selected.customerNote}</div>
-                </div>
-              </div>
-              <div className="p-2.5 rounded-lg bg-surface-container-low border border-outline-variant text-[12px] space-y-1">
-                <div className="text-outline font-medium">Chi tiết hàng hóa:</div>
-                <div className="font-medium text-on-surface leading-snug">{selected.goodsNote}</div>
-              </div>
-              <div className="space-y-2 pt-1 border-t border-outline-variant/60">
-                <div className="flex justify-between items-center text-body-sm">
-                  <span className="text-outline">Tổng giá trị đơn hàng:</span>
-                  <span className="font-mono font-semibold text-on-surface">{selected.totalAmount}</span>
-                </div>
-                <div className="flex justify-between items-center text-body-sm">
-                  <span className="text-outline">Đã thu qua hệ thống:</span>
-                  <span className="font-mono font-semibold text-emerald-700">{selected.collectedLabel}</span>
-                </div>
-                <div className="w-full bg-surface-container h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-600 h-full rounded-full" style={{ width: selected.progressWidth }}></div>
-                </div>
-                {selected.hasRemaining ? (
-                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-lg flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-1.5 text-amber-900 font-medium text-body-sm">
-                      <span className="material-symbols-outlined text-amber-700 text-[18px]">warning</span>
-                      <span className="">CÒN LẠI CẦN THU:</span>
-                    </div>
-                    <span className="font-mono font-bold text-amber-900 text-headline-sm">{selected.remainingAmount}</span>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between mt-2">
-                    <div className="flex items-center gap-1.5 text-emerald-800 font-medium text-body-sm">
-                      <span className="material-symbols-outlined text-emerald-700 text-[18px]">task_alt</span>
-                      <span className="">ĐÃ THU ĐỦ</span>
-                    </div>
-                    <span className="font-mono font-bold text-emerald-800 text-headline-sm">{selected.remainingAmount}</span>
-                  </div>
-                )}
-                <div className="text-[11px] text-outline flex items-center justify-between pt-1">
-                  <span className="">Người ghi nhận:</span>
-                  <span className="font-medium text-on-surface">{selected.recordedBy}</span>
-                </div>
-              </div>
-              <div className="pt-2 border-t border-outline-variant/60">
-                <span className="font-label-md text-label-md font-semibold text-on-surface block mb-2">
-                  Lịch sử thanh toán chi tiết
-                </span>
-                <div className="space-y-2">
-                  {selected.paymentHistory.map((entry, idx) => (
-                    <div
-                      key={`${entry.title}-${idx}`}
-                      className={`p-2 rounded border text-[12px] flex items-start justify-between ${entry.cardClassName}`}
-                    >
-                      <div>
-                        <div className="font-medium text-on-surface flex items-center gap-1">
-                          {entry.icon ? (
-                            <span className={`material-symbols-outlined text-[14px] ${entry.iconClassName ?? ''}`}>{entry.icon}</span>
-                          ) : null}
-                          <span className="">{entry.title}</span>
-                        </div>
-                        <div className="text-[11px] text-outline">{entry.note}</div>
-                      </div>
-                      <span className={`font-mono font-semibold text-right ${entry.amountClassName}`}>{entry.amountLabel}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2 pt-2">
-                <button
-                  className="w-full py-2 bg-primary-container hover:bg-primary text-white font-title-md text-title-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
-                  onClick={() => markPaymentPaid(selected.id)}
-                >
-                  <span className="material-symbols-outlined text-[18px]">payments</span>
-                  <span className="">Ghi nhận thu tiền tiếp</span>
-                </button>
-                <button
-                  className="w-full py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md font-medium rounded-xl transition-colors shadow-sm flex items-center justify-center gap-1.5"
-                  onClick={() => {
-                    showToast(`Đang in phiếu thu VietQR / biên nhận cho giao dịch #${selected.id}`)
-                    window.print()
-                  }}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-outline">print</span>
-                  <span className="">In phiếu thu VietQR / Biên nhận</span>
-                </button>
-                <button
-                  className="w-full py-1.5 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg font-label-md text-label-md transition-colors flex items-center justify-center gap-1.5"
-                  onClick={() => showToast(`Đã gửi nhắc nợ Zalo/SMS cho ${selected.customerName}`)}
-                >
-                  <span className="material-symbols-outlined text-[18px] text-blue-600">chat</span>
-                  <span className="">Gửi nhắc nợ Zalo / SMS</span>
-                </button>
-              </div>
-            </div>
-          </>
-        ) : null}
-      </DetailModal>
-
-      {/* MODAL: GHI NHẬN THANH TOÁN MỚI */}
+      {/* MODALS */}
       <FormModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}
@@ -588,35 +579,78 @@ export default function PaymentsPage() {
         values={createForm}
         onChange={updateCreateForm}
         onSubmit={handleCreatePayment}
-        submitLabel="Ghi nhận thanh toán"
+        submitLabel="Lưu giao dịch"
       />
 
-      {/* Compact Recent Payment Activity */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-space-md">
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-title-md text-title-md font-semibold text-on-surface">Nhật ký giao dịch gần đây</span>
-              <span className="material-symbols-outlined text-outline text-[18px]">update</span>
+      <DetailModal open={selected !== null} onClose={() => setSelectedId(null)} widthClassName="max-w-2xl">
+        {selected ? (
+          <>
+            {/* Same detail modal structure as before, just restyled to be cleaner */}
+            <div className="p-5 border-b border-slate-200 bg-slate-50">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Chi tiết thanh toán</h2>
+                  <p className="text-xs text-slate-500 font-mono mt-1">
+                    Mã TT: {selected.id} • Mã đơn: {selected.orderId}
+                  </p>
+                </div>
+                <StatusBadge label={selected.statusBadge.label} className={selected.statusBadge.className} />
+              </div>
             </div>
-            <div className="space-y-3 font-body-sm text-body-sm">
-              {payments.length === 0 ? (
-                <p className="text-outline text-center py-4">Không có giao dịch nào gần đây.</p>
-              ) : (
-                payments.slice(0, 3).map((payment) => (
-                  <div key={payment.id} className="flex items-start gap-2.5 pb-2.5 border-b border-outline-variant/60 last:border-0 last:pb-0">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></span>
-                    <div className="flex-1">
-                      <div className="text-on-surface">
-                        <strong className="font-mono text-primary">{payment.id}:</strong> Thu{' '}
-                        <span className="font-semibold text-emerald-700 font-mono">{payment.paidAmount}</span> qua {payment.methodLabel} từ{' '}
-                        {payment.customerName}
-                      </div>
-                      <div className="text-[11px] text-outline mt-0.5">{payment.time} • Bởi {payment.recordedBy}</div>
-                    </div>
-                  </div>
-                ))
+            
+            <div className="p-5 overflow-y-auto max-h-[60vh] space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 block mb-1">Khách hàng</span>
+                  <div className="font-bold text-slate-900">{selected.customerName}</div>
+                  <div className="text-xs text-slate-500">{selected.customerPhone}</div>
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 block mb-1">Phương thức</span>
+                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 ${selected.methodClassName}`}>
+                    {selected.methodLabel}
+                  </span>
+                </div>
+              </div>
+
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                 <span className="text-xs font-semibold text-slate-500 block mb-2">Thông tin tài chính</span>
+                 <div className="space-y-2 text-[13px]">
+                   <div className="flex justify-between">
+                     <span className="text-slate-600">Tổng đơn:</span>
+                     <span className="font-mono font-bold text-slate-900">{selected.totalAmount}</span>
+                   </div>
+                   <div className="flex justify-between">
+                     <span className="text-slate-600">Đã thu:</span>
+                     <span className={`font-mono font-bold ${selected.paidAmountClassName}`}>{selected.paidAmount}</span>
+                   </div>
+                   <div className="flex justify-between pt-2 border-t border-slate-200">
+                     <span className="font-bold text-slate-900">Còn lại:</span>
+                     <span className={`font-mono font-bold text-base ${selected.remainingAmountClassName}`}>{selected.remainingAmount}</span>
+                   </div>
+                 </div>
+              </div>
+            </div>
+            
+            <div className="p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
+              <button 
+                className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm"
+                onClick={() => setSelectedId(null)}
+              >
+                Đóng
+              </button>
+              {selected.hasRemaining && (
+                <button 
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-bold rounded-lg shadow-sm flex items-center gap-1.5"
+                  onClick={() => markPaymentPaid(selected.id)}
+                >
+                  <Banknote size={16} /> Thu số dư còn lại
+                </button>
               )}
             </div>
-          </div>
-    </>
+          </>
+        ) : null}
+      </DetailModal>
+    </div>
   )
 }

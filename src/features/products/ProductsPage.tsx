@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ChevronRight, Download, Plus, Package, CheckCircle2, AlertTriangle, Ban, FilterX, Info } from 'lucide-react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -205,130 +206,131 @@ export default function ProductsPage() {
   return (
     <>
       {/* 1. BREADCRUMBS & PAGE HEADER */}
-      <section className="space-y-1">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-body-sm text-outline">
-          <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
-          <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-          <span className="text-on-surface font-medium">Quản lý sản phẩm</span>
+      <section className="space-y-3">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500">
+          <Link className="hover:text-slate-900 transition-colors" to="/">Bảng điều khiển</Link>
+          <ChevronRight size={14} />
+          <span className="text-slate-900 font-medium">Quản lý sản phẩm</span>
         </nav>
-        <div className="flex justify-end pt-1">
-          <div className="flex items-center gap-space-sm self-start md:self-auto">
+        <div className="flex justify-end">
+          <div className="flex items-center gap-2 self-start md:self-auto flex-wrap">
             <button
-              className="flex items-center gap-2 h-9 px-space-md bg-surface-container-lowest hover:bg-surface border border-outline-variant rounded-lg text-on-surface font-label-md text-label-md transition-all shadow-sm"
+              className="flex items-center gap-2 h-9 px-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm font-medium transition-colors shadow-sm"
               onClick={handleExportProducts}
               type="button"
             >
-              <span className="material-symbols-outlined text-lg text-outline" data-icon="download">download</span>
+              <Download size={16} className="text-slate-500" />
               <span>Xuất Excel</span>
             </button>
             <button
-              className="flex items-center gap-2 h-9 px-space-lg bg-[#1E5E3A] hover:bg-[#17482D] text-on-primary rounded-lg font-label-md text-label-md transition-all shadow-sm"
+              className="flex items-center gap-2 h-9 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
               onClick={() => setCreateOpen(true)}
               type="button"
             >
-              <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Thêm sản phẩm</span>
+              <Plus size={16} />
+              <span>Thêm sản phẩm</span>
             </button>
           </div>
         </div>
       </section>
 
       {/* 2. COMPACT SUMMARY METRIC CARDS (4 Cards Grid) */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Tổng sản phẩm */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
           <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Tổng sản phẩm</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng sản phẩm</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface tabular-nums">{totalCount}</span>
-              <span className="font-body-sm text-body-sm text-outline">mặt hàng</span>
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{totalCount}</span>
+              <span className="text-xs text-slate-500 font-medium">mặt hàng</span>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">{categoryCount} danh mục đang hoạt động</p>
+            <p className="text-xs text-slate-500">{categoryCount} danh mục đang hoạt động</p>
           </div>
-          <div className="p-2.5 bg-surface-container rounded-lg text-primary">
-            <span className="material-symbols-outlined text-2xl" data-icon="inventory_2">inventory_2</span>
+          <div className="p-2.5 bg-slate-100 rounded-lg text-slate-600">
+            <Package size={20} />
           </div>
         </div>
         {/* Card 2: Đang kinh doanh */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
           <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Đang kinh doanh</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Đang kinh doanh</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#15803D] tabular-nums">{activeCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
+              <span className="text-2xl font-bold text-emerald-700 tabular-nums">{activeCount}</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                 {activePercent}%
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Đảm bảo dòng tiền bán lẻ</p>
+            <p className="text-xs text-slate-500">Đảm bảo dòng tiền bán lẻ</p>
           </div>
-          <div className="p-2.5 bg-[#DCFCE7] rounded-lg text-[#15803D]">
-            <span className="material-symbols-outlined text-2xl fill" data-icon="check_circle" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+          <div className="p-2.5 bg-emerald-50 rounded-lg text-emerald-600">
+            <CheckCircle2 size={20} />
           </div>
         </div>
         {/* Card 3: Sắp hết hàng */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
+        <div className="bg-white p-4 rounded-xl border border-amber-200 shadow-sm flex items-start justify-between">
           <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Sắp hết hàng</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Sắp hết hàng</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B45309] tabular-nums">{lowStockCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
+              <span className="text-2xl font-bold text-amber-600 tabular-nums">{lowStockCount}</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                 Cần nhập
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-[#B45309]">Ngưỡng cảnh báo &lt; 20 bao/chai</p>
+            <p className="text-xs text-amber-600">Ngưỡng cảnh báo &lt; 20 bao/chai</p>
           </div>
-          <div className="p-2.5 bg-[#FEF3C7] rounded-lg text-[#B45309]">
-            <span className="material-symbols-outlined text-2xl fill" data-icon="warning" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+          <div className="p-2.5 bg-amber-50 rounded-lg text-amber-600">
+            <AlertTriangle size={20} />
           </div>
         </div>
         {/* Card 4: Ngừng kinh doanh / Hết hàng */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
+        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
           <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Ngừng KD / Hết hàng</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Ngừng KD / Hết hàng</span>
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B91C1C] tabular-nums">{outOfStockCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
+              <span className="text-2xl font-bold text-rose-600 tabular-nums">{outOfStockCount}</span>
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-50 text-rose-600 border border-rose-200">
                 Tồn: 0
               </span>
             </div>
-            <p className="font-body-sm text-body-sm text-outline">Tồn kho 0 hoặc ngưng nhập</p>
+            <p className="text-xs text-slate-500">Tồn kho 0 hoặc ngưng nhập</p>
           </div>
-          <div className="p-2.5 bg-[#FEE2E2] rounded-lg text-[#B91C1C]">
-            <span className="material-symbols-outlined text-2xl" data-icon="block">block</span>
+          <div className="p-2.5 bg-rose-50 rounded-lg text-rose-500">
+            <Ban size={20} />
           </div>
         </div>
       </section>
 
       {/* 3. DATA FILTERS TOOLBAR */}
-      <section className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex flex-wrap items-center justify-between gap-space-md">
-        <div className="flex flex-wrap items-center gap-space-sm flex-1">
-          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, hoạt chất..." />
-          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[210px]" />
-          <FilterSelect value={businessFilter} onChange={setBusinessFilter} options={BUSINESS_OPTIONS} className="relative min-w-[170px]" />
+      <section className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3 flex-1">
+          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, hoạt chất..." className="relative flex-1 min-w-[240px]" />
+          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[180px]" />
+          <FilterSelect value={businessFilter} onChange={setBusinessFilter} options={BUSINESS_OPTIONS} className="relative min-w-[180px]" />
           <button
-            className="h-9 px-space-sm text-outline hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 transition-colors"
+            className="h-9 px-3 text-slate-500 hover:text-slate-900 text-xs font-medium flex items-center gap-1 transition-colors"
             onClick={handleClearFilters}
             type="button"
           >
-            <span className="material-symbols-outlined text-base" data-icon="filter_alt_off">filter_alt_off</span>
+            <FilterX size={14} />
             <span>Đặt lại bộ lọc</span>
           </button>
         </div>
       </section>
 
       {/* 4. ENTERPRISE DATA TABLE CONTAINER */}
-      <section className="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+      <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#F8FAFC] border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
+              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
                 <th className="py-3 pl-4 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
                 <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
                 <th className="py-3 px-3 min-w-[120px] text-right">Giá bán niêm yết</th>
                 <th className="py-3 px-3 min-w-[170px] text-right">Số lượng</th>
-                <th className="py-3 pr-4 pl-3 w-28 text-right">Thao tác</th>
+                <th className="py-3 pr-4 pl-3 w-28 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
+            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={5} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
               ) : null}
@@ -340,36 +342,36 @@ export default function ProductsPage() {
                     onClick={() => setSelectedId(product.id)}
                     className={`transition-colors cursor-pointer group ${
                       isSelected
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : `hover:bg-surface/70 ${product.rowClassName ?? ''}`
+                        ? 'bg-emerald-50/50 hover:bg-emerald-50 border-l-2 border-l-emerald-500'
+                        : `hover:bg-slate-50 ${product.rowClassName ?? ''}`
                     }`}
                   >
                     <td className="py-3.5 pl-4 px-3">
                       <div
-                        className={`font-title-md text-title-md group-hover:text-primary transition-colors ${
-                          product.discontinued ? 'text-outline line-through' : 'text-on-surface'
+                        className={`font-semibold text-sm group-hover:text-emerald-600 transition-colors ${
+                          product.discontinued ? 'text-slate-400 line-through' : 'text-slate-900'
                         }`}
                       >
                         {product.name}
                       </div>
-                      <div className="text-body-sm text-outline mt-0.5">{product.description}</div>
+                      <div className="text-xs text-slate-500 mt-0.5">{product.description}</div>
                     </td>
                     <td className="py-3.5 px-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${product.categoryClassName}`}>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${product.categoryClassName}`}>
                         {product.categoryLabel}
                       </span>
                     </td>
-                    <td className={`py-3.5 px-3 text-right font-semibold tabular-nums ${product.priceClassName ?? 'text-on-surface'}`}>
+                    <td className={`py-3.5 px-3 text-right font-semibold font-mono ${product.priceClassName ?? 'text-slate-900'}`}>
                       {product.price}
                     </td>
                     <td className="py-3.5 px-3 text-right">
-                      <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums text-on-surface">
+                      <span className="inline-flex items-center justify-end gap-1.5 font-semibold font-mono text-slate-900">
                         <span className={`w-1.5 h-1.5 rounded-full ${product.stockDotClassName}`}></span>
                         {product.stockQuantity}
                       </span>
                     </td>
-                    <td className="py-3.5 pr-4 pl-3 text-right">
-                      <div className="flex items-center justify-end">
+                    <td className="py-3.5 pr-4 pl-3 text-center">
+                      <div className="flex items-center justify-center">
                         <RowActionsMenu
                           triggerLabel={`Thao tác ${product.name}`}
                           actions={product.actions.map((action) => ({
@@ -399,12 +401,12 @@ export default function ProductsPage() {
       </section>
 
       {/* 6. OPERATIONAL AUDIT & FAST NOTES STRIP */}
-      <section className="p-space-sm px-space-md bg-surface-container-lowest rounded-lg border border-outline-variant flex flex-wrap items-center justify-between text-body-sm text-on-surface-variant">
+      <section className="p-3 px-4 bg-white rounded-xl border border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500 shadow-sm mt-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-primary text-base" data-icon="info">info</span>
+          <Info size={16} className="text-emerald-600" />
           <span>Hệ thống áp dụng cảnh báo sắp hết hàng mặc định: <strong>&lt; 20 bao/chai</strong> đối với nhóm Phân bón và Thuốc BVTV chủ lực vụ Đông Xuân.</span>
         </div>
-        <div className="flex items-center gap-3 text-xs text-outline">
+        <div className="flex items-center gap-3 text-[11px] text-slate-400 mt-2 md:mt-0">
           <span>Người đồng bộ kho gần nhất: <strong>Nguyễn Văn Khang (Kỹ sư nông học)</strong></span>
           <span>•</span>
           <span>15 phút trước qua VietQR Dispatch</span>

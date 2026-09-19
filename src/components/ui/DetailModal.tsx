@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface DetailModalProps {
@@ -30,17 +31,17 @@ export default function DetailModal({ open, onClose, children, widthClassName = 
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6" role="dialog" aria-modal="true">
-      <div className="fixed inset-0 bg-inverse-surface/40" onClick={onClose} aria-hidden="true" />
+      <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} aria-hidden="true" />
       <div className={`relative w-full ${widthClassName} my-4 sm:my-8`}>
         <button
           type="button"
           onClick={onClose}
-          className="absolute -top-3 -right-3 z-10 w-6 h-6 flex items-center justify-center rounded-full bg-white border border-outline-variant text-outline hover:text-on-surface hover:bg-surface-container-low shadow-md transition-colors"
+          className="absolute -top-3 -right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 shadow-md transition-colors"
           aria-label="Đóng"
         >
-          <span className="material-symbols-outlined text-[14px]">close</span>
+          <X size={16} />
         </button>
-        <div className="bg-surface-container-lowest rounded shadow-lg max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="bg-white rounded-xl shadow-xl max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)] overflow-y-auto">
           {children}
         </div>
       </div>

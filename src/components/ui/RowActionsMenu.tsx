@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { MoreVertical } from 'lucide-react'
 
 export interface RowAction {
   label: string
@@ -66,11 +67,11 @@ export default function RowActionsMenu({ actions, triggerLabel = 'Thao tác' }: 
   const toneClasses = (tone?: RowAction['tone']) => {
     switch (tone) {
       case 'primary':
-        return 'text-primary font-semibold'
+        return 'text-emerald-600 font-semibold'
       case 'danger':
-        return 'text-error'
+        return 'text-rose-600'
       default:
-        return 'text-on-surface'
+        return 'text-slate-700'
     }
   }
 
@@ -83,18 +84,18 @@ export default function RowActionsMenu({ actions, triggerLabel = 'Thao tác' }: 
           e.stopPropagation()
           toggleOpen()
         }}
-        className="p-1 rounded hover:bg-surface-container-low text-on-surface-variant hover:text-on-surface transition-colors"
+        className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors"
         title={triggerLabel}
         aria-haspopup="true"
         aria-expanded={open}
         aria-label={triggerLabel}
       >
-        <span className="material-symbols-outlined text-[18px]">more_vert</span>
+        <MoreVertical size={16} />
       </button>
       {open ? (
         <div
           ref={menuRef}
-          className="fixed z-50 w-52 rounded-lg border border-outline-variant bg-white shadow-lg py-1"
+          className="fixed z-50 w-48 rounded-lg border border-slate-200 bg-white shadow-lg py-1"
           style={{ top: menuStyle.top, left: menuStyle.left }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -106,7 +107,7 @@ export default function RowActionsMenu({ actions, triggerLabel = 'Thao tác' }: 
                 action.onClick?.()
                 setOpen(false)
               }}
-              className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-surface-container-low transition-colors ${toneClasses(action.tone)}`}
+              className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-[13px] hover:bg-slate-50 transition-colors ${toneClasses(action.tone)}`}
             >
               {action.icon ? <span className="material-symbols-outlined text-[16px]">{action.icon}</span> : null}
               <span>{action.label}</span>

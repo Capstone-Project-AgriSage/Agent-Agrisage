@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ChevronRight, Download, Printer, Plus, Receipt, Clock, Truck, CheckCircle, RefreshCw, Columns, MapPin, Phone, BadgeCheck, MessageSquare, FilterX } from 'lucide-react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -217,175 +218,176 @@ export default function OrdersPage() {
   return (
     <>
       {/* PAGE TITLE & ACTIONS ZONE */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
-        <nav className="flex items-center gap-1 text-[12px] text-outline" aria-label="Breadcrumb">
-          <Link className="hover:text-on-surface" to="/">Bảng điều khiển</Link>
-          <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-          <span className="text-on-surface font-medium">Quản lý đơn hàng</span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <nav className="flex items-center gap-1 text-[12px] text-slate-500" aria-label="Breadcrumb">
+          <Link className="hover:text-slate-900 transition-colors" to="/">Bảng điều khiển</Link>
+          <ChevronRight size={14} />
+          <span className="text-slate-900 font-medium">Quản lý đơn hàng</span>
         </nav>
-        <div className="flex items-center gap-space-xs flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
           <button
-            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
             type="button"
             onClick={handleExportOrders}
           >
-            <span className="material-symbols-outlined text-base text-outline" data-icon="table_view">table_view</span>
+            <Download size={16} className="text-slate-500" />
             <span>Xuất Excel</span>
           </button>
           <button
-            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
             type="button"
             onClick={handlePrintOrders}
           >
-            <span className="material-symbols-outlined text-base text-outline" data-icon="print">print</span>
+            <Printer size={16} className="text-slate-500" />
             <span>In phiếu xuất hàng loạt</span>
           </button>
           <button
-            className="inline-flex items-center gap-1 px-space-md py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
             type="button"
             onClick={() => setCreateOpen(true)}
           >
-            <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Tạo đơn hàng</span>
+            <Plus size={16} />
+            <span>Tạo đơn hàng</span>
           </button>
         </div>
       </div>
 
       {/* SUMMARY KPI CARDS (4 Clean SaaS Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        {/* KPI 1: Đơn hàng hôm nay */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1 */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đơn hàng hôm nay</span>
-            <span className="material-symbols-outlined text-xl text-primary" data-icon="receipt_long">receipt_long</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đơn hàng hôm nay</span>
+            <Receipt size={20} className="text-emerald-600" />
           </div>
-          <div className="my-space-xs">
+          <div className="my-2">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{totalOrdersToday}</span>
-              <span className="text-xs font-medium text-outline">đơn</span>
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{totalOrdersToday}</span>
+              <span className="text-xs font-medium text-slate-500">đơn</span>
             </div>
           </div>
-          <div className="text-xs font-mono text-outline border-t border-outline-variant/60 pt-1.5 flex justify-between">
+          <div className="text-xs text-slate-500 border-t border-slate-100 pt-2 flex justify-between">
             <span>Tổng giá trị:</span>
-            <span className="font-semibold text-on-surface">{formatVnd(totalOrderValue)}</span>
+            <span className="font-semibold text-slate-900">{formatVnd(totalOrderValue)}</span>
           </div>
         </div>
 
-        {/* KPI 2: Chờ xác nhận */}
-        <div className="bg-surface-container-lowest border-2 border-amber-400/80 rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        {/* KPI 2 */}
+        <div className="bg-white rounded-xl border border-amber-200 p-4 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Chờ xác nhận</span>
-            <span className="material-symbols-outlined text-xl text-amber-600" data-icon="pending_actions">pending_actions</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Chờ xác nhận</span>
+            <Clock size={20} className="text-amber-500" />
           </div>
-          <div className="my-space-xs">
+          <div className="my-2">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-amber-700 font-semibold">{waitingCount}</span>
-              <span className="text-xs text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-medium">Cần duyệt</span>
+              <span className="text-2xl font-bold text-amber-600 tabular-nums">{waitingCount}</span>
+              <span className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-semibold border border-amber-200">Cần duyệt</span>
             </div>
           </div>
-          <div className="text-xs text-amber-700 border-t border-outline-variant/60 pt-1.5 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+          <div className="text-xs text-amber-600 border-t border-amber-100/50 pt-2 flex items-center gap-1">
+            <Clock size={14} />
             <span>Ưu tiên xuất kho trạm</span>
           </div>
         </div>
-
-        {/* KPI 3: Đang vận chuyển */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        
+        {/* KPI 3 */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đang giao hàng</span>
-            <span className="material-symbols-outlined text-xl text-blue-600" data-icon="local_shipping">local_shipping</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Đang giao hàng</span>
+            <Truck size={20} className="text-blue-500" />
           </div>
-          <div className="my-space-xs">
+          <div className="my-2">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{processingCount + deliveringCount}</span>
-              <span className="text-xs text-blue-600 font-medium">đơn</span>
+              <span className="text-2xl font-bold text-slate-900 tabular-nums">{processingCount + deliveringCount}</span>
+              <span className="text-xs font-medium text-blue-600">đơn</span>
             </div>
           </div>
-          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
+          <div className="text-xs text-slate-500 border-t border-slate-100 pt-2">
             {deliveringCount} đang giao • {processingCount} đang soạn hàng
           </div>
         </div>
 
-        {/* KPI 4: Hoàn thành */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+        {/* KPI 4 */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hoàn thành</span>
-            <span className="material-symbols-outlined text-xl text-emerald-600" data-icon="check_circle">check_circle</span>
+            <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Hoàn thành</span>
+            <CheckCircle size={20} className="text-emerald-500" />
           </div>
-          <div className="my-space-xs">
+          <div className="my-2">
             <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-emerald-700 font-semibold">{completedCount}</span>
-              <span className="text-xs text-emerald-600 font-medium">đơn</span>
+              <span className="text-2xl font-bold text-emerald-600 tabular-nums">{completedCount}</span>
+              <span className="text-xs font-medium text-emerald-600">đơn</span>
             </div>
           </div>
-          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
+          <div className="text-xs text-slate-500 border-t border-slate-100 pt-2">
             Đã giao &amp; thanh toán thành công
           </div>
         </div>
       </div>
 
       {/* FILTER & SEARCH BAR */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
-        <div className="flex items-center gap-space-sm flex-1 flex-wrap">
+      <div className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
           <SearchInput
             value={search}
             onChange={setSearch}
             placeholder="Tìm kiếm mã đơn, tên nông dân, SĐT..."
-            className="relative min-w-[240px] flex-1 max-w-sm"
+            className="relative min-w-[280px] flex-1 max-w-md"
           />
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
-          <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={PAYMENT_OPTIONS} />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} className="relative min-w-[160px]" />
+          <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={PAYMENT_OPTIONS} className="relative min-w-[160px]" />
         </div>
-        <div className="flex items-center gap-space-xs">
+        <div className="flex items-center gap-2">
           <button
-            className="text-xs text-outline hover:text-error transition-colors flex items-center gap-1 px-2 py-1"
+            className="text-xs text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1 px-2 py-1"
             type="button"
             onClick={handleClearFilters}
           >
-            <span className="material-symbols-outlined text-sm" data-icon="filter_alt_off">filter_alt_off</span>
+            <FilterX size={14} />
             <span>Xóa bộ lọc</span>
           </button>
         </div>
       </div>
 
       {/* MAIN TABLE */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden flex flex-col">
-          <div className="px-space-md py-space-sm border-b border-outline-variant bg-surface-container-low/50 flex items-center justify-between">
-            <div className="flex items-center gap-space-xs">
-              <span className="font-title-md text-title-md text-on-surface">Danh sách đơn xuất kho trạm #04</span>
-              <span className="text-xs font-mono bg-surface-container text-outline px-1.5 py-0.5 rounded">{filteredOrders.length} bản ghi</span>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-slate-900">Danh sách đơn xuất kho trạm #04</span>
+              <span className="text-[10px] font-mono bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{filteredOrders.length} bản ghi</span>
             </div>
-            <div className="flex items-center gap-space-xs">
+            <div className="flex items-center gap-1">
               <button
-                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                className="p-1.5 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors"
                 title="Làm mới bảng"
                 onClick={() => showToast('Đã làm mới danh sách đơn hàng')}
               >
-                <span className="material-symbols-outlined text-base" data-icon="refresh">refresh</span>
+                <RefreshCw size={14} />
               </button>
               <button
-                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
+                className="p-1.5 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors"
                 title="Tùy biến cột"
                 onClick={() => showToast('Chức năng tùy biến cột đang được phát triển')}
               >
-                <span className="material-symbols-outlined text-base" data-icon="view_column">view_column</span>
+                <Columns size={14} />
               </button>
             </div>
           </div>
           <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse text-xs">
+            <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-surface-container-low/80 border-b border-outline-variant text-outline font-label-sm uppercase tracking-wider">
-                  <th className="py-3 px-3.5 font-semibold">Mã đơn</th>
-                  <th className="py-3 px-3.5 font-semibold">Khách hàng &amp; Xã</th>
-                  <th className="py-3 px-3.5 font-semibold">Thời gian</th>
-                  <th className="py-3 px-3.5 font-semibold">Sản phẩm chính</th>
-                  <th className="py-3 px-3.5 font-semibold text-right">Tổng tiền</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Thanh toán</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Trạng thái</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Thao tác</th>
+                <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+                  <th className="py-3 pl-4 px-3">Mã đơn</th>
+                  <th className="py-3 px-3">Khách hàng &amp; Xã</th>
+                  <th className="py-3 px-3">Thời gian</th>
+                  <th className="py-3 px-3">Sản phẩm chính</th>
+                  <th className="py-3 px-3 text-right">Tổng tiền</th>
+                  <th className="py-3 px-3 text-center">Thanh toán</th>
+                  <th className="py-3 px-3 text-center">Trạng thái</th>
+                  <th className="py-3 pr-4 pl-3 text-center">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-outline-variant/60 font-body-sm">
+              <tbody className="divide-y divide-slate-100">
                 {filteredOrders.length === 0 ? (
                   <EmptyTableRow colSpan={8} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
                 ) : null}
@@ -395,40 +397,40 @@ export default function OrdersPage() {
                     <tr
                       key={order.id}
                       onClick={() => setSelectedId(order.id)}
-                      className={`transition-colors cursor-pointer ${
+                      className={`transition-colors cursor-pointer group ${
                         isSelected
-                          ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                          : `hover:bg-surface-container-low ${order.rowAttentionClassName ?? ''}`
+                          ? 'bg-emerald-50/50 hover:bg-emerald-50 border-l-2 border-l-emerald-500'
+                          : `hover:bg-slate-50 ${order.rowAttentionClassName ?? ''}`
                       }`}
                     >
-                      <td className={`py-3.5 px-3.5 font-mono font-semibold ${isSelected ? 'text-primary' : order.idClassName}`}>
+                      <td className={`py-3 pl-4 px-3 font-mono font-medium text-xs ${isSelected ? 'text-emerald-600' : 'text-slate-900'}`}>
                         {order.id}
                       </td>
-                      <td className="py-3.5 px-3.5">
-                        <div className="font-semibold text-on-surface">{order.customerName}</div>
-                        <div className="text-xs text-outline">{order.phone} • {order.shortLocation}</div>
+                      <td className="py-3 px-3">
+                        <div className="font-semibold text-slate-900 text-sm">{order.customerName}</div>
+                        <div className="text-xs text-slate-500 mt-0.5">{order.phone} • {order.shortLocation}</div>
                       </td>
-                      <td className="py-3.5 px-3.5 text-outline whitespace-nowrap text-xs">
-                        {order.timeBold ? <span className="font-medium text-on-surface">{order.timeBold}</span> : null}
+                      <td className="py-3 px-3 text-slate-500 whitespace-nowrap text-xs">
+                        {order.timeBold ? <span className="font-semibold text-slate-900">{order.timeBold}</span> : null}
                         {order.timeBold ? ' ' : ''}
                         {order.timeRest}
                       </td>
-                      <td className="py-3.5 px-3.5 max-w-[200px]">
-                        <div className="truncate text-on-surface font-medium" title={order.productTitle}>
+                      <td className="py-3 px-3 max-w-[200px]">
+                        <div className="truncate text-slate-900 font-medium text-sm" title={order.productTitle}>
                           {order.productLine}
                         </div>
-                        <span className="text-xs text-outline">{order.productNote}</span>
+                        <span className="text-xs text-slate-500">{order.productNote}</span>
                       </td>
-                      <td className="py-3.5 px-3.5 text-right font-mono font-semibold text-on-surface whitespace-nowrap">
+                      <td className="py-3 px-3 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
                         {order.total}
                       </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
-                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[130px]" />
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[120px]" />
                       </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
                         <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
                       </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
+                      <td className="py-3 pr-4 pl-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">
                           <RowActionsMenu
                             triggerLabel={`Thao tác đơn #${order.id}`}
@@ -462,32 +464,33 @@ export default function OrdersPage() {
       <DetailModal open={selectedOrder !== null} onClose={() => setSelectedId(null)}>
         {selectedOrder ? (
           <>
-            <div className="p-space-sm bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+            <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between rounded-t-xl">
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-mono font-bold text-sm text-primary">#{selectedOrder.id}</span>
-                  <span className={`inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold ${selectedOrder.panelBadge.className}`}>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono font-bold text-sm text-slate-900">#{selectedOrder.id}</span>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border ${selectedOrder.panelBadge.className}`}>
                     {selectedOrder.panelBadge.label}
                   </span>
                 </div>
-                <div className="text-[11px] text-outline mt-0.5">{selectedOrder.createdAgo}</div>
+                <div className="text-[11px] text-slate-500 mt-1">{selectedOrder.createdAgo}</div>
               </div>
             </div>
-            <div className="p-space-sm space-y-space-xs border-b border-outline-variant">
+            <div className="p-4 space-y-2 border-b border-slate-100">
               <div>
-                <span className="font-label-sm text-[11px] text-outline uppercase tracking-wider block">Khách hàng đặt</span>
-                <div className="font-title-md text-sm text-on-surface font-semibold mt-0.5">{selectedOrder.customerName}</div>
-                <div className="text-xs text-outline flex items-center gap-1 mt-0.5">
-                  <span className="material-symbols-outlined text-xs text-primary" data-icon="call">call</span>
-                  <span className="font-mono font-medium text-on-surface">{selectedOrder.phone}</span>
-                  <span className="text-outline/70">| {selectedOrder.fullAddress}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Khách hàng đặt</span>
+                <div className="text-sm text-slate-900 font-bold mt-1">{selectedOrder.customerName}</div>
+                <div className="text-xs text-slate-500 flex items-center gap-1 mt-1">
+                  <Phone size={12} className="text-slate-400" />
+                  <span className="font-mono font-medium text-slate-900">{selectedOrder.phone}</span>
+                  <span className="text-slate-300">|</span> 
+                  <span>{selectedOrder.fullAddress}</span>
                 </div>
-                <div className="text-xs text-outline mt-0.5">{selectedOrder.wardAddress}</div>
+                <div className="text-xs text-slate-500 mt-1">{selectedOrder.wardAddress}</div>
               </div>
               {selectedOrder.deliveryNote ? (
-                <div className="bg-amber-50/70 border border-amber-200/80 rounded p-2 text-xs text-amber-900 mt-2">
-                  <div className="flex items-start gap-1">
-                    <span className="material-symbols-outlined text-sm text-amber-700 shrink-0 mt-0.5" data-icon="pin_drop">pin_drop</span>
+                <div className="bg-amber-50 border border-amber-200/60 rounded-md p-2.5 text-xs text-amber-900 mt-3">
+                  <div className="flex items-start gap-1.5">
+                    <MapPin size={14} className="text-amber-600 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-semibold">Ghi chú giao hàng:</span> {selectedOrder.deliveryNote}
                     </div>
@@ -495,56 +498,56 @@ export default function OrdersPage() {
                 </div>
               ) : null}
             </div>
-            <div className="p-space-sm space-y-space-xs border-b border-outline-variant">
-              <span className="font-label-sm text-[11px] text-outline uppercase tracking-wider block">Danh sách vật tư xuất</span>
-              <div className="space-y-2 pt-1 text-xs">
+            <div className="p-4 space-y-2 border-b border-slate-100">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Danh sách vật tư xuất</span>
+              <div className="space-y-3 pt-2 text-xs">
                 {selectedOrder.items.map((item) => (
                   <div key={item.name} className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium text-on-surface">{item.name}</p>
-                      <p className="text-[11px] text-outline font-mono">{item.qtyPrice}</p>
+                      <p className="font-semibold text-slate-900">{item.name}</p>
+                      <p className="text-[11px] text-slate-500 font-mono mt-0.5">{item.qtyPrice}</p>
                     </div>
-                    <span className="font-mono font-semibold text-on-surface">{item.total}</span>
+                    <span className="font-mono font-bold text-slate-900">{item.total}</span>
                   </div>
                 ))}
                 {selectedOrder.feeLine ? (
-                  <div className="flex items-start justify-between text-outline pt-1 border-t border-dashed border-outline-variant">
+                  <div className="flex items-start justify-between text-slate-500 pt-2 border-t border-dashed border-slate-200">
                     <span>{selectedOrder.feeLine.label}</span>
-                    <span className="font-mono font-medium text-on-surface">{selectedOrder.feeLine.value}</span>
+                    <span className="font-mono font-medium text-slate-700">{selectedOrder.feeLine.value}</span>
                   </div>
                 ) : null}
               </div>
-              <div className="pt-2 mt-2 border-t border-outline-variant flex items-center justify-between">
+              <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-semibold text-on-surface uppercase">{itemsTotalLabel}</span>
-                  <div className={`text-[11px] font-medium flex items-center gap-1 ${selectedOrder.paymentFooterClassName}`}>
-                    <span className="material-symbols-outlined text-xs" data-icon="verified">verified</span>
-                    {selectedOrder.paymentFooterNote}
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{itemsTotalLabel}</span>
+                  <div className={`text-[11px] font-medium flex items-center gap-1 mt-0.5 ${selectedOrder.paymentFooterClassName}`}>
+                    <BadgeCheck size={14} className="text-emerald-500" />
+                    <span className="text-slate-600">{selectedOrder.paymentFooterNote}</span>
                   </div>
                 </div>
-                <span className="font-mono text-base font-bold text-primary">{selectedOrder.total}</span>
+                <span className="font-mono text-lg font-bold text-emerald-600">{selectedOrder.total}</span>
               </div>
             </div>
-            <div className="p-space-sm bg-surface-container-low space-y-2">
+            <div className="p-4 bg-slate-50 rounded-b-xl space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  className="flex items-center justify-center gap-1 px-2 py-2 bg-surface-container-lowest border border-outline-variant hover:bg-surface-container text-on-surface rounded text-xs font-medium transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors shadow-sm"
                   type="button"
                   onClick={() => {
                     showToast(`Đang in phiếu giao hàng cho đơn #${selectedOrder.id}`)
                     window.print()
                   }}
                 >
-                  <span className="material-symbols-outlined text-sm" data-icon="print">print</span>
+                  <Printer size={14} className="text-slate-500" />
                   <span>In phiếu giao hàng</span>
                 </button>
                 <button
-                  className="flex items-center justify-center gap-1 px-2 py-2 bg-primary-container text-on-primary hover:bg-primary rounded text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
                   disabled={!NEXT_STATUS[selectedOrder.status]}
                   onClick={() => advanceOrderStatus(selectedOrder.id)}
                 >
-                  <span className="material-symbols-outlined text-sm" data-icon="update">update</span>
+                  <RefreshCw size={14} />
                   <span>
                     {NEXT_STATUS[selectedOrder.status]
                       ? `Chuyển sang "${NEXT_STATUS[selectedOrder.status]}"`
@@ -553,12 +556,12 @@ export default function OrdersPage() {
                 </button>
               </div>
               <button
-                className="w-full flex items-center justify-center gap-1 px-2 py-1.5 border border-outline-variant hover:bg-surface-container-lowest text-outline hover:text-on-surface rounded text-xs transition-colors"
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
                 type="button"
                 onClick={() => showToast(`Đã gửi SMS cập nhật cho ${selectedOrder.customerName}`)}
               >
-                <span className="material-symbols-outlined text-sm" data-icon="sms">sms</span>
-                <span>Gửi tin nhắn SMS cập nhật cho nông dân</span>
+                <MessageSquare size={14} className="text-slate-400" />
+                <span>Gửi SMS cập nhật cho nông dân</span>
               </button>
             </div>
           </>

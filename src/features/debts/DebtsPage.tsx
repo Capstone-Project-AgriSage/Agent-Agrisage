@@ -20,6 +20,22 @@ import { parseVnd, formatVnd } from '../../utils/money'
 import { downloadCsv } from '../../utils/csv'
 import type { CreditRequest, DebtPaymentRequest } from '../../types'
 
+import {
+  ChevronRight,
+  Download,
+  Printer,
+  Plus,
+  Landmark,
+  CreditCard,
+  Banknote,
+  AlarmClock,
+  CheckCircle2,
+  FilterX,
+  Check,
+  QrCode,
+  Wallet
+} from 'lucide-react'
+
 const STATUS_OPTIONS = ['Tất cả trạng thái công nợ', 'Bình thường', 'Sắp đến hạn', 'Đến hạn', 'Quá hạn', 'Đã thanh toán']
 const REGION_OPTIONS = [
   'Tất cả khu vực',
@@ -124,7 +140,6 @@ export default function DebtsPage() {
 
   const handleExportDebts = () => {
     downloadCsv(
-      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
       `cong-no-${Date.now()}.csv`,
       filteredCustomers.map((c) => ({
         'Khách hàng': c.name,
@@ -186,54 +201,54 @@ export default function DebtsPage() {
   return (
     <>
       {/* PAGE HEADER */}
-      <section className="flex flex-col md:flex-row md:items-center justify-between gap-space-md shrink-0">
-        <div className="flex items-center gap-2 text-slate-500 font-label-sm text-label-sm">
+      <section className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-2 text-slate-500 text-sm">
           <Link className="hover:text-slate-800" to="/">Bảng điều khiển</Link>
-          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+          <ChevronRight size={14} />
           <span className="text-slate-800 font-semibold">Quản lý công nợ</span>
         </div>
         <div className="flex items-center gap-2.5 self-start md:self-auto">
           <button
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
             type="button"
             onClick={handleExportDebts}
           >
-            <span className="material-symbols-outlined text-[18px]">file_download</span>
+            <Download size={18} />
             <span className="">Xuất báo cáo</span>
           </button>
           <button
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-title-md text-title-md rounded-lg hover:bg-slate-50 transition-colors shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
             type="button"
             onClick={handlePrintDebts}
           >
-            <span className="material-symbols-outlined text-[18px]">print</span>
+            <Printer size={18} />
             <span className="">In sổ nợ</span>
           </button>
           <button
-            className="flex items-center gap-2 px-4 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md font-medium rounded-lg transition-colors shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
             type="button"
             onClick={() => showToast('Chức năng ghi nhận thu nợ mới đang được phát triển')}
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Plus size={18} />
             <span className="">Ghi nhận thu nợ</span>
           </button>
         </div>
       </section>
 
-      {/* 3 TABS ĐIỀU HƯỚNG: SỔ NỢ NÔNG HỘ | DUYỆT TÍN DỤNG MÙA VỤ | XÁC NHẬN TRẢ NỢ */}
-      <div className="flex items-center gap-2 border-b border-slate-200 bg-white p-1.5 rounded-xl shadow-2xs shrink-0">
+      {/* 3 TABS ĐIỀU HƯỚNG */}
+      <div className="flex items-center gap-2 border-b border-slate-200 bg-white p-1.5 rounded-xl shadow-sm shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab('ledger')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
             activeTab === 'ledger'
-              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">account_balance</span>
+          <Landmark size={18} />
           <span>Sổ nợ nông hộ</span>
-          <span className={`px-2 py-0.2 rounded-full text-xs ${activeTab === 'ledger' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
+          <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === 'ledger' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'}`}>
             {customers.length}
           </span>
         </button>
@@ -243,14 +258,14 @@ export default function DebtsPage() {
           onClick={() => setActiveTab('credit-requests')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
             activeTab === 'credit-requests'
-              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">credit_score</span>
+          <CreditCard size={18} />
           <span>Duyệt tín dụng mùa vụ (WF-03)</span>
           {pendingCreditCount > 0 && (
-            <span className="px-2 py-0.2 rounded-full bg-amber-500 text-white text-xs font-bold animate-pulse">
+            <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-xs font-bold animate-pulse">
               {pendingCreditCount}
             </span>
           )}
@@ -261,14 +276,14 @@ export default function DebtsPage() {
           onClick={() => setActiveTab('repayments')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all ${
             activeTab === 'repayments'
-              ? 'bg-[#1E5E3A] text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-sm'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           }`}
         >
-          <span className="material-symbols-outlined text-[18px]">payments</span>
+          <Banknote size={18} />
           <span>Xác nhận trả nợ (WF-04)</span>
           {pendingRepaymentCount > 0 && (
-            <span className="px-2 py-0.2 rounded-full bg-emerald-600 text-white text-xs font-bold animate-pulse">
+            <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-xs font-bold animate-pulse">
               {pendingRepaymentCount}
             </span>
           )}
@@ -279,10 +294,10 @@ export default function DebtsPage() {
         <>
           {/* 3 THẺ KPI TÓM TẮT CÔNG NỢ */}
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-xs uppercase tracking-wider font-bold">Tổng Công Nợ Cho Vay</span>
-                <span className="material-symbols-outlined text-slate-400 text-[20px]">account_balance</span>
+                <Landmark className="text-slate-400" size={20} />
               </div>
               <div className="text-2xl font-bold text-slate-900 font-mono my-1">
                 {formatVnd(totalDebtAmount)}
@@ -292,10 +307,10 @@ export default function DebtsPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+            <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between text-amber-700 mb-1">
                 <span className="text-xs uppercase tracking-wider font-bold">Đến Hạn &amp; Quá Hạn</span>
-                <span className="material-symbols-outlined text-amber-600 text-[20px]">alarm</span>
+                <AlarmClock className="text-amber-600" size={20} />
               </div>
               <div className="text-2xl font-bold text-amber-900 font-mono my-1">
                 {formatVnd(dueTodayAmount + overdueAmount)}
@@ -306,10 +321,10 @@ export default function DebtsPage() {
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs flex flex-col justify-between">
+            <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col justify-between">
               <div className="flex items-center justify-between text-slate-500 mb-1">
                 <span className="text-xs uppercase tracking-wider font-bold">Đã Thu Hồi Nợ</span>
-                <span className="material-symbols-outlined text-emerald-600 text-[20px]">task_alt</span>
+                <CheckCircle2 className="text-emerald-600" size={20} />
               </div>
               <div className="text-2xl font-bold text-emerald-800 font-mono my-1">
                 {formatVnd(totalCollected)}
@@ -321,7 +336,7 @@ export default function DebtsPage() {
           </section>
 
           {/* BỘ LỌC CHUYÊN DỤNG */}
-          <section className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <section className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-sm flex flex-wrap items-center justify-between gap-3 shrink-0">
             <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[300px]">
               <SearchInput
                 value={search}
@@ -337,14 +352,14 @@ export default function DebtsPage() {
               type="button"
               onClick={handleClearFilters}
             >
-              <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+              <FilterX size={16} />
               <span>Xóa bộ lọc</span>
             </button>
           </section>
 
           {/* BẢNG QUẢN LÝ CÔNG NỢ */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-xs overflow-hidden flex flex-col">
-            <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+            <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-slate-900">Danh sách công nợ khách hàng</h2>
                 <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold">
@@ -377,7 +392,7 @@ export default function DebtsPage() {
                         onClick={() => setSelectedId(customer.id)}
                         className={`transition-colors cursor-pointer ${
                           isSelected
-                            ? 'bg-emerald-50/70 border-l-4 border-l-[#1E5E3A]'
+                            ? 'bg-emerald-50 border-l-4 border-l-emerald-600'
                             : 'hover:bg-slate-50'
                         }`}
                       >
@@ -385,7 +400,7 @@ export default function DebtsPage() {
                           <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                             <span>{customer.name}</span>
                             {customer.cropBadge && (
-                              <span className="px-1.5 py-0.2 bg-emerald-100 text-[#1E5E3A] text-[10px] rounded font-bold">
+                              <span className="px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] rounded font-bold">
                                 {customer.cropBadge}
                               </span>
                             )}
@@ -439,7 +454,7 @@ export default function DebtsPage() {
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#1E5E3A]">credit_score</span>
+            <CreditCard className="text-emerald-600" size={20} />
             <span>Hàng đợi duyệt hạn mức tín dụng mùa vụ (Gối nợ vật tư lúa)</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
@@ -482,7 +497,7 @@ export default function DebtsPage() {
                       <div className="text-slate-500 font-mono text-[11px]">{cr.farmerPhone}</div>
                     </td>
                     <td className="py-3.5 px-3 font-medium text-slate-700">{cr.cropSeason}</td>
-                    <td className="py-3.5 px-3 text-right font-mono font-bold text-[#1E5E3A] text-sm">
+                    <td className="py-3.5 px-3 text-right font-mono font-bold text-emerald-700 text-sm">
                       {formatVnd(cr.requestedAmount)}
                     </td>
                     <td className="py-3.5 px-3 text-right font-mono text-[11px]">
@@ -512,9 +527,9 @@ export default function DebtsPage() {
                           <button
                             type="button"
                             onClick={() => handleApproveCredit(cr.id)}
-                            className="px-3 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#17482D] text-white font-bold text-xs transition-colors shadow-2xs flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">check</span>
+                            <Check size={16} />
                             <span>Phê duyệt</span>
                           </button>
                           <button
@@ -547,7 +562,7 @@ export default function DebtsPage() {
       <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="font-bold text-base text-slate-900 flex items-center gap-2">
-            <span className="material-symbols-outlined text-[#1E5E3A]">payments</span>
+            <Banknote className="text-emerald-600" size={20} />
             <span>Hàng đợi xác nhận thanh toán trả nợ vụ mùa</span>
           </h3>
           <p className="text-xs text-slate-500 mt-1">
@@ -594,13 +609,13 @@ export default function DebtsPage() {
                     </td>
                     <td className="py-3.5 px-3">
                       {pr.paymentMethod === 'VIETQR' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                          <span className="material-symbols-outlined text-[13px]">qr_code_2</span>
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                          <QrCode size={14} />
                           VietQR Vietcombank (19006828999)
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
-                          <span className="material-symbols-outlined text-[13px]">local_atm</span>
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-800 border border-slate-200">
+                          <Wallet size={14} />
                           Tiền mặt nộp tại trạm
                         </span>
                       )}
@@ -632,9 +647,9 @@ export default function DebtsPage() {
                           <button
                             type="button"
                             onClick={() => handleConfirmRepayment(pr.id)}
-                            className="px-3 py-1.5 rounded-lg bg-[#1E5E3A] hover:bg-[#17482D] text-white font-bold text-xs transition-colors shadow-2xs flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors shadow-sm flex items-center gap-1"
                           >
-                            <span className="material-symbols-outlined text-[15px]">task_alt</span>
+                            <CheckCircle2 size={16} />
                             <span>Xác nhận thu nợ</span>
                           </button>
                           <button

@@ -1,3 +1,5 @@
+import { Search } from 'lucide-react'
+
 interface SearchInputProps {
   value: string
   onChange: (value: string) => void
@@ -8,14 +10,12 @@ interface SearchInputProps {
 export default function SearchInput({ value, onChange, placeholder, className = 'relative flex-1 min-w-[220px]' }: SearchInputProps) {
   return (
     <div className={className}>
-      <span
-        className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none"
-        data-icon="search"
-      >
-        search
-      </span>
+      <Search
+        size={16}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+      />
       <input
-        className="w-full pl-9 pr-3 py-1.5 bg-surface-container-low border border-outline-variant rounded-lg text-body-sm font-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+        className="w-full pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 transition-colors shadow-sm"
         placeholder={placeholder}
         type="text"
         value={value}
