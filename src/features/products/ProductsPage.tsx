@@ -50,19 +50,34 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState(CATEGORY_OPTIONS[0])
   const [businessFilter, setBusinessFilter] = useState(BUSINESS_OPTIONS[0])
+  type ProductQuickFilter = 'all' | 'active' | 'low_stock' | 'out_of_stock'
+  const [quickFilter, setQuickFilter] = useState<ProductQuickFilter>('all')
 
   const keyword = search.trim().toLowerCase()
   const filteredProducts = products.filter(
-    (p) =>
-      (!keyword || p.name.toLowerCase().includes(keyword) || p.description.toLowerCase().includes(keyword)) &&
-      (categoryFilter === CATEGORY_OPTIONS[0] || p.categoryLabel === categoryFilter) &&
-      (businessFilter === BUSINESS_OPTIONS[0] || p.businessStatus === businessFilter),
+    (p) => {
+      const matchesKeyword = !keyword || p.name.toLowerCase().includes(keyword) || p.description.toLowerCase().includes(keyword)
+      const matchesCategory = categoryFilter === CATEGORY_OPTIONS[0] || p.categoryLabel === categoryFilter
+      const matchesBusiness = businessFilter === BUSINESS_OPTIONS[0] || p.businessStatus === businessFilter
+      const matchesQuick =
+        quickFilter === 'all'
+          ? true
+          : quickFilter === 'active'
+          ? p.businessStatus === 'Đang kinh doanh'
+          : quickFilter === 'low_stock'
+          ? p.stockLabel === 'Sắp hết'
+          : quickFilter === 'out_of_stock'
+          ? p.stockLabel === 'Hết hàng' || p.businessStatus === 'Tạm ngừng kinh doanh'
+          : true
+      return matchesKeyword && matchesCategory && matchesBusiness && matchesQuick
+    },
   )
 
   const handleClearFilters = () => {
     setSearch('')
     setCategoryFilter(CATEGORY_OPTIONS[0])
     setBusinessFilter(BUSINESS_OPTIONS[0])
+    setQuickFilter('all')
   }
 
   const { page, totalPages, paginated, startIndex, endIndex, totalCount: pageTotalCount, goPrev, goNext, setPage } =
@@ -198,139 +213,137 @@ export default function ProductsPage() {
   const totalCount = products.length
   const activeCount = products.filter((p) => p.businessStatus === 'Đang kinh doanh').length
   const lowStockCount = products.filter((p) => p.stockLabel === 'Sắp hết').length
-  const outOfStockCount = products.filter((p) => p.stockLabel === 'Hết hàng').length
-  const activePercent = totalCount ? Math.round((activeCount / totalCount) * 1000) / 10 : 0
-  const categoryCount = new Set(products.map((p) => p.categoryLabel)).size
+  const outOfStockCount = products.filter((p) => p.stockLabel === 'Hết hàng' || p.businessStatus === 'Tạm ngừng kinh doanh').length
 
   return (
     <>
       {/* 1. BREADCRUMBS & PAGE HEADER */}
-      <section className="space-y-1">
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-body-sm text-outline">
-          <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-[12px] text-outline">
+          <Link className="hover:text-on-surface" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-          <span className="text-on-surface font-medium">Quản lý sản phẩm</span>
+          <span className="text-primary font-medium">Quản lý sản phẩm</span>
         </nav>
-        <div className="flex justify-end pt-1">
-          <div className="flex items-center gap-space-sm self-start md:self-auto">
-            <button
-              className="flex items-center gap-2 h-9 px-space-md bg-surface-container-lowest hover:bg-surface border border-outline-variant rounded-lg text-on-surface font-label-md text-label-md transition-all shadow-sm"
-              onClick={handleExportProducts}
-              type="button"
-            >
-              <span className="material-symbols-outlined text-lg text-outline" data-icon="download">download</span>
-              <span>Xuất Excel</span>
-            </button>
-            <button
-              className="flex items-center gap-2 h-9 px-space-lg bg-[#1E5E3A] hover:bg-[#17482D] text-on-primary rounded-lg font-label-md text-label-md transition-all shadow-sm"
-              onClick={() => setCreateOpen(true)}
-              type="button"
-            >
-              <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Thêm sản phẩm</span>
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. COMPACT SUMMARY METRIC CARDS (4 Cards Grid) */}
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        {/* Card 1: Tổng sản phẩm */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
-          <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Tổng sản phẩm</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface tabular-nums">{totalCount}</span>
-              <span className="font-body-sm text-body-sm text-outline">mặt hàng</span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">{categoryCount} danh mục đang hoạt động</p>
-          </div>
-          <div className="p-2.5 bg-surface-container rounded-lg text-primary">
-            <span className="material-symbols-outlined text-2xl" data-icon="inventory_2">inventory_2</span>
-          </div>
-        </div>
-        {/* Card 2: Đang kinh doanh */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
-          <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Đang kinh doanh</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#15803D] tabular-nums">{activeCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
-                {activePercent}%
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-on-surface-variant">Đảm bảo dòng tiền bán lẻ</p>
-          </div>
-          <div className="p-2.5 bg-[#DCFCE7] rounded-lg text-[#15803D]">
-            <span className="material-symbols-outlined text-2xl fill" data-icon="check_circle" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-          </div>
-        </div>
-        {/* Card 3: Sắp hết hàng */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
-          <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Sắp hết hàng</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B45309] tabular-nums">{lowStockCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEF3C7] text-[#B45309] border border-[#FDE68A]">
-                Cần nhập
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-[#B45309]">Ngưỡng cảnh báo &lt; 20 bao/chai</p>
-          </div>
-          <div className="p-2.5 bg-[#FEF3C7] rounded-lg text-[#B45309]">
-            <span className="material-symbols-outlined text-2xl fill" data-icon="warning" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-          </div>
-        </div>
-        {/* Card 4: Ngừng kinh doanh / Hết hàng */}
-        <div className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex items-start justify-between">
-          <div className="space-y-1">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider text-outline">Ngừng KD / Hết hàng</span>
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-[#B91C1C] tabular-nums">{outOfStockCount}</span>
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-medium bg-[#FEE2E2] text-[#B91C1C] border border-[#FCA5A5]">
-                Tồn: 0
-              </span>
-            </div>
-            <p className="font-body-sm text-body-sm text-outline">Tồn kho 0 hoặc ngưng nhập</p>
-          </div>
-          <div className="p-2.5 bg-[#FEE2E2] rounded-lg text-[#B91C1C]">
-            <span className="material-symbols-outlined text-2xl" data-icon="block">block</span>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. DATA FILTERS TOOLBAR */}
-      <section className="bg-surface-container-lowest p-space-md rounded-lg border border-outline-variant shadow-sm flex flex-wrap items-center justify-between gap-space-md">
-        <div className="flex flex-wrap items-center gap-space-sm flex-1">
-          <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, hoạt chất..." />
-          <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[210px]" />
-          <FilterSelect value={businessFilter} onChange={setBusinessFilter} options={BUSINESS_OPTIONS} className="relative min-w-[170px]" />
+        <div className="flex items-center gap-space-xs flex-wrap">
           <button
-            className="h-9 px-space-sm text-outline hover:text-on-surface font-body-sm text-body-sm flex items-center gap-1 transition-colors"
-            onClick={handleClearFilters}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-surface-container-lowest hover:bg-surface-container-low border border-outline-variant rounded-xl text-on-surface font-label-md text-label-md transition-all shadow-sm"
+            onClick={handleExportProducts}
             type="button"
           >
-            <span className="material-symbols-outlined text-base" data-icon="filter_alt_off">filter_alt_off</span>
-            <span>Đặt lại bộ lọc</span>
+            <span className="material-symbols-outlined text-[18px] text-outline" data-icon="download">download</span>
+            <span>Xuất Excel</span>
+          </button>
+          <button
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white rounded-xl font-title-md text-title-md transition-all shadow-sm"
+            onClick={() => setCreateOpen(true)}
+            type="button"
+          >
+            <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+            <span>Thêm sản phẩm</span>
           </button>
         </div>
-      </section>
+      </div>
 
-      {/* 4. ENTERPRISE DATA TABLE CONTAINER */}
-      <section className="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+      {/* 2. FILTER BAR WITH 1-CLICK QUICK PILLS */}
+      <div className="bg-surface-container-lowest border border-outline-variant p-3.5 rounded-xl shadow-sm space-y-3">
+        {/* Quick Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-label-md font-label-md">
+          <span className="text-outline text-[12px] whitespace-nowrap mr-1">Trạng thái:</span>
+          <button
+            type="button"
+            onClick={() => setQuickFilter('all')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors whitespace-nowrap ${
+              quickFilter === 'all'
+                ? 'bg-[#1E5E3A] text-white border-[#1E5E3A] shadow-sm'
+                : 'bg-surface-container-low text-on-surface border-outline-variant/60 hover:bg-surface-container'
+            }`}
+          >
+            Tất cả ({totalCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickFilter('active')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              quickFilter === 'active'
+                ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100/70'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+            <span>Đang kinh doanh ({activeCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickFilter('low_stock')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              quickFilter === 'low_stock'
+                ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100/70'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            <span>Sắp hết hàng ({lowStockCount})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickFilter('out_of_stock')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              quickFilter === 'out_of_stock'
+                ? 'bg-rose-700 text-white border-rose-700 shadow-sm'
+                : 'bg-rose-50 text-rose-900 border-rose-200 hover:bg-rose-100/70'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+            <span>Hết hàng / Tạm ngừng ({outOfStockCount})</span>
+          </button>
+        </div>
+
+        {/* Inputs & Dropdowns */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-2 border-t border-outline-variant/40">
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Tìm kiếm sản phẩm, hoạt chất..."
+            className="relative flex-1 min-w-[260px]"
+          />
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[170px]" />
+            <FilterSelect value={businessFilter} onChange={setBusinessFilter} options={BUSINESS_OPTIONS} className="relative min-w-[170px]" />
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 text-outline hover:text-on-surface hover:bg-surface-container-low rounded-xl font-label-md text-label-md transition-colors"
+              onClick={handleClearFilters}
+              type="button"
+            >
+              <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
+              <span>Xóa bộ lọc</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. ENTERPRISE DATA TABLE CONTAINER (6 Clean Columns) */}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden flex flex-col">
+        <div className="px-space-md py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-title-md text-title-md font-semibold text-on-surface">Danh mục sản phẩm kinh doanh</span>
+            <span className="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold">{filteredProducts.length} mặt hàng</span>
+          </div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#F8FAFC] border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
-                <th className="py-3 pl-4 px-3 min-w-[280px]">Sản phẩm &amp; Hoạt chất</th>
-                <th className="py-3 px-3 min-w-[130px]">Danh mục</th>
-                <th className="py-3 px-3 min-w-[120px] text-right">Giá bán niêm yết</th>
-                <th className="py-3 px-3 min-w-[170px] text-right">Số lượng</th>
-                <th className="py-3 pr-4 pl-3 w-28 text-right">Thao tác</th>
+              <tr className="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
+                <th className="py-2.5 px-4 min-w-[240px]">Sản phẩm &amp; Quy cách</th>
+                <th className="py-2.5 px-3">Danh mục</th>
+                <th className="py-2.5 px-3 text-right">Giá bán</th>
+                <th className="py-2.5 px-3 text-right">Tồn kho</th>
+                <th className="py-2.5 px-3 text-center">Trạng thái KD</th>
+                <th className="py-2.5 px-4 text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant text-body-md text-on-surface">
-              {paginated.length === 0 ? (
-                <EmptyTableRow colSpan={5} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
+            <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm text-on-surface">
+              {filteredProducts.length === 0 ? (
+                <EmptyTableRow colSpan={6} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
               ) : null}
               {paginated.map((product) => {
                 const isSelected = product.id === selectedId
@@ -340,36 +353,45 @@ export default function ProductsPage() {
                     onClick={() => setSelectedId(product.id)}
                     className={`transition-colors cursor-pointer group ${
                       isSelected
-                        ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                        : `hover:bg-surface/70 ${product.rowClassName ?? ''}`
+                        ? 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-primary-container'
+                        : `hover:bg-surface-container-low ${product.rowClassName ?? ''}`
                     }`}
                   >
-                    <td className="py-3.5 pl-4 px-3">
+                    <td className="py-3 px-4">
                       <div
-                        className={`font-title-md text-title-md group-hover:text-primary transition-colors ${
+                        className={`font-semibold group-hover:text-primary transition-colors ${
                           product.discontinued ? 'text-outline line-through' : 'text-on-surface'
                         }`}
                       >
                         {product.name}
                       </div>
-                      <div className="text-body-sm text-outline mt-0.5">{product.description}</div>
+                      <div className="text-[12px] text-outline truncate max-w-[260px] mt-0.5">{product.description}</div>
                     </td>
-                    <td className="py-3.5 px-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${product.categoryClassName}`}>
+                    <td className="py-3 px-3 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium border ${product.categoryClassName}`}>
                         {product.categoryLabel}
                       </span>
                     </td>
-                    <td className={`py-3.5 px-3 text-right font-semibold tabular-nums ${product.priceClassName ?? 'text-on-surface'}`}>
+                    <td className={`py-3 px-3 text-right font-semibold font-mono tabular-nums whitespace-nowrap ${product.priceClassName ?? 'text-on-surface'}`}>
                       {product.price}
                     </td>
-                    <td className="py-3.5 px-3 text-right">
-                      <span className="inline-flex items-center justify-end gap-1.5 font-semibold tabular-nums text-on-surface">
+                    <td className="py-3 px-3 text-right whitespace-nowrap">
+                      <span className="inline-flex items-center justify-end gap-1.5 font-semibold font-mono tabular-nums text-on-surface">
                         <span className={`w-1.5 h-1.5 rounded-full ${product.stockDotClassName}`}></span>
                         {product.stockQuantity}
                       </span>
                     </td>
-                    <td className="py-3.5 pr-4 pl-3 text-right">
-                      <div className="flex items-center justify-end">
+                    <td className="py-3 px-3 text-center whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                        product.businessStatus === 'Đang kinh doanh'
+                          ? 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]'
+                          : 'bg-slate-100 text-slate-700 border-slate-300'
+                      }`}>
+                        {product.businessStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center">
                         <RowActionsMenu
                           triggerLabel={`Thao tác ${product.name}`}
                           actions={product.actions.map((action) => ({
@@ -396,7 +418,7 @@ export default function ProductsPage() {
           goNext={goNext}
           setPage={setPage}
         />
-      </section>
+      </div>
 
       {/* 6. OPERATIONAL AUDIT & FAST NOTES STRIP */}
       <section className="p-space-sm px-space-md bg-surface-container-lowest rounded-lg border border-outline-variant flex flex-wrap items-center justify-between text-body-sm text-on-surface-variant">

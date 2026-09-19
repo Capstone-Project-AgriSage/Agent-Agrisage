@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import EmptyTableRow from '../../components/ui/EmptyTableRow'
@@ -30,7 +30,6 @@ export default function FarmersPage() {
 
   const handleExportFarmers = () => {
     downloadCsv(
-      // oxlint-disable-next-line react/purity -- only invoked from a click handler, never during render
       `nong-dan-${Date.now()}.csv`,
       filteredFarmers.map((f) => ({
         'Tên nông dân': f.name,
@@ -89,93 +88,82 @@ export default function FarmersPage() {
 
   return (
     <>
-      {/* Utility Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4 pb-4">
-        <div className="flex items-center gap-2.5">
+      {/* PAGE HEADER & ACTIONS */}
+      <section className="flex flex-col md:flex-row md:items-center justify-between gap-space-md shrink-0">
+        <div className="flex items-center gap-2 text-slate-500 font-label-sm text-label-sm">
+          <Link className="hover:text-slate-800" to="/">Bảng điều khiển</Link>
+          <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+          <span className="text-slate-800 font-semibold">Quản lý nông dân</span>
+        </div>
+        <div className="flex items-center gap-2.5 self-start md:self-auto">
           <button
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 font-label-md text-label-md shadow-sm transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-slate-300 text-slate-700 font-medium text-sm rounded-xl hover:bg-slate-50 transition-colors shadow-2xs"
+            type="button"
             onClick={handleExportFarmers}
           >
-            <span className="material-symbols-outlined text-base" data-icon="file_download">
-              file_download
-            </span>
-            <span className="">Xuất danh sách</span>
+            <span className="material-symbols-outlined text-[18px]">file_download</span>
+            <span>Xuất danh sách</span>
           </button>
         </div>
-      </div>
+      </section>
 
-      {/* 4 KPI TILES OVERVIEW */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        {/* KPI 1 */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider">Tổng nông dân</span>
-            <span className="w-7 h-7 rounded bg-emerald-50 text-emerald-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg" data-icon="people">
-                people
-              </span>
-            </span>
+      {/* COMPACT OPERATIONAL SUMMARY STRIP */}
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Tổng nông dân</span>
+            <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+              {totalFarmers} <span className="text-xs font-normal text-slate-500">nông hộ</span>
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Phụ trách tại Trạm #04</div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">{totalFarmers}</span>
-            <span className="text-xs text-slate-500 font-medium">nông dân</span>
-          </div>
-          <div className="font-body-sm text-body-sm text-slate-500 mt-1">Mạng lưới phụ trách của Trạm #04</div>
-        </div>
-        {/* KPI 2 */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider">Tổng đơn hàng</span>
-            <span className="w-7 h-7 rounded bg-blue-50 text-blue-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg" data-icon="receipt_long">
-                receipt_long
-              </span>
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">{totalOrders}</span>
-            <span className="text-xs text-emerald-700 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">{activePercent}% đang hoạt động</span>
-          </div>
-          <div className="font-body-sm text-body-sm text-slate-500 mt-1">Tỉ lệ hoạt động giao dịch cao</div>
-        </div>
-        {/* KPI 3 */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider">Đang có công nợ</span>
-            <span className="w-7 h-7 rounded bg-red-50 text-red-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg" data-icon="credit_card_off">
-                credit_card_off
-              </span>
-            </span>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-red-700">{inDebtFarmers.length}</span>
-            <span className="text-xs text-slate-500 font-medium">người</span>
-          </div>
-          <div className="font-body-sm text-body-sm text-slate-500 mt-1">
-            Tổng nợ: <span className="font-semibold text-slate-700">{formatVnd(totalDebtAmount)}</span>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-[#1E5E3A]">
+            <span className="material-symbols-outlined text-[20px]">people</span>
           </div>
         </div>
-        {/* KPI 4 */}
-        <div className="bg-white border border-slate-200 rounded-lg p-3.5 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
-            <span className="font-label-sm text-label-sm uppercase tracking-wider">Phân tích AI gần đây</span>
-            <span className="w-7 h-7 rounded bg-purple-50 text-purple-700 flex items-center justify-center">
-              <span className="material-symbols-outlined text-lg" data-icon="psychology">
-                psychology
-              </span>
-            </span>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Giao dịch vụ mùa</span>
+            <div className="text-xl font-bold text-slate-900 font-mono mt-0.5">
+              {totalOrders} <span className="text-xs font-normal text-slate-500">đơn hàng</span>
+            </div>
+            <div className="text-[11px] text-emerald-700 font-medium mt-0.5">{activePercent}% đang hoạt động</div>
           </div>
-          <div className="flex items-baseline gap-2">
-            <span className="font-metric-num text-metric-num text-slate-900">{aiLogCount}</span>
-            <span className="text-xs text-slate-500 font-medium">lượt</span>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-700">
+            <span className="material-symbols-outlined text-[20px]">receipt_long</span>
           </div>
-          <div className="font-body-sm text-body-sm text-slate-500 mt-1">Ghi nhận trong 14 ngày qua</div>
         </div>
-      </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Đang có công nợ</span>
+            <div className="text-xl font-bold text-amber-900 font-mono mt-0.5">
+              {inDebtFarmers.length} <span className="text-xs font-normal text-slate-500">hộ</span>
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Tổng nợ: <span className="font-mono font-semibold text-slate-700">{formatVnd(totalDebtAmount)}</span></div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-700">
+            <span className="material-symbols-outlined text-[20px]">credit_card_off</span>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-2xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] uppercase tracking-wider font-semibold text-slate-500">Phân tích AI gần đây</span>
+            <div className="text-xl font-bold text-purple-900 font-mono mt-0.5">
+              {aiLogCount} <span className="text-xs font-normal text-slate-500">lượt</span>
+            </div>
+            <div className="text-[11px] text-slate-500 mt-0.5">Ghi nhận trong 14 ngày qua</div>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-700">
+            <span className="material-symbols-outlined text-[20px]">psychology</span>
+          </div>
+        </div>
+      </section>
 
       {/* FILTER TOOLBAR */}
-      <div className="bg-white border border-slate-200 rounded-lg p-3 mt-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+      <section className="bg-white border border-slate-200 rounded-xl p-3 shadow-2xs flex flex-wrap items-center justify-between gap-3 shrink-0">
         <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
           <SearchInput
             value={search}
@@ -188,141 +176,148 @@ export default function FarmersPage() {
           <FilterSelect value={activityFilter} onChange={setActivityFilter} options={ACTIVITY_OPTIONS} />
         </div>
         <button
-          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 px-2.5 py-1.5 rounded hover:bg-slate-100 transition-colors"
+          className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg hover:bg-slate-100 font-semibold transition-colors"
+          type="button"
           onClick={handleClearFilters}
         >
-          <span className="material-symbols-outlined text-sm" data-icon="restart_alt">
-            restart_alt
-          </span>
-          <span className="">Xóa bộ lọc</span>
+          <span className="material-symbols-outlined text-[16px]">filter_alt_off</span>
+          <span>Xóa bộ lọc</span>
         </button>
-      </div>
+      </section>
 
       {/* MAIN FARMER TABLE */}
-      <div className="pt-3 bg-white border border-slate-200 rounded-lg shadow-sm flex flex-col overflow-hidden min-w-0">
-          <div className="overflow-x-auto flex-1 custom-scrollbar">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider sticky top-0">
-                  <th className="py-2.5 px-3">Nông dân</th>
-                  <th className="py-2.5 px-3">Số điện thoại</th>
-                  <th className="py-2.5 px-3">Khu vực</th>
-                  <th className="py-2.5 px-3">Đơn gần nhất</th>
-                  <th className="py-2.5 px-3 text-right">Tổng mua</th>
-                  <th className="py-2.5 px-3 text-right">Công nợ</th>
-                  <th className="py-2.5 px-3">Hoạt động</th>
-                  <th className="py-2.5 px-3 text-center">Trạng thái</th>
-                  <th className="py-2.5 px-3 text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs font-normal">
-                {filteredFarmers.length === 0 ? (
-                  <EmptyTableRow colSpan={9} message="Không tìm thấy nông dân phù hợp với bộ lọc." className="text-slate-400" />
-                ) : null}
-                {paginatedFarmers.map((farmer) => {
-                  const isSelected = farmer.id === selectedId
-                  return (
-                    <tr
-                      key={farmer.id}
-                      onClick={() => setSelectedId(farmer.id)}
-                      className={`transition-colors cursor-pointer ${
-                        isSelected ? 'bg-emerald-50/60 border-l-4 border-l-primary-container hover:bg-emerald-50' : 'hover:bg-slate-50'
-                      }`}
-                    >
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`w-8 h-8 rounded-full font-semibold flex items-center justify-center text-xs flex-shrink-0 ${
-                              isSelected ? 'bg-emerald-800 text-white' : 'bg-slate-200 text-slate-700'
-                            }`}
-                          >
-                            {farmer.initials}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                              <span className="">{farmer.name}</span>
-                              {farmer.verified ? (
-                                <span
-                                  className="material-symbols-outlined text-emerald-700 text-sm"
-                                  data-icon="check_circle"
-                                  title="Đã xác thực"
-                                >
-                                  check_circle
-                                </span>
-                              ) : null}
-                            </div>
-                            <div className="text-[11px] text-slate-500">#{farmer.id}</div>
-                          </div>
+      <div className="bg-white border border-slate-200 rounded-xl shadow-xs flex flex-col overflow-hidden min-w-0">
+        <div className="px-4 py-3 border-b border-slate-200 bg-slate-50/70 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-bold text-slate-900">Danh bạ nông dân liên kết</h2>
+            <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-xs font-semibold">
+              {filteredFarmers.length} nông hộ
+            </span>
+          </div>
+        </div>
+        <div className="overflow-x-auto flex-1 custom-scrollbar">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <th className="py-2.5 px-4">Nông dân</th>
+                <th className="py-2.5 px-3">Số điện thoại</th>
+                <th className="py-2.5 px-3">Khu vực</th>
+                <th className="py-2.5 px-3">Đơn gần nhất</th>
+                <th className="py-2.5 px-3 text-right">Tổng mua</th>
+                <th className="py-2.5 px-3 text-right">Công nợ</th>
+                <th className="py-2.5 px-3">Hoạt động</th>
+                <th className="py-2.5 px-3 text-center">Trạng thái</th>
+                <th className="py-2.5 px-4 text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 text-xs font-normal">
+              {filteredFarmers.length === 0 ? (
+                <EmptyTableRow colSpan={9} message="Không tìm thấy nông dân phù hợp với bộ lọc." className="text-slate-400" />
+              ) : null}
+              {paginatedFarmers.map((farmer) => {
+                const isSelected = farmer.id === selectedId
+                return (
+                  <tr
+                    key={farmer.id}
+                    onClick={() => setSelectedId(farmer.id)}
+                    className={`transition-colors cursor-pointer ${
+                      isSelected ? 'bg-emerald-50/70 border-l-4 border-l-[#1E5E3A]' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-8 h-8 rounded-full font-semibold flex items-center justify-center text-xs flex-shrink-0 ${
+                            isSelected ? 'bg-[#1E5E3A] text-white' : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {farmer.initials}
                         </div>
-                      </td>
-                      <td className="py-3 px-3 font-medium text-slate-700">{farmer.phone}</td>
-                      <td className="py-3 px-3 text-slate-600 truncate max-w-[130px]" title={farmer.areaTitle}>
-                        {farmer.areaShort}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="font-medium text-slate-800">{farmer.lastOrderId}</span>
-                        <span className="block text-[11px] text-slate-500">{farmer.lastOrderAgo}</span>
-                      </td>
-                      <td className="py-3 px-3 text-right font-medium text-slate-900">{farmer.totalPurchaseLabel}</td>
-                      <td className="py-3 px-3 text-right">
-                        {farmer.hasDebt ? (
-                          <>
-                            <span
-                              className={`font-semibold px-1.5 py-0.5 rounded border ${
-                                farmer.debtNoteClassName === 'text-red-600 font-medium'
-                                  ? 'text-red-700 bg-red-50 border-red-200'
-                                  : 'text-amber-800 bg-amber-50 border-amber-200'
-                              }`}
-                            >
-                              {farmer.debtLabel}
-                            </span>
-                            {farmer.debtNote ? (
-                              <span className={`block text-[10px] mt-0.5 ${farmer.debtNoteClassName ?? 'text-slate-500'}`}>
-                                {farmer.debtNote}
+                        <div>
+                          <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                            <span>{farmer.name}</span>
+                            {farmer.verified ? (
+                              <span
+                                className="material-symbols-outlined text-[#1E5E3A] text-sm"
+                                title="Đã xác thực"
+                              >
+                                check_circle
                               </span>
                             ) : null}
-                          </>
-                        ) : (
-                          <span className="font-medium text-slate-400">{farmer.debtLabel}</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600">
-                        <div className="truncate max-w-[130px]" title={`${farmer.activityDate} - ${farmer.activityNote}`}>
-                          {farmer.activityDate}
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-mono">#{farmer.id}</div>
                         </div>
-                        <span className={`text-[11px] ${farmer.activityNoteClassName}`}>{farmer.activityNote}</span>
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <StatusBadge label={farmer.statusBadge.label} className={farmer.statusBadge.className} minWidthClassName="min-w-[135px]" />
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          className={
-                            isSelected
-                              ? 'px-2.5 py-1 text-xs font-medium bg-primary-container text-white rounded hover:bg-emerald-900 transition-colors shadow-sm'
-                              : 'px-2.5 py-1 text-xs font-medium border border-slate-300 text-slate-700 rounded hover:bg-slate-100 transition-colors'
-                          }
-                        >
-                          Chi tiết
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            totalCount={totalCount}
-            unitLabel="nông dân"
-            goPrev={goPrev}
-            goNext={goNext}
-            setPage={setPage}
-          />
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 font-medium text-slate-700 font-mono">{farmer.phone}</td>
+                    <td className="py-3 px-3 text-slate-600 truncate max-w-[130px]" title={farmer.areaTitle}>
+                      {farmer.areaShort}
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="font-medium text-slate-800 font-mono">{farmer.lastOrderId}</span>
+                      <span className="block text-[11px] text-slate-500">{farmer.lastOrderAgo}</span>
+                    </td>
+                    <td className="py-3 px-3 text-right font-medium text-slate-900 font-mono">{farmer.totalPurchaseLabel}</td>
+                    <td className="py-3 px-3 text-right">
+                      {farmer.hasDebt ? (
+                        <>
+                          <span
+                            className={`font-semibold font-mono text-xs px-1.5 py-0.5 rounded border ${
+                              farmer.debtNoteClassName === 'text-red-600 font-medium'
+                                ? 'text-rose-700 bg-rose-50 border-rose-200'
+                                : 'text-amber-800 bg-amber-50 border-amber-200'
+                            }`}
+                          >
+                            {farmer.debtLabel}
+                          </span>
+                          {farmer.debtNote ? (
+                            <span className={`block text-[10px] mt-0.5 ${farmer.debtNoteClassName ?? 'text-slate-500'}`}>
+                              {farmer.debtNote}
+                            </span>
+                          ) : null}
+                        </>
+                      ) : (
+                        <span className="font-mono text-slate-400">{farmer.debtLabel}</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-3 text-slate-600">
+                      <div className="truncate max-w-[130px]" title={`${farmer.activityDate} - ${farmer.activityNote}`}>
+                        {farmer.activityDate}
+                      </div>
+                      <span className={`text-[11px] ${farmer.activityNoteClassName}`}>{farmer.activityNote}</span>
+                    </td>
+                    <td className="py-3 px-3 text-center">
+                      <StatusBadge label={farmer.statusBadge.label} className={farmer.statusBadge.className} minWidthClassName="min-w-[125px]" />
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedId(farmer.id)
+                        }}
+                        className="px-2.5 py-1 text-xs font-medium border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                      >
+                        Chi tiết
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={totalCount}
+          unitLabel="nông dân"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
       </div>
 
       {/* DETAIL MODAL: THÔNG TIN NÔNG DÂN */}

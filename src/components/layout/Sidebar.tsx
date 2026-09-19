@@ -1,13 +1,11 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import type { NavItem } from '../../types'
-import { products } from '../../data/mockProducts'
 import { inventoryItems } from '../../data/mockInventory'
 import { orders } from '../../data/mockOrders'
 import { payments } from '../../data/mockPayments'
 import { debtCustomers } from '../../data/mockDebts'
 import { aiCases } from '../../data/mockAiRecommendations'
-import { parseVnd, formatVndShort } from '../../utils/money'
 
 function badgeClasses(tone: NavItem['badgeTone']) {
   switch (tone) {
@@ -31,18 +29,19 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { user } = useAuth()
 
   const inventoryAlertCount = inventoryItems.filter((i) => i.stockLabel !== 'Tồn kho tốt').length
-  const unpaidPaymentCount = payments.filter((p) => p.statusBadge.label !== 'Đã thanh toán').length
-  const totalDebtRemaining = debtCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
+  const pendingOrderCount = orders.filter((o) => o.statusBadge.label === 'Chờ xác nhận').length
+  const pendingVietQrCount = payments.filter((p) => p.statusBadge.label === 'Chờ đối soát' || (p.methodLabel.includes('VietQR') && p.statusBadge.label !== 'Đã thanh toán')).length
+  const debtAlertCount = debtCustomers.filter((c) => c.statusBadge.label === 'Đến hạn' || c.statusBadge.label === 'Quá hạn').length
   const pendingAiCount = aiCases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
 
   const navItems: NavItem[] = [
     { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
-    { label: 'Sản phẩm', to: '/products', icon: 'category', badge: String(products.length) },
-    { label: 'Kho hàng (Lite)', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
-    { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: String(orders.length), badgeTone: 'primary' },
-    { label: 'Thanh toán VietQR', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
-    { label: 'Sổ nợ mùa vụ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
-    { label: 'Hàng đợi AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
+    { label: 'Sản phẩm', to: '/products', icon: 'category' },
+    { label: 'Kho hàng', to: '/inventory', icon: 'inventory_2', badge: inventoryAlertCount > 0 ? String(inventoryAlertCount) : undefined, badgeTone: 'error' },
+    { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: pendingOrderCount > 0 ? `${pendingOrderCount} chờ` : undefined, badgeTone: 'warning' },
+    { label: 'Thanh toán VietQR', to: '/payments', icon: 'payments', badge: pendingVietQrCount > 0 ? `${pendingVietQrCount} chờ` : undefined, badgeTone: 'primary' },
+    { label: 'Sổ nợ mùa vụ', to: '/debts', icon: 'pending_actions', badge: debtAlertCount > 0 ? `${debtAlertCount} hộ` : undefined, badgeTone: 'error' },
+    { label: 'Hàng đợi AI', to: '/ai-recommendations', icon: 'psychology', badge: pendingAiCount > 0 ? `${pendingAiCount} chờ` : undefined, badgeTone: 'error', iconTone: 'primary' },
     { label: 'Nông dân', to: '/farmers', icon: 'groups' },
     { label: 'Nhật ký kiểm toán', to: '/activity-log', icon: 'history_toggle_off' },
     { label: 'Cài đặt', to: '/settings', icon: 'settings' },
@@ -68,12 +67,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary shadow-sm flex-shrink-0">
               <span className="material-symbols-outlined text-[20px]">eco</span>
             </div>
-            <div className="flex-1 min-w-0 flex items-center gap-1.5">
+            <div className="flex-1 min-w-0">
               <span className="font-headline-sm text-headline-sm text-primary font-bold tracking-tight">
                 AgriSage
-              </span>
-              <span className="bg-surface-container text-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded border border-outline-variant">
-                OS
               </span>
             </div>
             <button
@@ -151,11 +147,10 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             </div>
           </div>
           <div className="mt-2 pt-2 border-t border-outline-variant/60 flex items-center justify-between text-[11px] text-on-surface-variant font-medium">
-            <span className="flex items-center gap-1 text-primary">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-              Syncing Can Tho Node
+            <span className="flex items-center gap-1.5 text-primary">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Trạm Thới Lai • Đang hoạt động
             </span>
-            <span className="tabular-nums text-outline">v2.4.1</span>
           </div>
         </div>
       </div>

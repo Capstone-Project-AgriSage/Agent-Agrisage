@@ -92,7 +92,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-outline">search</span>
           <input
             className="w-full h-8 pl-9 pr-3 text-sm bg-surface-container-low border border-outline-variant/60 rounded focus:border-primary focus:ring-1 focus:ring-primary focus:bg-white text-on-surface transition-all placeholder:text-outline font-body-md"
-            placeholder="Tìm nông dân, đơn hàng, vật tư (NPK, giống, thuốc BVTV)..."
+            placeholder="Tìm nhanh đơn hàng, nông dân, vật tư..."
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

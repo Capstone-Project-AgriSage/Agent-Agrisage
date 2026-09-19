@@ -214,6 +214,16 @@ export default function OrdersPage() {
   const deliveringCount = orders.filter((o) => o.statusBadge.label === 'Đang giao').length
   const completedCount = orders.filter((o) => o.statusBadge.label === 'Hoàn thành').length
 
+  const getOrderProductSummary = (order: Order) => {
+    if (order.items && order.items.length > 0) {
+      const firstName = order.items[0].name.split('(')[0].replace(/^(Phân bón|Thuốc trừ cỏ|Thuốc trừ sâu|Lúa giống)\s+/i, '').trim()
+      const extraCount = order.items.length - 1
+      return { firstName, extraCount }
+    }
+    const title = order.productTitle.split(',')[0].split('(')[0].trim()
+    return { firstName: title, extraCount: 0 }
+  }
+
   return (
     <>
       {/* PAGE TITLE & ACTIONS ZONE */}
@@ -221,242 +231,281 @@ export default function OrdersPage() {
         <nav className="flex items-center gap-1 text-[12px] text-outline" aria-label="Breadcrumb">
           <Link className="hover:text-on-surface" to="/">Bảng điều khiển</Link>
           <span className="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
-          <span className="text-on-surface font-medium">Quản lý đơn hàng</span>
+          <span className="text-primary font-medium">Quản lý đơn hàng</span>
         </nav>
         <div className="flex items-center gap-space-xs flex-wrap">
           <button
-            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded-xl hover:bg-surface-container-low transition-colors shadow-sm"
             type="button"
             onClick={handleExportOrders}
           >
-            <span className="material-symbols-outlined text-base text-outline" data-icon="table_view">table_view</span>
+            <span className="material-symbols-outlined text-[18px] text-outline" data-icon="table_view">table_view</span>
             <span>Xuất Excel</span>
           </button>
           <button
-            className="inline-flex items-center gap-1 px-space-sm py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded hover:bg-surface-container-low transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-container-lowest border border-outline-variant text-on-surface font-label-md text-label-md rounded-xl hover:bg-surface-container-low transition-colors shadow-sm"
             type="button"
             onClick={handlePrintOrders}
           >
-            <span className="material-symbols-outlined text-base text-outline" data-icon="print">print</span>
-            <span>In phiếu xuất hàng loạt</span>
+            <span className="material-symbols-outlined text-[18px] text-outline" data-icon="print">print</span>
+            <span>In phiếu xuất</span>
           </button>
           <button
-            className="inline-flex items-center gap-1 px-space-md py-2 bg-primary-container text-on-primary font-label-md text-label-md rounded hover:bg-primary transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md rounded-xl transition-colors shadow-sm"
             type="button"
             onClick={() => setCreateOpen(true)}
           >
-            <span className="material-symbols-outlined text-lg" data-icon="add">add</span><span>Tạo đơn hàng</span>
+            <span className="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+            <span>Tạo đơn hàng</span>
           </button>
         </div>
       </div>
 
-      {/* SUMMARY KPI CARDS (4 Clean SaaS Cards) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
-        {/* KPI 1: Đơn hàng hôm nay */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đơn hàng hôm nay</span>
-            <span className="material-symbols-outlined text-xl text-primary" data-icon="receipt_long">receipt_long</span>
-          </div>
-          <div className="my-space-xs">
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{totalOrdersToday}</span>
-              <span className="text-xs font-medium text-outline">đơn</span>
+      {/* COMPACT OPERATIONAL SUMMARY (2 High-Value Blocks) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+        {/* Block 1: Cần xử lý xuất kho (Action-Oriented Queue) */}
+        <div className="bg-amber-50/40 border border-amber-300 rounded-xl p-space-md shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-amber-900 font-semibold text-label-md">
+              <span className="material-symbols-outlined text-[18px] text-amber-700">pending_actions</span>
+              <span>Cần xử lý xuất kho</span>
+              <span className="px-2 py-0.2 rounded-full text-[11px] font-bold bg-amber-200/80 text-amber-900">
+                {waitingCount + processingCount} đơn
+              </span>
+            </div>
+            <div className="text-xs text-amber-800">
+              {waitingCount > 0 ? `${waitingCount} đơn chờ duyệt xuất kho` : 'Đã duyệt tất cả'} • {processingCount} đơn đang soạn hàng
             </div>
           </div>
-          <div className="text-xs font-mono text-outline border-t border-outline-variant/60 pt-1.5 flex justify-between">
-            <span>Tổng giá trị:</span>
-            <span className="font-semibold text-on-surface">{formatVnd(totalOrderValue)}</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('Chờ xác nhận')}
+            className="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200/80 text-amber-900 font-medium text-xs border border-amber-300 transition-colors"
+          >
+            Lọc đơn chờ →
+          </button>
         </div>
 
-        {/* KPI 2: Chờ xác nhận */}
-        <div className="bg-surface-container-lowest border-2 border-amber-400/80 rounded-xl p-space-md shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Chờ xác nhận</span>
-            <span className="material-symbols-outlined text-xl text-amber-600" data-icon="pending_actions">pending_actions</span>
-          </div>
-          <div className="my-space-xs">
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-amber-700 font-semibold">{waitingCount}</span>
-              <span className="text-xs text-amber-800 bg-amber-50 px-2 py-0.5 rounded font-medium">Cần duyệt</span>
+        {/* Block 2: Đang giao & Hoàn thành (Routine Statistics) */}
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-1.5 text-on-surface font-semibold text-label-md">
+              <span className="material-symbols-outlined text-[18px] text-emerald-700">local_shipping</span>
+              <span>Đang vận chuyển & Hoàn tất</span>
+              <span className="px-2 py-0.2 rounded-full text-[11px] font-medium bg-surface-container text-outline">
+                {deliveringCount + completedCount} đơn
+              </span>
+            </div>
+            <div className="text-xs text-outline">
+              {deliveringCount} đang trên đường giao • {completedCount} hoàn thành • Tổng: {formatVnd(totalOrderValue)}
             </div>
           </div>
-          <div className="text-xs text-amber-700 border-t border-outline-variant/60 pt-1.5 flex items-center gap-1">
-            <span className="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
-            <span>Ưu tiên xuất kho trạm</span>
-          </div>
-        </div>
-
-        {/* KPI 3: Đang vận chuyển */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Đang giao hàng</span>
-            <span className="material-symbols-outlined text-xl text-blue-600" data-icon="local_shipping">local_shipping</span>
-          </div>
-          <div className="my-space-xs">
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-on-surface font-semibold">{processingCount + deliveringCount}</span>
-              <span className="text-xs text-blue-600 font-medium">đơn</span>
-            </div>
-          </div>
-          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
-            {deliveringCount} đang giao • {processingCount} đang soạn hàng
-          </div>
-        </div>
-
-        {/* KPI 4: Hoàn thành */}
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-space-md shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hoàn thành</span>
-            <span className="material-symbols-outlined text-xl text-emerald-600" data-icon="check_circle">check_circle</span>
-          </div>
-          <div className="my-space-xs">
-            <div className="flex items-baseline gap-2">
-              <span className="font-metric-num text-metric-num text-emerald-700 font-semibold">{completedCount}</span>
-              <span className="text-xs text-emerald-600 font-medium">đơn</span>
-            </div>
-          </div>
-          <div className="text-xs text-outline border-t border-outline-variant/60 pt-1.5">
-            Đã giao &amp; thanh toán thành công
-          </div>
+          <span className="text-xs font-mono font-bold text-slate-700">
+            {totalOrdersToday} tổng đơn
+          </span>
         </div>
       </div>
 
-      {/* FILTER & SEARCH BAR */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded p-space-sm shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-sm">
-        <div className="flex items-center gap-space-sm flex-1 flex-wrap">
+      {/* FILTER BAR WITH 1-CLICK STATUS PILLS */}
+      <div className="bg-surface-container-lowest border border-outline-variant p-3.5 rounded-xl shadow-sm space-y-3">
+        {/* Quick Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-label-md font-label-md">
+          <span className="text-outline text-[12px] whitespace-nowrap mr-1">Trạng thái:</span>
+          <button
+            type="button"
+            onClick={() => setStatusFilter(STATUS_OPTIONS[0])}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors whitespace-nowrap ${
+              statusFilter === STATUS_OPTIONS[0]
+                ? 'bg-[#1E5E3A] text-white border-[#1E5E3A] shadow-sm'
+                : 'bg-surface-container-low text-on-surface border-outline-variant/60 hover:bg-surface-container'
+            }`}
+          >
+            Tất cả ({orders.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('Chờ xác nhận')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              statusFilter === 'Chờ xác nhận'
+                ? 'bg-amber-600 text-white border-amber-600 shadow-sm'
+                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100/70'
+            }`}
+          >
+            <span>Chờ xác nhận</span>
+            <span className="px-1.5 py-0.2 bg-amber-200/80 text-amber-900 text-[11px] rounded-full font-bold">
+              {waitingCount}
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('Đang xử lý')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors whitespace-nowrap ${
+              statusFilter === 'Đang xử lý'
+                ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
+                : 'bg-surface-container-low text-on-surface border-outline-variant/60 hover:bg-surface-container'
+            }`}
+          >
+            Đang xử lý ({processingCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('Đang giao')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors whitespace-nowrap ${
+              statusFilter === 'Đang giao'
+                ? 'bg-slate-800 text-white border-slate-800 shadow-sm'
+                : 'bg-surface-container-low text-on-surface border-outline-variant/60 hover:bg-surface-container'
+            }`}
+          >
+            Đang giao ({deliveringCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter('Hoàn thành')}
+            className={`px-3 py-1.5 rounded-lg border text-[13px] font-medium transition-colors whitespace-nowrap ${
+              statusFilter === 'Hoàn thành'
+                ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm'
+                : 'bg-surface-container-low text-on-surface border-outline-variant/60 hover:bg-surface-container'
+            }`}
+          >
+            Hoàn thành ({completedCount})
+          </button>
+        </div>
+
+        {/* Inputs & Dropdowns */}
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-2 border-t border-outline-variant/40">
           <SearchInput
             value={search}
             onChange={setSearch}
-            placeholder="Tìm kiếm mã đơn, tên nông dân, SĐT..."
-            className="relative min-w-[240px] flex-1 max-w-sm"
+            placeholder="Tìm kiếm mã đơn, khách hàng, SĐT..."
+            className="relative flex-1 min-w-[260px]"
           />
-          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
-          <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={PAYMENT_OPTIONS} />
-        </div>
-        <div className="flex items-center gap-space-xs">
-          <button
-            className="text-xs text-outline hover:text-error transition-colors flex items-center gap-1 px-2 py-1"
-            type="button"
-            onClick={handleClearFilters}
-          >
-            <span className="material-symbols-outlined text-sm" data-icon="filter_alt_off">filter_alt_off</span>
-            <span>Xóa bộ lọc</span>
-          </button>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} />
+            <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={PAYMENT_OPTIONS} />
+            <button
+              className="flex items-center gap-1 px-3 py-1.5 text-outline hover:text-on-surface hover:bg-surface-container-low rounded-xl font-label-md text-label-md transition-colors"
+              type="button"
+              onClick={handleClearFilters}
+            >
+              <span className="material-symbols-outlined text-[18px]">filter_alt_off</span>
+              <span>Xóa bộ lọc</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* MAIN TABLE */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded shadow-sm overflow-hidden flex flex-col">
-          <div className="px-space-md py-space-sm border-b border-outline-variant bg-surface-container-low/50 flex items-center justify-between">
-            <div className="flex items-center gap-space-xs">
-              <span className="font-title-md text-title-md text-on-surface">Danh sách đơn xuất kho trạm #04</span>
-              <span className="text-xs font-mono bg-surface-container text-outline px-1.5 py-0.5 rounded">{filteredOrders.length} bản ghi</span>
-            </div>
-            <div className="flex items-center gap-space-xs">
-              <button
-                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
-                title="Làm mới bảng"
-                onClick={() => showToast('Đã làm mới danh sách đơn hàng')}
-              >
-                <span className="material-symbols-outlined text-base" data-icon="refresh">refresh</span>
-              </button>
-              <button
-                className="p-1 hover:bg-surface-container rounded text-outline hover:text-on-surface"
-                title="Tùy biến cột"
-                onClick={() => showToast('Chức năng tùy biến cột đang được phát triển')}
-              >
-                <span className="material-symbols-outlined text-base" data-icon="view_column">view_column</span>
-              </button>
-            </div>
+      {/* MAIN TABLE (7 Columns Scannable) */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <div className="px-space-md py-3 bg-surface-container-low border-b border-outline-variant flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="font-title-md text-title-md font-semibold text-on-surface">Danh sách đơn xuất kho trạm</span>
+            <span className="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold">{filteredOrders.length} đơn</span>
           </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-surface-container-low/80 border-b border-outline-variant text-outline font-label-sm uppercase tracking-wider">
-                  <th className="py-3 px-3.5 font-semibold">Mã đơn</th>
-                  <th className="py-3 px-3.5 font-semibold">Khách hàng &amp; Xã</th>
-                  <th className="py-3 px-3.5 font-semibold">Thời gian</th>
-                  <th className="py-3 px-3.5 font-semibold">Sản phẩm chính</th>
-                  <th className="py-3 px-3.5 font-semibold text-right">Tổng tiền</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Thanh toán</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Trạng thái</th>
-                  <th className="py-3 px-3.5 font-semibold text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/60 font-body-sm">
-                {filteredOrders.length === 0 ? (
-                  <EmptyTableRow colSpan={8} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
-                ) : null}
-                {paginatedOrders.map((order) => {
-                  const isSelected = order.id === selectedId
-                  return (
-                    <tr
-                      key={order.id}
-                      onClick={() => setSelectedId(order.id)}
-                      className={`transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
-                          : `hover:bg-surface-container-low ${order.rowAttentionClassName ?? ''}`
-                      }`}
-                    >
-                      <td className={`py-3.5 px-3.5 font-mono font-semibold ${isSelected ? 'text-primary' : order.idClassName}`}>
-                        {order.id}
-                      </td>
-                      <td className="py-3.5 px-3.5">
-                        <div className="font-semibold text-on-surface">{order.customerName}</div>
-                        <div className="text-xs text-outline">{order.phone} • {order.shortLocation}</div>
-                      </td>
-                      <td className="py-3.5 px-3.5 text-outline whitespace-nowrap text-xs">
-                        {order.timeBold ? <span className="font-medium text-on-surface">{order.timeBold}</span> : null}
-                        {order.timeBold ? ' ' : ''}
-                        {order.timeRest}
-                      </td>
-                      <td className="py-3.5 px-3.5 max-w-[200px]">
-                        <div className="truncate text-on-surface font-medium" title={order.productTitle}>
-                          {order.productLine}
-                        </div>
-                        <span className="text-xs text-outline">{order.productNote}</span>
-                      </td>
-                      <td className="py-3.5 px-3.5 text-right font-mono font-semibold text-on-surface whitespace-nowrap">
-                        {order.total}
-                      </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
-                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[130px]" />
-                      </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
-                        <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
-                      </td>
-                      <td className="py-3.5 px-3.5 text-center whitespace-nowrap">
-                        <div className="flex items-center justify-center">
-                          <RowActionsMenu
-                            triggerLabel={`Thao tác đơn #${order.id}`}
-                            actions={order.actions.map((action) => ({
-                              ...action,
-                              onClick: () => handleOrderAction(order.id, action.label),
-                            }))}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            totalCount={totalCount}
-            unitLabel="đơn hàng"
-            goPrev={goPrev}
-            goNext={goNext}
-            setPage={setPage}
-          />
+          <button
+            className="p-1 hover:bg-surface-container rounded-lg text-outline hover:text-on-surface transition-colors"
+            title="Làm mới bảng"
+            type="button"
+            onClick={() => showToast('Đã làm mới danh sách đơn hàng')}
+          >
+            <span className="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+          </button>
         </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-semibold text-outline uppercase tracking-wider">
+                <th className="py-2.5 px-space-md">MÃ ĐƠN &amp; GIỜ</th>
+                <th className="py-2.5 px-space-md">KHÁCH HÀNG</th>
+                <th className="py-2.5 px-space-md">SẢN PHẨM</th>
+                <th className="py-2.5 px-space-md text-right">TỔNG TIỀN</th>
+                <th className="py-2.5 px-space-md text-center">THANH TOÁN</th>
+                <th className="py-2.5 px-space-md text-center">TRẠNG THÁI</th>
+                <th className="py-2.5 px-space-md text-center">THAO TÁC</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
+              {filteredOrders.length === 0 ? (
+                <EmptyTableRow colSpan={7} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
+              ) : null}
+              {paginatedOrders.map((order) => {
+                const isSelected = order.id === selectedId
+                return (
+                  <tr
+                    key={order.id}
+                    onClick={() => setSelectedId(order.id)}
+                    className={`transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-primary-container'
+                        : `hover:bg-surface-container-low ${order.rowAttentionClassName ?? ''}`
+                    }`}
+                  >
+                    <td className="py-3 px-space-md whitespace-nowrap">
+                      <div className={`font-semibold font-mono ${isSelected ? 'text-primary' : order.idClassName}`}>
+                        #{order.id}
+                      </div>
+                      <div className="text-[11px] font-mono text-outline">
+                        {order.timeBold ? `${order.timeBold} ` : ''}{order.timeRest}
+                      </div>
+                    </td>
+                    <td className="py-3 px-space-md">
+                      <div className="font-medium text-on-surface">{order.customerName}</div>
+                      <div className="text-[11px] text-outline truncate max-w-[160px]">{order.shortLocation}</div>
+                    </td>
+                    <td className="py-3 px-space-md max-w-[220px]">
+                      {(() => {
+                        const { firstName, extraCount } = getOrderProductSummary(order)
+                        return (
+                          <div className="flex flex-col">
+                            <span className="font-medium text-on-surface truncate" title={order.productTitle}>
+                              {firstName}
+                            </span>
+                            {extraCount > 0 && (
+                              <span className="text-[11px] text-outline font-medium">
+                                + {extraCount} sản phẩm
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </td>
+                    <td className="py-3 px-space-md text-right font-mono font-semibold text-on-surface whitespace-nowrap">
+                      {order.total}
+                    </td>
+                    <td className="py-3 px-space-md text-center whitespace-nowrap">
+                      <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} />
+                    </td>
+                    <td className="py-3 px-space-md text-center whitespace-nowrap">
+                      <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} />
+                    </td>
+                    <td className="py-3 px-space-md text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center">
+                        <RowActionsMenu
+                          triggerLabel={`Thao tác đơn #${order.id}`}
+                          actions={order.actions.map((action) => ({
+                            ...action,
+                            onClick: () => handleOrderAction(order.id, action.label),
+                          }))}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={totalCount}
+          unitLabel="đơn hàng"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
+      </div>
 
       {/* DETAIL MODAL: CHI TIẾT ĐƠN HÀNG */}
       <DetailModal open={selectedOrder !== null} onClose={() => setSelectedId(null)}>

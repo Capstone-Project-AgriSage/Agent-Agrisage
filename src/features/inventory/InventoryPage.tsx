@@ -29,21 +29,21 @@ const STOCK_OPTIONS = [
 
 const MOVEMENT_TYPE_OPTIONS = [
   { value: 'ALL', label: 'Tất cả loại biến động' },
-  { value: 'STOCK_IN', label: 'Nhập kho (STOCK_IN)' },
-  { value: 'SALE', label: 'Xuất bán hàng (SALE)' },
-  { value: 'ADJUSTMENT', label: 'Điều chỉnh kiểm kê (ADJUSTMENT)' },
+  { value: 'STOCK_IN', label: 'Nhập hàng' },
+  { value: 'SALE', label: 'Bán hàng' },
+  { value: 'ADJUSTMENT', label: 'Điều chỉnh kiểm kê' },
 ]
 
 const ADJUST_REASONS: { value: StockAdjustmentReason; label: string; desc: string }[] = [
-  { value: 'DAMAGED', label: 'Hư hỏng / Rách vỡ bao bì (DAMAGED)', desc: 'Vật tư bị hỏng do bảo quản hoặc vận chuyển' },
-  { value: 'EXPIRED', label: 'Hết hạn sử dụng (EXPIRED)', desc: 'Vật tư quá date lưu kho theo quy chuẩn BVTV' },
-  { value: 'LOST', label: 'Thất thoát / Hao hụt kiểm kê (LOST)', desc: 'Không tìm thấy hiện vật khi đối chiếu kho thực tế' },
-  { value: 'MANUAL_CORRECTION', label: 'Hiệu chỉnh sai lệch kiểm đếm (MANUAL_CORRECTION)', desc: 'Cân bằng số dư thẻ kho với kiểm kê thực tế' },
+  { value: 'DAMAGED', label: 'Hư hỏng / Rách vỡ bao bì', desc: 'Vật tư bị hỏng do bảo quản hoặc vận chuyển' },
+  { value: 'EXPIRED', label: 'Hết hạn sử dụng', desc: 'Vật tư quá date lưu kho theo quy chuẩn BVTV' },
+  { value: 'LOST', label: 'Thất thoát / Hao hụt kiểm kê', desc: 'Không tìm thấy hiện vật khi đối chiếu kho thực tế' },
+  { value: 'MANUAL_CORRECTION', label: 'Hiệu chỉnh sai lệch kiểm đếm', desc: 'Cân bằng số dư thẻ kho với kiểm kê thực tế' },
 ]
 
 export default function InventoryPage() {
   usePageHeader({
-    title: 'Quản lý kho hàng & Thẻ kho (WF-05)',
+    title: 'Quản lý kho hàng & Thẻ kho',
   })
 
   const { showToast } = useToast()
@@ -321,7 +321,7 @@ export default function InventoryPage() {
           <nav className="flex items-center gap-2 text-body-sm font-body-sm text-outline">
             <Link className="hover:text-primary transition-colors" to="/">Bảng điều khiển</Link>
             <span className="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
-            <span className="text-on-surface font-medium">Quản lý kho &amp; Thẻ kho (WF-05)</span>
+            <span className="text-primary font-medium">Quản lý kho &amp; Thẻ kho</span>
           </nav>
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#DCFCE7] text-[#15803D] border border-[#86EFAC]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
@@ -329,17 +329,17 @@ export default function InventoryPage() {
           </span>
         </div>
         {/* Major Operational Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low hover:border-outline font-title-md text-title-md transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low font-title-md text-title-md transition-colors shadow-sm"
             type="button"
             onClick={activeTab === 'stock' ? handleExportInventory : handleExportLedger}
           >
             <span className="material-symbols-outlined text-[18px] text-outline" data-icon="file_download">file_download</span>
-            <span>{activeTab === 'stock' ? 'Xuất kiểm kê CSV' : 'Xuất thẻ kho CSV'}</span>
+            <span>Xuất dữ liệu</span>
           </button>
           <button
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 hover:bg-amber-100 font-title-md text-title-md transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface hover:bg-surface-container-low font-title-md text-title-md transition-colors shadow-sm"
             type="button"
             onClick={() => {
               setAdjustItem(inventoryItems[0] ?? null)
@@ -350,11 +350,11 @@ export default function InventoryPage() {
               setAdjustOpen(true)
             }}
           >
-            <span className="material-symbols-outlined text-[18px] text-amber-700" data-icon="tune">tune</span>
-            <span>Điều chỉnh kho (WF-05)</span>
+            <span className="material-symbols-outlined text-[18px] text-outline" data-icon="tune">tune</span>
+            <span>Điều chỉnh kho</span>
           </button>
           <button
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary hover:bg-[#17482D] active:bg-[#113622] text-on-primary font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#1E5E3A] hover:bg-[#17482D] text-white font-title-md text-title-md transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
             type="button"
             onClick={() => {
               resetRestockForm({ itemId: inventoryItems[0]?.id ?? '', amount: '' })
@@ -396,7 +396,7 @@ export default function InventoryPage() {
           }`}
         >
           <span className="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
-          <span>Sổ biến động thẻ kho (Append-Only)</span>
+          <span>Lịch sử biến động kho</span>
           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
             activeTab === 'ledger' ? 'bg-primary/10 text-primary' : 'bg-surface-container text-on-surface-variant'
           }`}>
@@ -408,89 +408,114 @@ export default function InventoryPage() {
       {/* TAB 1: TỒN KHO HIỆN TẠI */}
       {activeTab === 'stock' && (
         <div className="space-y-space-lg">
-          {/* 4 KPI SUMMARY CARDS */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-base">
-            {/* Card 1: Total Stocked Items */}
-            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-outline transition-colors flex flex-col justify-between">
+          {/* 3 COMPACT OPERATIONAL SUMMARY CARDS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-space-base">
+            {/* Card 1: Low Stock Alert (Actionable) */}
+            <div
+              onClick={() => setStockFilter(stockFilter === 'Sắp hết' ? '' : 'Sắp hết')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setStockFilter(stockFilter === 'Sắp hết' ? '' : 'Sắp hết')}
+              className={`p-space-base rounded-xl shadow-sm transition-all cursor-pointer flex flex-col justify-between ${
+                stockFilter === 'Sắp hết'
+                  ? 'border-2 border-amber-500 bg-amber-100/60 ring-2 ring-amber-400/30'
+                  : 'border border-amber-300 bg-amber-50/40 hover:bg-amber-50/80'
+              }`}
+            >
               <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Tổng mặt hàng trong kho</span>
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="inventory">inventory</span>
+                <span className="font-label-sm text-label-sm text-amber-900 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-amber-700">warning</span>
+                  Sắp hết hàng
+                </span>
+                <span className="px-2 py-0.2 rounded-full text-[11px] font-bold bg-amber-200/80 text-amber-900">
+                  {lowStockCount > 0 ? 'Cần nhập' : 'Ổn định'}
+                </span>
+              </div>
+              <div className="mt-2">
+                <div className="font-metric-num text-metric-num text-amber-900 font-bold tabular-nums">
+                  {lowStockCount} <span className="text-sm font-normal text-amber-800">mặt hàng</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-amber-800 font-medium">
+                  <span>Dưới ngưỡng an toàn</span>
+                  <span className="underline underline-offset-2">{stockFilter === 'Sắp hết' ? 'Bỏ lọc ✕' : 'Lọc ngay →'}</span>
                 </div>
               </div>
-              <div className="mt-3">
-                <div className="font-metric-num text-metric-num text-on-surface font-semibold">{totalCount} <span className="text-sm font-normal text-outline">mặt hàng</span></div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-outline">
-                  <span className="material-symbols-outlined text-[15px] text-emerald-600" data-icon="check_circle">check_circle</span>
+            </div>
+
+            {/* Card 2: Out of Stock Alert (Actionable) */}
+            <div
+              onClick={() => setStockFilter(stockFilter === 'Hết hàng' ? '' : 'Hết hàng')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setStockFilter(stockFilter === 'Hết hàng' ? '' : 'Hết hàng')}
+              className={`p-space-base rounded-xl shadow-sm transition-all cursor-pointer flex flex-col justify-between ${
+                stockFilter === 'Hết hàng'
+                  ? 'border-2 border-rose-500 bg-rose-100/60 ring-2 ring-rose-400/30'
+                  : 'border border-rose-200 bg-rose-50/40 hover:bg-rose-50/80'
+              }`}
+            >
+              <div className="flex items-start justify-between">
+                <span className="font-label-sm text-label-sm text-rose-900 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-rose-700">block</span>
+                  Hết hàng
+                </span>
+                <span className="px-2 py-0.2 rounded-full text-[11px] font-bold bg-rose-200/80 text-rose-900">
+                  {outOfStockCount > 0 ? 'Tồn kho 0' : 'Đầy đủ'}
+                </span>
+              </div>
+              <div className="mt-2">
+                <div className="font-metric-num text-metric-num text-rose-900 font-bold tabular-nums">
+                  {outOfStockCount} <span className="text-sm font-normal text-rose-800">mặt hàng</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-rose-800 font-medium">
+                  <span>Tồn 0, tạm ngưng bán</span>
+                  <span className="underline underline-offset-2">{stockFilter === 'Hết hàng' ? 'Bỏ lọc ✕' : 'Lọc ngay →'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Healthy Stock & Total SKUs (Quiet) */}
+            <div
+              onClick={() => setStockFilter('')}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setStockFilter('')}
+              className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm hover:border-slate-400 transition-colors flex flex-col justify-between cursor-pointer"
+            >
+              <div className="flex items-start justify-between">
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[18px] text-emerald-700">task_alt</span>
+                  Tồn kho an toàn
+                </span>
+                <span className="px-2 py-0.2 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {totalCount} SKU
+                </span>
+              </div>
+              <div className="mt-2">
+                <div className="font-metric-num text-metric-num text-on-surface font-semibold tabular-nums">
+                  {totalCount - lowStockCount - outOfStockCount} <span className="text-sm font-normal text-outline">SKU ổn định</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between text-xs text-outline">
                   <span>9 danh mục vật tư lúa ĐBSCL</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Low Stock Warning */}
-            <div className="p-space-base rounded-xl bg-surface-container-lowest border-2 border-amber-400/80 shadow-sm transition-colors flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sắp hết hàng</span>
-                <div className="w-8 h-8 rounded-lg bg-[#FEF3C7] flex items-center justify-center text-[#B45309]">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="warning">warning</span>
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="font-metric-num text-metric-num text-[#B45309] font-semibold">{lowStockCount} <span className="text-sm font-normal text-outline">mặt hàng</span></div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-amber-700 font-medium">
-                  <span className="material-symbols-outlined text-[15px]" data-icon="trending_down">trending_down</span>
-                  <span>Dưới ngưỡng an toàn, cần nhập thêm</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3: Out of Stock Alert */}
-            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm transition-colors flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Hết hàng</span>
-                <div className="w-8 h-8 rounded-lg bg-[#FEE2E2] flex items-center justify-center text-error">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="block">block</span>
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="font-metric-num text-metric-num text-error font-semibold">{outOfStockCount} <span className="text-sm font-normal text-outline">mặt hàng</span></div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-error font-medium">
-                  <span className="material-symbols-outlined text-[15px]" data-icon="error">error</span>
-                  <span>Tồn kho 0, tạm ngưng bán</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: Total Inventory Value */}
-            <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm transition-colors flex flex-col justify-between">
-              <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Giá trị tồn kho</span>
-                <div className="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
-                  <span className="material-symbols-outlined text-[20px]" data-icon="monetization_on">monetization_on</span>
-                </div>
-              </div>
-              <div className="mt-3">
-                <div className="font-metric-num text-metric-num text-primary font-semibold">1.845.600.000 <span className="text-sm font-normal text-outline">₫</span></div>
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-outline">
-                  <span>Giá vốn kho Đại lý Hai Thắng</span>
+                  <span className="underline underline-offset-2">Xem tất cả</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* FILTERS & SEARCH CONTROLS */}
-          <div className="p-space-md rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+          <div className="p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
             <SearchInput value={search} onChange={setSearch} placeholder="Tìm kiếm sản phẩm, mã SKU, hoạt chất..." className="relative flex-1" />
             <div className="flex flex-wrap items-center gap-2.5">
               <FilterSelect value={categoryFilter} onChange={setCategoryFilter} options={CATEGORY_OPTIONS} className="relative min-w-[150px]" />
               <FilterSelect value={stockFilter} onChange={setStockFilter} options={STOCK_OPTIONS} className="relative min-w-[150px]" />
               <button
-                className="px-3 py-2 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
+                className="px-3 py-1.5 rounded-xl text-body-sm font-label-md text-outline hover:text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-1"
                 type="button"
                 onClick={handleClearFilters}
               >
-                <span className="material-symbols-outlined text-[16px]" data-icon="restart_alt">restart_alt</span>
-                <span>Xóa lọc</span>
+                <span className="material-symbols-outlined text-[18px]" data-icon="filter_alt_off">filter_alt_off</span>
+                <span>Xóa bộ lọc</span>
               </button>
             </div>
           </div>
@@ -500,17 +525,17 @@ export default function InventoryPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-surface-container-low border-b border-outline-variant text-[11px] font-label-sm uppercase tracking-wider text-outline select-none">
-                    <th className="py-3 px-4 font-semibold" scope="col">Sản phẩm &amp; Hoạt chất</th>
-                    <th className="py-3 px-3 font-semibold" scope="col">SKU</th>
-                    <th className="py-3 px-3 font-semibold" scope="col">Danh mục</th>
-                    <th className="py-3 px-3 font-semibold text-right" scope="col">Số lượng</th>
-                    <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
-                    <th className="py-3 px-3 font-semibold" scope="col">Cập nhật gần nhất</th>
-                    <th className="py-3 px-4 font-semibold text-right" scope="col">Thao tác</th>
+                  <tr className="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-semibold uppercase tracking-wider text-outline select-none">
+                    <th className="py-2.5 px-4" scope="col">Sản phẩm &amp; Hoạt chất</th>
+                    <th className="py-2.5 px-3" scope="col">SKU</th>
+                    <th className="py-2.5 px-3" scope="col">Danh mục</th>
+                    <th className="py-2.5 px-3 text-right" scope="col">Số lượng tồn</th>
+                    <th className="py-2.5 px-3 text-center" scope="col">Trạng thái</th>
+                    <th className="py-2.5 px-3" scope="col">Cập nhật gần nhất</th>
+                    <th className="py-2.5 px-4 text-center" scope="col">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-outline-variant text-body-md">
+                <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
                   {paginated.length === 0 ? (
                     <EmptyTableRow colSpan={7} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
                   ) : null}
@@ -522,44 +547,39 @@ export default function InventoryPage() {
                         onClick={() => setSelectedId(item.id)}
                         className={`transition-colors cursor-pointer group ${
                           isSelected
-                            ? 'bg-primary/5 hover:bg-primary/10 border-l-4 border-l-primary'
+                            ? 'bg-emerald-50/40 hover:bg-emerald-50/70 border-l-4 border-l-primary-container'
                             : `hover:bg-surface-container-low ${item.rowClassName ?? ''}`
                         }`}
                       >
                         <td className="py-3 px-4">
                           <div className="flex flex-col">
-                            <span className={`font-title-md text-title-md font-semibold group-hover:text-primary ${item.nameClassName ?? 'text-on-surface'}`}>
+                            <span className={`font-semibold group-hover:text-primary ${item.nameClassName ?? 'text-on-surface'}`}>
                               {item.name}
                             </span>
-                            <span className="font-body-sm text-[12px] text-outline">{item.description}</span>
+                            <span className="text-[12px] text-outline truncate max-w-[280px]">{item.description}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium">{item.sku}</td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 font-mono text-[12px] text-on-surface-variant font-medium whitespace-nowrap">{item.sku}</td>
+                        <td className="py-3 px-3 whitespace-nowrap">
                           <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-surface-container text-on-surface-variant">{item.categoryLabel}</span>
                         </td>
-                        <td className="py-3 px-3 text-right">
-                          <div className="flex flex-col items-end">
-                            <span className={`font-semibold tabular-nums ${item.stockQuantityClassName ?? 'text-on-surface'}`}>{item.stockQuantity}</span>
-                            <div className="w-16 h-1.5 bg-surface-container-high rounded-full overflow-hidden mt-1">
-                              <div className={`h-full rounded-full ${item.stockBarClassName}`} style={{ width: item.stockBarWidth }}></div>
-                            </div>
-                          </div>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <span className={`font-mono font-semibold tabular-nums ${item.stockQuantityClassName ?? 'text-on-surface'}`}>{item.stockQuantity}</span>
                         </td>
-                        <td className="py-3 px-3 text-center">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
                             <span className={`w-1.5 h-1.5 rounded-full ${item.stockDotClassName}`}></span>
                             {item.stockLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 whitespace-nowrap">
                           <div className="flex flex-col text-[11px]">
-                            <span className="text-on-surface">{item.updatedAgo}</span>
+                            <span className="text-on-surface font-medium">{item.updatedAgo}</span>
                             <span className="text-outline">{item.updatedBy}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end">
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          <div className="flex items-center justify-center">
                             <RowActionsMenu
                               triggerLabel={`Thao tác ${item.name}`}
                               actions={item.actions.map((action) => ({
@@ -729,7 +749,7 @@ export default function InventoryPage() {
 
             <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
               <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Lượt nhập kho (STOCK_IN)</span>
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Lượt nhập hàng</span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-700">
                   <span className="material-symbols-outlined text-[20px]" data-icon="input">input</span>
                 </div>
@@ -742,7 +762,7 @@ export default function InventoryPage() {
 
             <div className="p-space-base rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col justify-between">
               <div className="flex items-start justify-between">
-                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Lượt xuất bán (SALE)</span>
+                <span className="font-label-sm text-label-sm text-outline uppercase tracking-wider">Lượt bán hàng</span>
                 <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-700">
                   <span className="material-symbols-outlined text-[20px]" data-icon="shopping_cart_checkout">shopping_cart_checkout</span>
                 </div>
@@ -771,15 +791,15 @@ export default function InventoryPage() {
           <div className="p-3.5 rounded-xl bg-surface-container-lowest border border-outline-variant shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 text-on-surface">
               <span className="material-symbols-outlined text-primary text-[20px]">verified_user</span>
-              <span className="font-semibold">Thẻ kho điện tử kiểm toán (WF-05)</span>
-              <span className="text-outline hidden sm:inline">• Lịch sử bất biến (Append-Only)</span>
+              <span className="font-semibold">Sổ theo dõi biến động kho</span>
+              <span className="text-outline hidden sm:inline">• Lưu vết kiểm toán tự động</span>
             </div>
             <div className="flex items-center gap-1.5 font-mono text-[11px] text-outline flex-wrap">
-              <span>Mã kiểm toán:</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">DAMAGED</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">EXPIRED</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">LOST</span>
-              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">MANUAL_CORRECTION</span>
+              <span>Lý do kiểm kê:</span>
+              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">Hư hỏng</span>
+              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">Hết hạn</span>
+              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">Thất thoát</span>
+              <span className="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">Kiểm kê</span>
             </div>
           </div>
 
@@ -868,10 +888,10 @@ export default function InventoryPage() {
                               }`}
                             ></span>
                             {m.movementType === 'STOCK_IN'
-                              ? 'Nhập kho'
+                              ? 'Nhập hàng'
                               : m.movementType === 'SALE'
-                              ? 'Xuất bán'
-                              : 'Điều chỉnh'}
+                              ? 'Bán hàng'
+                              : 'Điều chỉnh kiểm kê'}
                           </span>
                         </td>
                         <td className="py-3 px-3 text-right">
@@ -1005,7 +1025,7 @@ export default function InventoryPage() {
                 </div>
                 <div>
                   <h3 className="font-title-lg text-title-lg font-bold text-on-surface">Điều chỉnh tồn kho kiểm kê</h3>
-                  <p className="text-xs text-outline">Ghi sổ thẻ kho append-only theo quy chuẩn WF-05</p>
+                  <p className="text-xs text-outline">Ghi nhận biến động thẻ kho lưu vết kiểm toán</p>
                 </div>
               </div>
               <button
