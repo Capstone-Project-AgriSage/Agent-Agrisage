@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -22,18 +21,12 @@ import type { Payment } from '../../types'
 import {
   ChevronRight,
   Download,
-  Printer,
   Plus,
   FilterX,
   User,
-  AlertTriangle,
-  CheckCircle2,
   Banknote,
   MessageCircle,
-  Clock,
   RefreshCw,
-  Settings2,
-  QrCode,
   ScanLine,
   History,
   MoreHorizontal
@@ -398,16 +391,17 @@ export default function PaymentsPage() {
                     <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
                       <th className="py-3 px-4 w-32">Mã TT / Đơn</th>
                       <th className="py-3 px-4">Khách hàng</th>
-                      <th className="py-3 px-4">Tổng đơn</th>
-                      <th className="py-3 px-4">Đã thu</th>
-                      <th className="py-3 px-4">Còn lại</th>
-                      <th className="py-3 px-4">Phương thức</th>
+                      <th className="py-3 px-4 text-center">Tổng đơn</th>
+                      <th className="py-3 px-4 text-center">Đã thu</th>
+                      <th className="py-3 px-4 text-center">Còn lại</th>
+                      <th className="py-3 px-4 text-center">Phương thức</th>
                       <th className="py-3 px-4 text-center">Trạng thái</th>
+                      <th className="py-3 px-4 w-20 text-center">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-[13px]">
                     {paginatedPayments.length === 0 ? (
-                      <EmptyTableRow colSpan={7} message="Không tìm thấy giao dịch nào." className="text-slate-400 py-10" />
+                      <EmptyTableRow colSpan={8} message="Không tìm thấy giao dịch nào." className="text-slate-400 py-10" />
                     ) : null}
                     {paginatedPayments.map((item) => {
                       const isSelected = item.id === selectedId
@@ -429,18 +423,29 @@ export default function PaymentsPage() {
                             <div className="font-semibold text-slate-900">{item.customerName}</div>
                             <div className="text-[11px] text-slate-500 mt-0.5">{item.customerPhone}</div>
                           </td>
-                          <td className="py-3 px-4 font-mono font-semibold text-slate-900">{item.totalAmount}</td>
-                          <td className={`py-3 px-4 font-mono font-semibold ${item.paidAmountClassName}`}>{item.paidAmount}</td>
-                          <td className={`py-3 px-4 font-mono font-bold ${item.remainingAmountClassName}`}>
+                          <td className="py-3 px-4 text-center font-mono font-semibold text-slate-900">{item.totalAmount}</td>
+                          <td className={`py-3 px-4 text-center font-mono font-semibold ${item.paidAmountClassName}`}>{item.paidAmount}</td>
+                          <td className={`py-3 px-4 text-center font-mono font-bold ${item.remainingAmountClassName}`}>
                             {item.remainingAmount}
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-3 px-4 text-center">
                             <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 ${item.methodClassName}`}>
                               {item.methodLabel}
                             </span>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
+                          </td>
+                          <td className="py-3 px-4 text-center">
+                            <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                              <RowActionsMenu
+                                triggerLabel={`Thao tác giao dịch ${item.id}`}
+                                actions={item.actions.map((action) => ({
+                                  ...action,
+                                  onClick: () => handlePaymentAction(item.id, action.label),
+                                }))}
+                              />
+                            </div>
                           </td>
                         </tr>
                       )

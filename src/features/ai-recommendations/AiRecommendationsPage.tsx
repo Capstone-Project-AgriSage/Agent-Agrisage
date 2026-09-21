@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react'
+import { useRef, useState, useMemo } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import { useAuth } from '../../context/AuthContext'
@@ -14,21 +14,18 @@ import { useFilteredList } from '../../hooks/useFilteredList'
 import { usePagination } from '../../hooks/usePagination'
 import { aiCases as INITIAL_AI_CASES } from '../../data/mockAiRecommendations'
 import { products as STORE_PRODUCTS } from '../../data/mockProducts'
-import { downloadCsv } from '../../utils/csv'
 
 import {
   Download,
   AlertTriangle,
   RotateCcw,
   RefreshCw,
-  ZoomIn,
   Pencil,
   X,
   Check,
   CheckCircle,
   Package,
-  ChevronRight,
-  BrainCircuit
+  ChevronRight
 } from 'lucide-react'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -160,8 +157,8 @@ export default function AiRecommendationsPage() {
                     activeIngredient: matchedProduct.description,
                     fitTag: 'Đại lý hiệu chỉnh phác đồ',
                     price: matchedProduct.price,
-                    priceUnit: matchedProduct.stockQuantity.includes('bao') ? '/ bao' : '/ chai',
-                    stockLabel: `Kho: ${matchedProduct.stockQuantity}`,
+                    priceUnit: `/ ${matchedProduct.unit}`,
+                    stockLabel: `Kho: ${matchedProduct.stockQuantity} ${matchedProduct.unit}`,
                     stockNote: 'Sẵn hàng tại kho Thới Lai',
                     reasoning: 'Thẩm định viên chuyên môn đã hiệu chỉnh bệnh thực tế và chỉ định thuốc đặc trị phù hợp.',
                   }
@@ -371,17 +368,16 @@ export default function AiRecommendationsPage() {
                 <th className="py-3 px-4 w-28">Mã ca</th>
                 <th className="py-3 px-4">Nông dân & Thửa</th>
                 <th className="py-3 px-3">Ảnh lá</th>
-                <th className="py-3 px-3">Độ tin cậy</th>
+                <th className="py-3 px-3 text-center">Độ tin cậy</th>
                 <th className="py-3 px-3">Sản phẩm gợi ý</th>
-                <th className="py-3 px-3">Kho Thới Lai</th>
-                <th className="py-3 px-3 w-40">Trạng thái</th>
+                <th className="py-3 px-3 w-40 text-center">Trạng thái</th>
                 <th className="py-3 px-4 w-20 text-center">Thao tác</th>
               </tr>
             </thead>
             
             {filteredCases.length === 0 && (
                <tbody className="divide-y divide-slate-100 text-[13px]">
-                  <EmptyTableRow colSpan={8} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
+                  <EmptyTableRow colSpan={7} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
                </tbody>
             )}
 
@@ -389,7 +385,7 @@ export default function AiRecommendationsPage() {
               <tbody key={groupName} className="divide-y divide-slate-100 text-[13px]">
                 {/* GROUP SUBHEADER */}
                 <tr className="bg-slate-50/80 border-b border-slate-200">
-                  <td colSpan={8} className="py-2 px-4">
+                  <td colSpan={7} className="py-2 px-4">
                     <div className="flex items-center gap-2">
                       <span className="text-[13px] font-bold text-slate-700">{groupName}</span>
                       <span className="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-bold">{groupCases.length} ca</span>
@@ -422,13 +418,8 @@ export default function AiRecommendationsPage() {
                           <img className={`w-full h-full object-cover ${item.imageBlurred ? 'blur-[1px] opacity-80' : ''}`} data-alt={item.imageAlt} src={item.imageSrc} />
                         </div>
                       </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                            <div className={`${item.confidenceBarClassName} h-full rounded-full`} style={{ width: `${item.confidencePercent}%` }}></div>
-                          </div>
-                          <span className={`font-bold text-[11px] tabular-nums ${item.confidenceTextClassName}`}>{item.confidencePercent}%</span>
-                        </div>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`font-bold text-[11px] tabular-nums ${item.confidenceTextClassName}`}>{item.confidencePercent}%</span>
                         <span className={`text-[11px] block mt-1 font-medium ${item.confidenceNoteClassName}`}>{item.confidenceNote}</span>
                       </td>
                       <td className="py-3 px-3">
@@ -442,12 +433,7 @@ export default function AiRecommendationsPage() {
                         )}
                         {!item.productLine ? <div className="text-[11px] text-amber-700 font-bold mt-1">Chưa đủ tin cậy</div> : null}
                       </td>
-                      <td className="py-3 px-3">
-                        <span className={`inline-flex items-center text-[11px] font-bold ${item.stockLabelClassName}`}>
-                          {item.productLine ? item.stockLabel : '—'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 text-center">
                         <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
                       </td>
                       <td className="py-3 px-4 text-center">

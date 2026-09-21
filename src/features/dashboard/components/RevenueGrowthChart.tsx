@@ -1,4 +1,4 @@
-import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis } from 'recharts'
+import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts'
 import { revenueGrowthData } from '../mockSalesData'
 
 export default function RevenueGrowthChart() {

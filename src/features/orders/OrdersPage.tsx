@@ -381,7 +381,7 @@ export default function OrdersPage() {
                   <th className="py-3 px-3">Khách hàng &amp; Xã</th>
                   <th className="py-3 px-3">Thời gian</th>
                   <th className="py-3 px-3">Sản phẩm chính</th>
-                  <th className="py-3 px-3 text-right">Tổng tiền</th>
+                  <th className="py-3 px-3 text-center">Tổng tiền</th>
                   <th className="py-3 px-3 text-center">Thanh toán</th>
                   <th className="py-3 px-3 text-center">Trạng thái</th>
                   <th className="py-3 pr-4 pl-3 text-center">Thao tác</th>
@@ -421,7 +421,7 @@ export default function OrdersPage() {
                         </div>
                         <span className="text-xs text-slate-500">{order.productNote}</span>
                       </td>
-                      <td className="py-3 px-3 text-right font-mono font-semibold text-slate-900 whitespace-nowrap">
+                      <td className="py-3 px-3 text-center font-mono font-semibold text-slate-900 whitespace-nowrap">
                         {order.total}
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">

@@ -1,4 +1,4 @@
-import { BarChart, Bar, ResponsiveContainer, Tooltip, YAxis } from 'recharts'
+import { BarChart, Bar, ResponsiveContainer, Tooltip } from 'recharts'
 import { newOrdersData } from '../mockSalesData'
 
 export default function NewLeadsChart() {

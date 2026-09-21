@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Download, SlidersHorizontal, Plus, Package, History, TrendingDown, AlertTriangle, Ban, DollarSign, FilterX, RefreshCw, Receipt, ArrowRight, X, Settings2, FileText, CheckCircle2, RotateCcw, Box, ShoppingCart, Info, Activity } from 'lucide-react'
+import { ChevronRight, Download, SlidersHorizontal, Plus, Package, History, TrendingDown, AlertTriangle, Ban, DollarSign, RefreshCw, Receipt, ArrowRight, X, FileText, CheckCircle2, ShoppingCart } from 'lucide-react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 import RowActionsMenu from '../../components/ui/RowActionsMenu'
@@ -21,6 +21,14 @@ import {
 import type { InventoryItem, StockMovement, StockAdjustmentReason } from '../../types'
 
 const CATEGORY_OPTIONS = ['Tất cả danh mục', ...new Set(INITIAL_INVENTORY.map((item) => item.categoryLabel))]
+
+const CATEGORY_BADGE_CLASSNAMES: Record<string, string> = {
+  'Phân bón': 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  'Thuốc BVTV': 'bg-amber-50 text-amber-800 border-amber-200',
+  'Lúa giống': 'bg-blue-50 text-blue-800 border-blue-200',
+}
+const getCategoryBadgeClassName = (categoryLabel: string) =>
+  CATEGORY_BADGE_CLASSNAMES[categoryLabel] ?? 'bg-slate-50 text-slate-700 border-slate-200'
 const STOCK_OPTIONS = [
   { value: '', label: 'Tất cả trạng thái' },
   { value: 'Tồn kho tốt', label: 'Tồn kho tốt' },
@@ -156,14 +164,14 @@ export default function InventoryPage() {
       return
     }
     const currentQty = Number.parseInt(restockItem.stockQuantity, 10) || 0
-    const unit = restockItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()
+    const unit = restockItem.unit
     const newQty = currentQty + amount
     setInventoryItems((prev) =>
       prev.map((item) =>
         item.id === restockItem.id
           ? {
               ...item,
-              stockQuantity: `${newQty} ${unit}`.trim(),
+              stockQuantity: String(newQty),
               stockBarClassName: 'bg-emerald-600',
               stockBarWidth: '100%',
               stockLabel: 'Tồn kho tốt',
@@ -203,7 +211,7 @@ export default function InventoryPage() {
       return
     }
     const currentQty = Number.parseInt(targetItem.stockQuantity, 10) || 0
-    const unit = targetItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()
+    const unit = targetItem.unit
     const delta = adjustChangeType === 'decrease' ? -amount : amount
     const newQty = Math.max(0, currentQty + delta)
 
@@ -212,7 +220,7 @@ export default function InventoryPage() {
         item.id === targetItem.id
           ? {
               ...item,
-              stockQuantity: `${newQty} ${unit}`.trim(),
+              stockQuantity: String(newQty),
               stockLabel: newQty === 0 ? 'Hết hàng' : newQty < 20 ? 'Sắp hết' : 'Tồn kho tốt',
               stockClassName:
                 newQty === 0
@@ -259,6 +267,7 @@ export default function InventoryPage() {
         'SKU': item.sku,
         'Danh mục': item.categoryLabel,
         'Số lượng': item.stockQuantity,
+        'Đơn vị': item.unit,
         'Trạng thái': item.stockLabel,
       })),
     )
@@ -307,7 +316,7 @@ export default function InventoryPage() {
       type: 'note',
       content: restockItem ? (
         <p className="text-body-sm text-outline">
-          Tồn hiện tại: <span className="font-semibold text-on-surface">{restockItem.stockQuantity}</span>
+          Tồn hiện tại: <span className="font-semibold text-on-surface">{restockItem.stockQuantity} {restockItem.unit}</span>
         </p>
       ) : null,
     },
@@ -505,8 +514,8 @@ export default function InventoryPage() {
                   <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
                     <th className="py-3 px-4" scope="col">Sản phẩm &amp; Hoạt chất</th>
                     <th className="py-3 px-3" scope="col">SKU</th>
-                    <th className="py-3 px-3" scope="col">Danh mục</th>
-                    <th className="py-3 px-3 text-right" scope="col">Số lượng</th>
+                    <th className="py-3 px-3 text-center" scope="col">Danh mục</th>
+                    <th className="py-3 px-3 text-center" scope="col">Số lượng</th>
                     <th className="py-3 px-3 text-center" scope="col">Trạng thái</th>
                     <th className="py-3 px-3" scope="col">Cập nhật gần nhất</th>
                     <th className="py-3 px-4 text-center w-28" scope="col">Thao tác</th>
@@ -537,20 +546,14 @@ export default function InventoryPage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-3 font-mono text-xs text-slate-500 font-medium">{item.sku}</td>
-                        <td className="py-3.5 px-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">{item.categoryLabel}</span>
-                        </td>
-                        <td className="py-3.5 px-3 text-right">
-                          <div className="flex flex-col items-end">
-                            <span className={`font-semibold font-mono ${item.stockQuantityClassName ?? 'text-slate-900'}`}>{item.stockQuantity}</span>
-                            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden mt-1">
-                              <div className={`h-full rounded-full ${item.stockBarClassName}`} style={{ width: item.stockBarWidth }}></div>
-                            </div>
-                          </div>
+                        <td className="py-3.5 px-3 text-center">
+                          <span className={`inline-flex items-center justify-center min-w-[110px] px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getCategoryBadgeClassName(item.categoryLabel)}`}>{item.categoryLabel}</span>
                         </td>
                         <td className="py-3.5 px-3 text-center">
-                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${item.stockDotClassName}`}></span>
+                          <span className={`font-semibold font-mono ${item.stockQuantityClassName ?? 'text-slate-900'}`}>{item.stockQuantity}</span>
+                        </td>
+                        <td className="py-3.5 px-3 text-center">
+                          <span className={`inline-flex items-center justify-center min-w-[120px] px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
                             {item.stockLabel}
                           </span>
                         </td>
@@ -823,8 +826,8 @@ export default function InventoryPage() {
                     <th className="py-3 px-4" scope="col">Mã GD &amp; Thời gian</th>
                     <th className="py-3 px-3" scope="col">Sản phẩm &amp; SKU</th>
                     <th className="py-3 px-3 text-center" scope="col">Loại biến động</th>
-                    <th className="py-3 px-3 text-right" scope="col">Biến động</th>
-                    <th className="py-3 px-3 text-right" scope="col">Tồn sau GD</th>
+                    <th className="py-3 px-3 text-center" scope="col">Biến động</th>
+                    <th className="py-3 px-3 text-center" scope="col">Tồn sau GD</th>
                     <th className="py-3 px-3" scope="col">Lý do / Tham chiếu</th>
                     <th className="py-3 px-3" scope="col">Người thực hiện</th>
                     <th className="py-3 px-4" scope="col">Ghi chú</th>
@@ -876,7 +879,7 @@ export default function InventoryPage() {
                               : 'Điều chỉnh'}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right">
+                        <td className="py-3 px-3 text-center">
                           <span
                             className={`font-semibold font-mono ${
                               isPositive ? 'text-emerald-600' : 'text-slate-900'
@@ -885,7 +888,7 @@ export default function InventoryPage() {
                             {isPositive ? `+${m.quantityChange}` : m.quantityChange} {m.unit}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right">
+                        <td className="py-3 px-3 text-center">
                           <span className="font-mono text-sm font-bold text-slate-900 tabular-nums">
                             {m.balanceAfter} <span className="font-normal text-xs text-slate-500">{m.unit}</span>
                           </span>
@@ -944,18 +947,14 @@ export default function InventoryPage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-mono text-[12px] text-slate-500 font-medium px-2 py-0.5 bg-slate-50 border border-slate-200 rounded">{selectedItem.sku}</span>
               <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">{selectedItem.categoryLabel}</span>
-              <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium border ${selectedItem.stockClassName}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${selectedItem.stockDotClassName}`}></span>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${selectedItem.stockClassName}`}>
                 {selectedItem.stockLabel}
               </span>
             </div>
             <div className="pt-2 border-t border-slate-100">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+              <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>Số lượng</span>
                 <span className="font-semibold text-slate-900 tabular-nums">{selectedItem.stockQuantity}</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full ${selectedItem.stockBarClassName}`} style={{ width: selectedItem.stockBarWidth }}></div>
               </div>
             </div>
             <div className="text-xs text-slate-500">
@@ -1036,13 +1035,13 @@ export default function InventoryPage() {
                 >
                   {inventoryItems.map((item) => (
                     <option key={item.id} value={item.id}>
-                      {item.name} ({item.sku}) - Hiện tồn: {item.stockQuantity}
+                      {item.name} ({item.sku}) - Hiện tồn: {item.stockQuantity} {item.unit}
                     </option>
                   ))}
                 </select>
                 {adjustItem && (
                   <p className="mt-1.5 text-xs text-slate-500">
-                    Hiện tại kho ghi nhận: <strong className="text-slate-900">{adjustItem.stockQuantity}</strong>
+                    Hiện tại kho ghi nhận: <strong className="text-slate-900">{adjustItem.stockQuantity} {adjustItem.unit}</strong>
                   </p>
                 )}
               </div>
@@ -1095,7 +1094,7 @@ export default function InventoryPage() {
                     className="flex-1 px-3 py-2 rounded-xl border border-slate-200 bg-white text-slate-900 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-semibold"
                   />
                   <span className="text-xs font-semibold text-slate-500 px-3 py-2 bg-slate-50 rounded-xl border border-slate-200">
-                    {adjustItem?.stockQuantity.replace(/^[0-9.,\s]+/, '').trim() || 'đơn vị'}
+                    {adjustItem?.unit || 'đơn vị'}
                   </span>
                 </div>
               </div>
@@ -1147,7 +1146,7 @@ export default function InventoryPage() {
                           ? -(Number.parseInt(adjustAmount, 10) || 0)
                           : Number.parseInt(adjustAmount, 10) || 0),
                     )}{' '}
-                    {adjustItem.stockQuantity.replace(/^[0-9.,\s]+/, '').trim()}
+                    {adjustItem.unit}
                   </span>
                 </div>
               )}

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { Calendar, DollarSign, Briefcase, Download, ChevronDown, MoreVertical, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from 'lucide-react'
 import NewLeadsChart from './components/NewLeadsChart'
@@ -11,7 +10,6 @@ import { revenueByRegionData, actionItemsData } from './mockSalesData'
 
 import { orders as ALL_ORDERS } from '../../data/mockOrders'
 import { debtCustomers as ALL_DEBT_CUSTOMERS } from '../../data/mockDebts'
-import { payments as ALL_PAYMENTS } from '../../data/mockPayments'
 import { parseVnd, formatVnd } from '../../utils/money'
 
 export default function DashboardPage() {
@@ -221,8 +219,8 @@ export default function DashboardPage() {
                 <th className="py-3 px-4 whitespace-nowrap">Khách Hàng</th>
                 <th className="py-3 px-4 min-w-[200px]">Sản Phẩm</th>
                 <th className="py-3 px-4 text-center whitespace-nowrap">Trạng Thái</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Tổng Tiền</th>
-                <th className="py-3 px-4 text-right whitespace-nowrap">Thanh Toán</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">Tổng Tiền</th>
+                <th className="py-3 px-4 text-center whitespace-nowrap">Thanh Toán</th>
                 <th className="py-3 px-4 w-12"></th>
               </tr>
             </thead>
@@ -248,10 +246,10 @@ export default function DashboardPage() {
                       {order.statusBadge.label}
                     </span>
                   </td>
-                  <td className="py-3 px-4 font-mono font-bold text-slate-900 text-right whitespace-nowrap">
+                  <td className="py-3 px-4 font-mono font-bold text-slate-900 text-center whitespace-nowrap">
                     {order.total}
                   </td>
-                  <td className="py-3 px-4 text-right whitespace-nowrap">
+                  <td className="py-3 px-4 text-center whitespace-nowrap">
                     <span className={`px-2 py-1 rounded-full text-[10px] font-medium border ${
                       order.paymentBadge.label.includes('Gối nợ') ? 'border-red-200 text-red-700 bg-white' :
                       order.paymentBadge.label.includes('Cọc') ? 'border-amber-200 text-amber-700 bg-white' :

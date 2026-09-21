@@ -12,7 +12,8 @@ export const products: Product[] = [
     stockLabel: 'Sắp hết',
     stockClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
     stockDotClassName: 'bg-[#D97706]',
-    stockQuantity: '14 bao',
+    stockQuantity: '14',
+    unit: 'bao',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -31,7 +32,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '182 gói',
+    stockQuantity: '182',
+    unit: 'gói',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -50,7 +52,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '186 bao',
+    stockQuantity: '186',
+    unit: 'bao',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -69,7 +72,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '95 chai',
+    stockQuantity: '95',
+    unit: 'chai',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -88,7 +92,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '310 bao',
+    stockQuantity: '310',
+    unit: 'bao',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -107,7 +112,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '76 gói',
+    stockQuantity: '76',
+    unit: 'gói',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -126,7 +132,8 @@ export const products: Product[] = [
     stockLabel: 'Sắp hết',
     stockClassName: 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]',
     stockDotClassName: 'bg-[#D97706]',
-    stockQuantity: '18 chai',
+    stockQuantity: '18',
+    unit: 'chai',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -145,7 +152,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '140 chai',
+    stockQuantity: '140',
+    unit: 'chai',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },
@@ -164,7 +172,8 @@ export const products: Product[] = [
     stockLabel: 'Còn hàng',
     stockClassName: 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
     stockDotClassName: 'bg-[#16A34A]',
-    stockQuantity: '60 chai',
+    stockQuantity: '60',
+    unit: 'chai',
     businessStatus: 'Đang kinh doanh',
     actions: [
       { label: 'Xem chi tiết', icon: 'visibility' },

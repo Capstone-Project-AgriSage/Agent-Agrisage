@@ -200,7 +200,7 @@ export default function ContactPage() {
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-xs uppercase tracking-wider text-slate-500 select-none">
                 <th className="py-3 px-4 font-semibold" scope="col">Người gửi &amp; Liên hệ</th>
-                <th className="py-3 px-3 font-semibold" scope="col">Loại yêu cầu</th>
+                <th className="py-3 px-3 font-semibold text-center" scope="col">Loại yêu cầu</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Nội dung</th>
                 <th className="py-3 px-3 font-semibold" scope="col">Thời gian gửi</th>
                 <th className="py-3 px-3 font-semibold text-center" scope="col">Trạng thái</th>
@@ -230,7 +230,7 @@ export default function ContactPage() {
                         {request.senderPhone} · {request.channel}
                       </div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-3 text-center">
                       <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">
                         {request.requestType}
                       </span>

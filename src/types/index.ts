@@ -463,6 +463,7 @@ export interface Product {
   stockClassName: string
   stockDotClassName: string
   stockQuantity: string
+  unit: string
   businessStatus: string
   rowClassName?: string
   actions: RowAction[]
@@ -475,6 +476,7 @@ export interface InventoryItem {
   sku: string
   categoryLabel: string
   stockQuantity: string
+  unit: string
   stockQuantityClassName?: string
   stockBarClassName: string
   stockBarWidth: string

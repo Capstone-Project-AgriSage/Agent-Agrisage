@@ -28,7 +28,8 @@ import {
   ArrowRight,
   Brain,
   Contact,
-  Pencil
+  Pencil,
+  ChevronRight
 } from 'lucide-react'
 
 const MODULE_OPTIONS = ['Tất cả phân hệ', 'Đơn hàng', 'Giao hàng', 'Thanh toán', 'Công nợ', 'Gợi ý AI', 'Kho hàng', 'Sản phẩm', 'Nông dân']
@@ -225,8 +226,8 @@ export default function ActivityLogPage() {
                   <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
                     <th className="py-3 px-4">Thời gian</th>
                     <th className="py-3 px-4">Người thực hiện</th>
-                    <th className="py-3 px-3">Phân hệ</th>
-                    <th className="py-3 px-3">Thao tác</th>
+                    <th className="py-3 px-3 text-center">Phân hệ</th>
+                    <th className="py-3 px-3 text-center">Thao tác</th>
                     <th className="py-3 px-3">Đối tượng</th>
                     <th className="py-3 px-4 min-w-[200px]">Mô tả nghiệp vụ</th>
                     <th className="py-3 px-3 text-center">Kết quả</th>
@@ -256,22 +257,15 @@ export default function ActivityLogPage() {
                           {entry.timeNote ? <div className="text-[10px] text-slate-400">{entry.timeNote}</div> : null}
                         </td>
                         <td className="py-3 px-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2.5">
-                            <div
-                              className={`w-7 h-7 rounded-full text-white text-[11px] font-bold flex items-center justify-center ${entry.actorAvatarClassName}`}
-                            >
-                              {entry.actorInitials}
-                            </div>
-                            <span className="font-semibold text-slate-900">{entry.actorName}</span>
-                          </div>
+                          <span className="font-semibold text-slate-900">{entry.actorName}</span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-bold border ${entry.moduleClassName}`}>
+                        <td className="py-3 px-3 whitespace-nowrap text-center">
+                          <span className={`inline-flex items-center justify-center min-w-[100px] px-2 py-0.5 rounded text-[11px] font-bold border ${entry.moduleClassName}`}>
                             {entry.moduleLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap">
-                          <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${entry.actionClassName}`}>
+                        <td className="py-3 px-3 whitespace-nowrap text-center">
+                          <span className={`inline-flex items-center justify-center min-w-[100px] px-2 py-0.5 rounded text-[11px] font-semibold ${entry.actionClassName}`}>
                             {entry.actionLabel}
                           </span>
                         </td>

@@ -197,8 +197,8 @@ export default function FarmersPage() {
                   <th className="py-3 px-3">Số điện thoại</th>
                   <th className="py-3 px-3">Khu vực</th>
                   <th className="py-3 px-3">Đơn gần nhất</th>
-                  <th className="py-3 px-3 text-right">Tổng mua</th>
-                  <th className="py-3 px-3 text-right">Công nợ</th>
+                  <th className="py-3 px-3 text-center">Tổng mua</th>
+                  <th className="py-3 px-3 text-center">Công nợ</th>
                   <th className="py-3 px-3">Hoạt động</th>
                   <th className="py-3 px-3 text-center">Trạng thái</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
@@ -219,24 +219,15 @@ export default function FarmersPage() {
                       }`}
                     >
                       <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-9 h-9 rounded-full font-semibold flex items-center justify-center text-xs flex-shrink-0 ${
-                              isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {farmer.initials}
-                          </div>
-                          <div>
-                            <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                              <span className="">{farmer.name}</span>
-                              {farmer.verified ? (
-                                <CheckCircle2 size={14} className="text-emerald-500" title="Đã xác thực" />
-                              ) : null}
-                            </div>
-                            <div className="text-[11px] text-slate-500">#{farmer.id}</div>
-                          </div>
+                        <div className="font-semibold text-slate-900 flex items-center gap-1.5">
+                          <span className="">{farmer.name}</span>
+                          {farmer.verified ? (
+                            <span title="Đã xác thực">
+                              <CheckCircle2 size={14} className="text-emerald-500" />
+                            </span>
+                          ) : null}
                         </div>
+                        <div className="text-[11px] text-slate-500">#{farmer.id}</div>
                       </td>
                       <td className="py-3.5 px-3 font-medium text-slate-700 text-xs">{farmer.phone}</td>
                       <td className="py-3.5 px-3 text-slate-600 truncate max-w-[130px] text-xs" title={farmer.areaTitle}>
@@ -246,8 +237,8 @@ export default function FarmersPage() {
                         <span className="font-medium text-slate-900 text-xs">{farmer.lastOrderId}</span>
                         <span className="block text-[11px] text-slate-500">{farmer.lastOrderAgo}</span>
                       </td>
-                      <td className="py-3.5 px-3 text-right font-semibold text-slate-900 text-xs tabular-nums">{farmer.totalPurchaseLabel}</td>
-                      <td className="py-3.5 px-3 text-right">
+                      <td className="py-3.5 px-3 text-center font-semibold text-slate-900 text-xs tabular-nums">{farmer.totalPurchaseLabel}</td>
+                      <td className="py-3.5 px-3 text-center">
                         {farmer.hasDebt ? (
                           <>
                             <span
@@ -314,21 +305,16 @@ export default function FarmersPage() {
           <div className="flex flex-col overflow-hidden">
           {/* Detail Panel Header */}
           <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 font-bold text-base flex items-center justify-center shadow-sm">
-                {selectedFarmer.initials}
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg text-slate-900 font-bold">{selectedFarmer.name}</h3>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
+                  #{selectedFarmer.id}
+                </span>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="text-lg text-slate-900 font-bold">{selectedFarmer.name}</h3>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600 font-semibold border border-slate-200">
-                    #{selectedFarmer.id}
-                  </span>
-                </div>
-                <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                  <Phone size={12} className="text-slate-400" />
-                  <span className="font-medium text-slate-700">{selectedFarmer.phone}</span>
-                </div>
+              <div className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
+                <Phone size={12} className="text-slate-400" />
+                <span className="font-medium text-slate-700">{selectedFarmer.phone}</span>
               </div>
             </div>
             <StatusBadge label={selectedFarmer.statusBadge.label} className={selectedFarmer.statusBadge.className} />

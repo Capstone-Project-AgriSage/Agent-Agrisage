@@ -34,7 +34,6 @@ import {
   Phone,
   AlertTriangle,
   Flag,
-  Truck,
   Check,
   X,
   Radio
@@ -416,7 +415,7 @@ export default function DeliveryPage() {
                 <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
                   <th className="py-3 px-4">Mã GH / Đơn</th>
                   <th className="py-3 px-4">Khách hàng &amp; Địa chỉ</th>
-                  <th className="py-3 px-4 text-right">Thu COD</th>
+                  <th className="py-3 px-4 text-center">Thu COD</th>
                   <th className="py-3 px-4 text-center">Trạng thái</th>
                   <th className="py-3 px-4 text-right">Thao tác</th>
                 </tr>
@@ -447,7 +446,7 @@ export default function DeliveryPage() {
                           {trip.addressShort}
                         </div>
                       </td>
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-center">
                         <div className={trip.codAmountClassName}>{trip.codAmountLabel}</div>
                         <span className={`inline-block px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-semibold ${trip.codBadge.className}`}>
                           {trip.codBadge.label}

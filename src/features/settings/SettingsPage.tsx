@@ -1,19 +1,5 @@
 import { useState } from 'react'
-import {
-  Mail,
-  Pencil,
-  MoreHorizontal,
-  CheckCircle2,
-  CalendarDays,
-  Network,
-  Clock,
-  Save,
-  Check,
-  Settings2,
-  Key,
-  Eye,
-  EyeOff
-} from 'lucide-react'
+import { Mail, Pencil, MoreHorizontal, CheckCircle2, CalendarDays, Network, Clock } from 'lucide-react'
 import { usePageHeader } from '../../context/PageHeaderContext'
 import { useToast } from '../../context/ToastContext'
 
@@ -22,24 +8,6 @@ const DEFAULT_PROFILE = {
   phone: '0918.234.567',
   email: 'minh.nguyen@agrisage.vn',
 }
-
-const DEFAULT_NOTIFICATIONS = {
-  newOrder: { inApp: true, email: true },
-  pendingPayment: { inApp: true, email: true },
-  debtDue: { inApp: true, email: false },
-  lowStock: { inApp: true, email: true },
-  aiPending: { inApp: true, email: false },
-}
-
-type NotificationKey = keyof typeof DEFAULT_NOTIFICATIONS
-
-const NOTIFICATION_ROWS: { key: NotificationKey; title: string; description: string }[] = [
-  { key: 'newOrder', title: 'Đơn hàng mới', description: 'Nhận thông báo khi nông dân đặt vật tư' },
-  { key: 'pendingPayment', title: 'Thanh toán chờ xác nhận', description: 'Giao dịch tiền mặt chờ khớp' },
-  { key: 'debtDue', title: 'Công nợ sắp đến hạn', description: 'Cảnh báo nợ gối đầu sắp quá hạn' },
-  { key: 'lowStock', title: 'Sản phẩm sắp hết', description: 'Tồn kho dưới ngưỡng tại trạm' },
-  { key: 'aiPending', title: 'Gợi ý AI chờ duyệt', description: 'Ảnh bệnh mới tải lên chờ xác nhận' },
-]
 
 type TabKey = 'overview' | 'personal' | 'employment' | 'compensation' | 'timeoff' | 'documents'
 
@@ -52,15 +20,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'documents', label: 'Tài liệu' },
 ]
 
-function NotificationToggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
-  return (
-    <label className="inline-flex items-center cursor-pointer relative">
-      <input checked={checked} onChange={onChange} className="sr-only peer" type="checkbox" />
-      <div className="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-slate-900"></div>
-    </label>
-  )
-}
-
 export default function SettingsPage() {
   // Clear the global header since we are doing a full-page custom layout
   usePageHeader({ title: '' })
@@ -71,18 +30,9 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState(DEFAULT_PROFILE)
   const [profileDraft, setProfileDraft] = useState(DEFAULT_PROFILE)
 
-  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)
-  const toggleNotification = (key: NotificationKey, channel: 'inApp' | 'email') => {
-    setNotifications((prev) => ({ ...prev, [key]: { ...prev[key], [channel]: !prev[key][channel] } }))
-  }
-
-  const [theme, setTheme] = useState<'light' | 'system'>('light')
-
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
 
   const handleSaveProfile = () => {
     setProfile(profileDraft)
