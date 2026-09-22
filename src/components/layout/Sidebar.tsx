@@ -35,17 +35,45 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const totalDebtRemaining = debtCustomers.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const pendingAiCount = aiCases.filter((c) => c.statusBadge.label === 'Chờ duyệt').length
 
-  const navItems: NavItem[] = [
-    { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
-    { label: 'Sản phẩm', to: '/products', icon: 'category', badge: String(products.length) },
-    { label: 'Kho hàng (Lite)', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
-    { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: String(orders.length), badgeTone: 'primary' },
-    { label: 'Thanh toán VietQR', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
-    { label: 'Sổ nợ mùa vụ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
-    { label: 'Hàng đợi AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error', iconTone: 'primary' },
-    { label: 'Nông dân', to: '/farmers', icon: 'groups' },
-    { label: 'Nhật ký kiểm toán', to: '/activity-log', icon: 'history_toggle_off' },
-    { label: 'Cài đặt', to: '/settings', icon: 'settings' },
+  const navGroups: { title: string, items: NavItem[] }[] = [
+    {
+      title: 'Chung',
+      items: [
+        { label: 'Tổng quan', to: '/', icon: 'dashboard', iconTone: 'primary' },
+        { label: 'Đơn hàng', to: '/orders', icon: 'receipt_long', badge: String(orders.length), badgeTone: 'primary' },
+        { label: 'Thanh toán VietQR', to: '/payments', icon: 'payments', badge: `${unpaidPaymentCount} chờ`, badgeTone: 'primary' },
+        ...(user.can_review_ai ? [{ label: 'Hàng đợi AI', to: '/ai-recommendations', icon: 'psychology', badge: String(pendingAiCount), badgeTone: 'error' as const, iconTone: 'primary' as const }] : [])
+      ]
+    },
+    {
+      title: 'Quản lý kho & Sản phẩm',
+      items: [
+        { label: 'Sản phẩm', to: '/products', icon: 'category', badge: String(products.length) },
+        { label: 'Tồn kho', to: '/inventory', icon: 'inventory_2', badge: String(inventoryAlertCount), badgeTone: 'error' },
+        { label: 'Biến động kho', to: '/inventory/movements', icon: 'sync_alt' },
+        { label: 'Kiểm kê', to: '/inventory/stocktake', icon: 'fact_check' },
+        { label: 'Giao hàng', to: '/deliveries', icon: 'local_shipping' },
+      ]
+    },
+    {
+      title: 'Mua hàng & Công nợ',
+      items: [
+        { label: 'Nhà cung cấp', to: '/purchases/suppliers', icon: 'storefront' },
+        { label: 'Phiếu nhập hàng', to: '/purchases/orders', icon: 'shopping_cart' },
+        { label: 'Mua chịu (Seasonal)', to: '/debts/seasonal-credit', icon: 'credit_score' },
+        { label: 'Sổ nợ mùa vụ', to: '/debts', icon: 'pending_actions', badge: formatVndShort(totalDebtRemaining), badgeTone: 'warning' },
+      ]
+    },
+    {
+      title: 'Cộng đồng & Quản trị',
+      items: [
+        { label: 'Nông dân', to: '/farmers', icon: 'groups' },
+        { label: 'Đánh giá sản phẩm', to: '/products/reviews', icon: 'reviews' },
+        { label: 'Nhân sự', to: '/staff', icon: 'manage_accounts' },
+        { label: 'Nhật ký kiểm toán', to: '/activity-log', icon: 'history_toggle_off' },
+        { label: 'Cài đặt', to: '/settings', icon: 'settings' },
+      ]
+    }
   ]
 
   return (
@@ -94,46 +122,57 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </div>
       </div>
 
-      <nav aria-label="Main Operations Navigation" className="flex-1 min-h-0 overflow-y-auto space-y-0.5 px-space-xs">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-space-md py-space-sm font-label-md text-label-md rounded transition-all ${
-                  isActive
-                    ? 'bg-surface-container text-primary font-title-md text-title-md border-r-2 border-primary rounded-l'
-                    : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
-                }`
-              }
-            >
-              {({ isActive }) => (
-                <>
-                  <div className="flex items-center gap-space-sm">
-                    <span
-                      className={`material-symbols-outlined text-[20px] ${
-                        isActive || item.iconTone === 'primary' ? 'text-primary' : ''
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                    <span>{item.label}</span>
-                  </div>
-                  {item.badge ? (
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[11px] tabular-nums ${badgeClasses(item.badgeTone)}`}
-                    >
-                      {item.badge}
-                    </span>
-                  ) : isActive ? (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
-                  ) : null}
-                </>
-              )}
-            </NavLink>
-          ))}
+      <nav aria-label="Main Operations Navigation" className="flex-1 min-h-0 overflow-y-auto px-space-xs pb-4">
+        {navGroups.map((group, groupIdx) => (
+          <div key={groupIdx} className={groupIdx > 0 ? 'mt-4' : ''}>
+            {group.title && (
+              <div className="px-space-md py-2 text-[10px] font-bold uppercase tracking-wider text-outline">
+                {group.title}
+              </div>
+            )}
+            <div className="space-y-0.5">
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === '/'}
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center justify-between px-space-md py-space-sm font-label-md text-label-md rounded transition-all ${
+                      isActive
+                        ? 'bg-surface-container text-primary font-title-md text-title-md border-r-2 border-primary rounded-l'
+                        : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div className="flex items-center gap-space-sm">
+                        <span
+                          className={`material-symbols-outlined text-[20px] ${
+                            isActive || item.iconTone === 'primary' ? 'text-primary' : ''
+                          }`}
+                        >
+                          {item.icon}
+                        </span>
+                        <span>{item.label}</span>
+                      </div>
+                      {item.badge ? (
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[11px] tabular-nums ${badgeClasses(item.badgeTone)}`}
+                        >
+                          {item.badge}
+                        </span>
+                      ) : isActive ? (
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                      ) : null}
+                    </>
+                  )}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        ))}
       </nav>
 
       <div className="shrink-0 px-space-xs pt-space-sm border-t border-outline-variant">

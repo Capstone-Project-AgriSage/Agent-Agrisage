@@ -21,6 +21,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {
@@ -43,6 +44,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {
@@ -65,6 +67,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {
@@ -87,6 +90,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {
@@ -109,6 +113,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {
@@ -131,6 +136,7 @@ export const inventoryItems: InventoryItem[] = [
       { label: 'Xem chi tiết', icon: 'visibility' },
       { label: 'Điều chỉnh kho', icon: 'tune' },
       { label: 'Nhập hàng ngay', icon: 'add_circle', tone: 'primary' },
+      { label: 'Ngừng kinh doanh', icon: 'block' },
     ],
   },
   {

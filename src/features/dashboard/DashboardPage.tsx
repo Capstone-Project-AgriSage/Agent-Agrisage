@@ -22,6 +22,14 @@ export default function DashboardPage() {
   const debtHouseholds = ALL_DEBT_CUSTOMERS.filter((c) => parseVnd(c.remaining) > 0)
   const totalDebtRemaining = debtHouseholds.reduce((sum, c) => sum + parseVnd(c.remaining), 0)
   const todayOrders = ALL_ORDERS.filter(o => o.timeRest === 'Hôm nay')
+  
+  // New KPIs for Phase 3
+  const pendingOrdersCount = ALL_ORDERS.filter(o => o.statusBadge.label === 'Đang xử lý').length
+  const pendingVietQrCount = 2 // Mock value for PENDING_VERIFICATION
+  const pendingAiReviewsCount = 5 // Mock value for AI cases
+  const lowStockCount = 8 // Mock value for Low Stock products
+  const activeDeliveriesCount = 3 // Mock value for delivering trips
+
 
   return (
     <div className="space-y-4 pb-12">
@@ -96,6 +104,33 @@ export default function DashboardPage() {
           <RevenueGrowthChart />
           <div className="mt-2 text-xs font-medium text-slate-500">
             Tăng trưởng +35% so với năm ngoái
+          </div>
+        </div>
+      </section>
+
+      {/* NEW SECTION: Alerts & Pending Actions */}
+      <section className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+        <h2 className="text-base font-bold text-slate-900 mb-4">Cần Xử Lý & Cảnh Báo</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="p-3 border border-amber-200 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
+            <div className="text-xs font-semibold text-amber-700">Đơn chờ xử lý</div>
+            <div className="text-2xl font-bold text-amber-900 mt-1">{pendingOrdersCount}</div>
+          </div>
+          <div className="p-3 border border-indigo-200 bg-indigo-50 rounded-lg cursor-pointer hover:bg-indigo-100 transition-colors">
+            <div className="text-xs font-semibold text-indigo-700">Thanh toán VietQR chờ</div>
+            <div className="text-2xl font-bold text-indigo-900 mt-1">{pendingVietQrCount}</div>
+          </div>
+          <div className="p-3 border border-purple-200 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+            <div className="text-xs font-semibold text-purple-700">Ca AI chờ review</div>
+            <div className="text-2xl font-bold text-purple-900 mt-1">{pendingAiReviewsCount}</div>
+          </div>
+          <div className="p-3 border border-rose-200 bg-rose-50 rounded-lg cursor-pointer hover:bg-rose-100 transition-colors">
+            <div className="text-xs font-semibold text-rose-700">Sản phẩm sắp hết hàng</div>
+            <div className="text-2xl font-bold text-rose-900 mt-1">{lowStockCount}</div>
+          </div>
+          <div className="p-3 border border-blue-200 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+            <div className="text-xs font-semibold text-blue-700">Đang giao hàng</div>
+            <div className="text-2xl font-bold text-blue-900 mt-1">{activeDeliveriesCount}</div>
           </div>
         </div>
       </section>

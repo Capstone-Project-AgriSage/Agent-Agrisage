@@ -16,9 +16,19 @@ import {
   mockDebtPaymentRequests as INITIAL_PAYMENT_REQUESTS,
   debtCustomers as INITIAL_DEBT_CUSTOMERS,
 } from '../../data/mockDebts'
-import { parseVnd, formatVnd } from '../../utils/money'
+import { parseVnd, formatVnd, formatVndShort } from '../../utils/money'
 import { downloadCsv } from '../../utils/csv'
 import type { CreditRequest, DebtPaymentRequest } from '../../types'
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts'
 
 import {
   ChevronRight,
@@ -332,6 +342,42 @@ export default function DebtsPage() {
               <div className="text-xs text-slate-500 pt-1 border-t border-slate-100">
                 Thu hồi từ thu hoạch lúa sớm
               </div>
+            </div>
+          </section>
+
+          {/* BIỂU ĐỒ TỔNG QUAN CÔNG NỢ */}
+          <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm shrink-0">
+            <h3 className="text-sm font-bold text-slate-900 mb-4">Biến động công nợ qua các tháng (Mức độ thu - chi)</h3>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={[
+                    { name: 'Tháng 5', phatSinh: 40000000, thuHoi: 15000000 },
+                    { name: 'Tháng 6', phatSinh: 60000000, thuHoi: 25000000 },
+                    { name: 'Tháng 7', phatSinh: 85000000, thuHoi: 30000000 },
+                    { name: 'Tháng 8', phatSinh: 35000000, thuHoi: 65000000 },
+                    { name: 'Tháng 9', phatSinh: 15000000, thuHoi: 90000000 },
+                    { name: 'Tháng 10', phatSinh: 12000000, thuHoi: 42000000 },
+                  ]}
+                  margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748B' }} dy={10} />
+                  <YAxis 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fontSize: 12, fill: '#64748B' }} 
+                    tickFormatter={(value) => `${value / 1000000}Tr`}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: '#F1F5F9' }}
+                    formatter={(value: any) => [formatVndShort(value as number), undefined]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
+                  <Bar dataKey="phatSinh" name="Phát sinh nợ mới" fill="#F59E0B" radius={[4, 4, 0, 0]} barSize={32} />
+                  <Bar dataKey="thuHoi" name="Đã thu hồi" fill="#10B981" radius={[4, 4, 0, 0]} barSize={32} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </section>
 

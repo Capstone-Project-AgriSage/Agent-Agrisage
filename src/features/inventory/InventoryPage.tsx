@@ -142,6 +142,21 @@ export default function InventoryPage() {
       setRestockOpen(true)
       return
     }
+    if (label === 'Ngừng kinh doanh' || label === 'Tiếp tục kinh doanh') {
+      const item = inventoryItems.find((i) => i.id === id)
+      if (!item) return
+      
+      const isCurrentlyActive = label === 'Ngừng kinh doanh'
+      setInventoryItems(prev => prev.map(i => i.id === id ? {
+        ...i,
+        stockClassName: isCurrentlyActive ? 'bg-slate-100 text-slate-500 border-slate-200' : 'bg-[#DCFCE7] text-[#15803D] border-[#86EFAC]',
+        stockLabel: isCurrentlyActive ? 'Ngừng KD' : 'Tồn kho tốt',
+        actions: i.actions.map(a => a.label === label ? { ...a, label: isCurrentlyActive ? 'Tiếp tục kinh doanh' : 'Ngừng kinh doanh', icon: isCurrentlyActive ? 'play_arrow' : 'block' } : a)
+      } : i))
+      
+      showToast(`Đã ${isCurrentlyActive ? 'ngừng' : 'tiếp tục'} kinh doanh sản phẩm ${item.name}`)
+      return
+    }
     if (label === 'Điều chỉnh kho') {
       setAdjustItem(inventoryItems.find((i) => i.id === id) ?? null)
       setAdjustChangeType('decrease')

@@ -25,7 +25,7 @@ import {
   Check,
   CheckCircle,
   Package,
-  ChevronRight
+  ChevronRight,
 } from 'lucide-react'
 
 const STATUS_LABELS: Record<string, string> = {
@@ -115,14 +115,14 @@ export default function AiRecommendationsPage() {
       prev.map((c) =>
         c.id === id
           ? {
-              ...c,
-              status: 'Đã phê duyệt',
-              statusBadge: { label: 'Đã phê duyệt', className: 'bg-emerald-100 text-emerald-800 border border-emerald-300', dotClassName: 'bg-emerald-600' },
-              panelBadge: { label: 'Đã gửi đến nông dân', className: 'bg-emerald-100 text-emerald-800', dotClassName: 'bg-emerald-600' },
-              actionsMode: 'sent' as const,
-              rowClassName: undefined,
-              agentNote: note || c.agentNote,
-            }
+            ...c,
+            status: 'Đã phê duyệt',
+            statusBadge: { label: 'Đã phê duyệt', className: 'bg-emerald-100 text-emerald-800 border border-emerald-300', dotClassName: 'bg-emerald-600' },
+            panelBadge: { label: 'Đã gửi đến nông dân', className: 'bg-emerald-100 text-emerald-800', dotClassName: 'bg-emerald-600' },
+            actionsMode: 'sent' as const,
+            rowClassName: undefined,
+            agentNote: note || c.agentNote,
+          }
           : c,
       ),
     )
@@ -178,13 +178,13 @@ export default function AiRecommendationsPage() {
       prev.map((c) =>
         c.id === id
           ? {
-              ...c,
-              status: 'Đã từ chối',
-              statusBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700 border border-slate-300', dotClassName: 'bg-slate-500' },
-              panelBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700', dotClassName: 'bg-slate-500' },
-              rowClassName: undefined,
-              rejectReasonLabel: reasonLabel,
-            }
+            ...c,
+            status: 'Đã từ chối',
+            statusBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700 border border-slate-300', dotClassName: 'bg-slate-500' },
+            panelBadge: { label: 'Đã từ chối', className: 'bg-slate-200 text-slate-700', dotClassName: 'bg-slate-500' },
+            rowClassName: undefined,
+            rejectReasonLabel: reasonLabel,
+          }
           : c,
       ),
     )
@@ -218,15 +218,15 @@ export default function AiRecommendationsPage() {
       // 1. Text Search
       const matchKey = !keyword || item.id.toLowerCase().includes(keyword) || item.farmerName.toLowerCase().includes(keyword) || item.field.farmerPhone.toLowerCase().includes(keyword)
       // 2. Tab Filter
-      const matchTab = activeTab === 'all' || 
-                       (activeTab === 'pending' && item.statusBadge.label === 'Chờ duyệt') ||
-                       (activeTab === 'approved' && item.statusBadge.label === 'Đã phê duyệt') ||
-                       (activeTab === 'rejected' && item.statusBadge.label === 'Đã từ chối')
+      const matchTab = activeTab === 'all' ||
+        (activeTab === 'pending' && item.statusBadge.label === 'Chờ duyệt') ||
+        (activeTab === 'approved' && item.statusBadge.label === 'Đã phê duyệt') ||
+        (activeTab === 'rejected' && item.statusBadge.label === 'Đã từ chối')
       // 3. Dropdowns
       const matchStatus = !statusFilter || item.statusBadge.label === STATUS_LABELS[statusFilter]
       const matchDisease = !diseaseFilter || item.diseaseLabel.includes(DISEASE_KEYWORDS[diseaseFilter])
       const matchConf = !confidenceFilter || CONFIDENCE_RANGES[confidenceFilter](item.confidencePercent)
-      
+
       return matchKey && matchTab && matchStatus && matchDisease && matchConf
     },
     '',
@@ -273,7 +273,7 @@ export default function AiRecommendationsPage() {
 
   return (
     <div className="bg-white -m-4 lg:-m-6 p-4 lg:p-8 min-h-[calc(100vh-4rem)] text-slate-900">
-      
+
       {/* Title & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
@@ -304,11 +304,10 @@ export default function AiRecommendationsPage() {
           <button
             key={tab.key}
             onClick={() => { setActiveTab(tab.key); setPage(1) }}
-            className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${
-              activeTab === tab.key
-                ? 'border-slate-900 text-slate-900'
-                : 'border-transparent text-slate-500 hover:text-slate-700'
-            }`}
+            className={`pb-3 text-sm font-semibold transition-colors border-b-2 whitespace-nowrap ${activeTab === tab.key
+              ? 'border-slate-900 text-slate-900'
+              : 'border-transparent text-slate-500 hover:text-slate-700'
+              }`}
           >
             {tab.label}
           </button>
@@ -325,7 +324,7 @@ export default function AiRecommendationsPage() {
               <p className="text-[13px] text-amber-700 mt-0.5">Có {uncertainCount} ca thẩm định chưa đủ độ tin cậy (dưới 70%), kỹ sư cần kiểm tra kỹ lại ảnh hoặc yêu cầu khảo sát thực địa trước khi duyệt.</p>
             </div>
           </div>
-          <button 
+          <button
             className="shrink-0 text-[13px] font-semibold text-amber-900 hover:text-amber-700 flex items-center gap-1"
             onClick={() => { setStatusFilter('chua-chac-chan'); setActiveTab('all') }}
           >
@@ -347,7 +346,7 @@ export default function AiRecommendationsPage() {
         <FilterSelect value={diseaseFilter} onChange={setDiseaseFilter} options={DISEASE_OPTIONS} className="w-auto" />
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={AI_STATUS_OPTIONS} className="w-auto" />
         <FilterSelect value={confidenceFilter} onChange={setConfidenceFilter} options={CONFIDENCE_OPTIONS} className="w-auto" />
-        
+
         {(search || diseaseFilter || statusFilter || confidenceFilter) && (
           <button
             className="px-3 py-1.5 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 font-semibold text-[13px] flex items-center gap-1.5 transition-colors"
@@ -374,11 +373,11 @@ export default function AiRecommendationsPage() {
                 <th className="py-3 px-4 w-20 text-center">Thao tác</th>
               </tr>
             </thead>
-            
+
             {filteredCases.length === 0 && (
-               <tbody className="divide-y divide-slate-100 text-[13px]">
-                  <EmptyTableRow colSpan={7} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
-               </tbody>
+              <tbody className="divide-y divide-slate-100 text-[13px]">
+                <EmptyTableRow colSpan={7} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
+              </tbody>
             )}
 
             {Object.entries(groupedCases).map(([groupName, groupCases]) => (
@@ -400,11 +399,10 @@ export default function AiRecommendationsPage() {
                     <tr
                       key={item.id}
                       onClick={() => { setSelectedId(item.id); setIsCorrecting(false) }}
-                      className={`transition-colors cursor-pointer group ${
-                        isSelected
-                          ? 'border-l-2 border-l-emerald-600 bg-emerald-50 hover:bg-emerald-50'
-                          : `hover:bg-slate-50 border-l-2 border-l-transparent ${item.rowClassName ?? ''}`
-                      }`}
+                      className={`transition-colors cursor-pointer group ${isSelected
+                        ? 'border-l-2 border-l-emerald-600 bg-emerald-50 hover:bg-emerald-50'
+                        : `hover:bg-slate-50 border-l-2 border-l-transparent ${item.rowClassName ?? ''}`
+                        }`}
                     >
                       <td className="py-3 px-4">
                         <span className={`font-mono font-bold ${isSelected ? 'text-emerald-700' : item.idClassName}`}>#{item.id}</span>
@@ -468,7 +466,7 @@ export default function AiRecommendationsPage() {
             ))}
           </table>
         </div>
-        
+
         {/* Pagination */}
         <div className="border-t border-slate-200 bg-white">
           <Pagination

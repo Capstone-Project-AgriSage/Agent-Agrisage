@@ -91,7 +91,7 @@ export interface OrderItem {
 export type OrderStatus = 'Chờ xác nhận' | 'Đã xác nhận' | 'Đang xử lý' | 'Đang giao' | 'Hoàn thành' | 'Đã hủy'
 
 /** How the order is being paid — distinct from OrderStatus (fulfillment progress). */
-export type OrderPaymentMethod = 'Tiền mặt tại kho' | 'Chuyển khoản' | 'VietQR (Đã TT)' | 'Cọc 50%' | 'Gối nợ vụ mùa'
+export type OrderPaymentMethod = 'Tiền mặt tại kho' | 'Tiền mặt (COD)' | 'Chuyển khoản' | 'VietQR (Đã TT)' | 'Cọc 50%' | 'Gối nợ vụ mùa'
 
 export interface Order {
   id: string
@@ -575,4 +575,17 @@ export interface DebtPaymentRequest {
   createdAt: string
   note?: string
   confirmedAt?: string
+}
+
+export type StaffRole = 'Store Owner' | 'Sales Staff' | 'Delivery Staff'
+export type StaffStatus = 'Đang làm việc' | 'Đã khóa'
+export interface StaffMember {
+  id: string
+  name: string
+  phone: string
+  role: StaffRole
+  status: StaffStatus
+  can_review_ai: boolean
+  joinedAt: string
+  actions: RowAction[]
 }

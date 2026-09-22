@@ -97,11 +97,11 @@ export default function DeliveryPage() {
       prev.map((t) =>
         t.id === id
           ? {
-              ...t,
-              status: label,
-              statusBadge: { label, className: visuals.className, dotClassName: visuals.dotClassName, dotPulseClassName: visuals.dotPulseClassName },
-              rowClassName: undefined,
-            }
+            ...t,
+            status: label,
+            statusBadge: { label, className: visuals.className, dotClassName: visuals.dotClassName, dotPulseClassName: visuals.dotPulseClassName },
+            rowClassName: undefined,
+          }
           : t,
       ),
     )
@@ -399,293 +399,291 @@ export default function DeliveryPage() {
 
       {/* BẢNG DỮ LIỆU GIAO HÀNG */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-slate-900">Danh sách các chuyến giao thực địa</span>
-              <span className="px-2 py-0.5 rounded-full text-xs bg-slate-200 text-slate-700 font-semibold tabular-nums">{filteredTrips.length} chuyến</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="">Cập nhật trực tiếp: 09:28</span>
-            </div>
+        <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-slate-900">Danh sách các chuyến giao thực địa</span>
+            <span className="px-2 py-0.5 rounded-full text-xs bg-slate-200 text-slate-700 font-semibold tabular-nums">{filteredTrips.length} chuyến</span>
           </div>
-          <div className="flex-1 overflow-auto">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                  <th className="py-3 px-4">Mã GH / Đơn</th>
-                  <th className="py-3 px-4">Khách hàng &amp; Địa chỉ</th>
-                  <th className="py-3 px-4 text-center">Thu COD</th>
-                  <th className="py-3 px-4 text-center">Trạng thái</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredTrips.length === 0 ? (
-                  <EmptyTableRow colSpan={5} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-slate-400" />
-                ) : null}
-                {paginatedTrips.map((trip) => {
-                  const isSelected = trip.id === selectedId
-                  return (
-                    <tr
-                      key={trip.id}
-                      onClick={() => setSelectedId(trip.id)}
-                      className={`transition-colors cursor-pointer ${
-                        isSelected
-                          ? 'bg-emerald-50 hover:bg-emerald-50 border-l-4 border-l-emerald-600'
-                          : `hover:bg-slate-50/80 ${trip.rowClassName ?? ''}`
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="">Cập nhật trực tiếp: 09:28</span>
+          </div>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <table className="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
+                <th className="py-3 px-4">Mã GH / Đơn</th>
+                <th className="py-3 px-4">Khách hàng &amp; Địa chỉ</th>
+                <th className="py-3 px-4 text-right">Thu COD</th>
+                <th className="py-3 px-4 text-center">Trạng thái</th>
+                <th className="py-3 px-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredTrips.length === 0 ? (
+                <EmptyTableRow colSpan={5} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-slate-400" />
+              ) : null}
+              {paginatedTrips.map((trip) => {
+                const isSelected = trip.id === selectedId
+                return (
+                  <tr
+                    key={trip.id}
+                    onClick={() => setSelectedId(trip.id)}
+                    className={`transition-colors cursor-pointer ${isSelected
+                      ? 'bg-emerald-50 hover:bg-emerald-50 border-l-4 border-l-emerald-600'
+                      : `hover:bg-slate-50/80 ${trip.rowClassName ?? ''}`
                       }`}
-                    >
-                      <td className="py-3 px-4">
-                        <div className="font-semibold text-slate-900 text-[13px]">{trip.id}</div>
-                        <div className="text-[11px] text-slate-500">{trip.orderId}</div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="font-medium text-slate-900">{trip.customerName}</div>
-                        <div className="text-[11px] text-slate-500 truncate max-w-[190px]" title={trip.addressTitle}>
-                          {trip.addressShort}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className={trip.codAmountClassName}>{trip.codAmountLabel}</div>
-                        <span className={`inline-block px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-semibold ${trip.codBadge.className}`}>
-                          {trip.codBadge.label}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <StatusBadge label={trip.statusBadge.label} className={trip.statusBadge.className} minWidthClassName="min-w-[144px]" />
-                        {trip.failureNote ? (
-                          <div className="text-[11px] text-rose-600 mt-1 font-medium">{trip.failureNote}</div>
-                        ) : null}
-                      </td>
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end">
-                          <RowActionsMenu
-                            triggerLabel={`Thao tác chuyến #${trip.id}`}
-                            actions={trip.actions.map((action) => ({
-                              ...action,
-                              onClick: () => handleTripAction(trip.id, action.label),
-                            }))}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                  >
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-slate-900 text-[13px]">{trip.id}</div>
+                      <div className="text-[11px] text-slate-500">{trip.orderId}</div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-medium text-slate-900">{trip.customerName}</div>
+                      <div className="text-[11px] text-slate-500 truncate max-w-[190px]" title={trip.addressTitle}>
+                        {trip.addressShort}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className={trip.codAmountClassName}>{trip.codAmountLabel}</div>
+                      <span className={`inline-block px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-semibold ${trip.codBadge.className}`}>
+                        {trip.codBadge.label}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <StatusBadge label={trip.statusBadge.label} className={trip.statusBadge.className} minWidthClassName="min-w-[144px]" />
+                      {trip.failureNote ? (
+                        <div className="text-[11px] text-rose-600 mt-1 font-medium">{trip.failureNote}</div>
+                      ) : null}
+                    </td>
+                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end">
+                        <RowActionsMenu
+                          triggerLabel={`Thao tác chuyến #${trip.id}`}
+                          actions={trip.actions.map((action) => ({
+                            ...action,
+                            onClick: () => handleTripAction(trip.id, action.label),
+                          }))}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          startIndex={startIndex}
+          endIndex={endIndex}
+          totalCount={totalCount}
+          unitLabel="chuyến giao"
+          goPrev={goPrev}
+          goNext={goNext}
+          setPage={setPage}
+        />
+        <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
+              <Radio size={16} className="text-emerald-600" />
+              Nhật ký vận hành trực tiếp trạm Cần Thơ #04
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium">Tự động đồng bộ mỗi 30 giây</span>
           </div>
-          <Pagination
-            page={page}
-            totalPages={totalPages}
-            startIndex={startIndex}
-            endIndex={endIndex}
-            totalCount={totalCount}
-            unitLabel="chuyến giao"
-            goPrev={goPrev}
-            goNext={goNext}
-            setPage={setPage}
-          />
-          <div className="p-4 border-t border-slate-200 bg-slate-50">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs uppercase tracking-wider text-slate-500 font-bold flex items-center gap-1.5">
-                <Radio size={16} className="text-emerald-600" />
-                Nhật ký vận hành trực tiếp trạm Cần Thơ #04
+          <div className="space-y-2 text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">09:25</span>
+                <span className=""><strong>GH-8821</strong> bắt đầu di chuyển về Thới Lai (Tài xế Út - Xe lôi)</span>
               </span>
-              <span className="text-[11px] text-slate-400 font-medium">Tự động đồng bộ mỗi 30 giây</span>
+              <span className="text-[11px] text-slate-500 shrink-0">GPS: 10.0452° N, 105.7469° E</span>
             </div>
-            <div className="space-y-2 text-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
-                <span className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-emerald-700 font-bold bg-emerald-100 px-1.5 py-0.5 rounded">09:25</span>
-                  <span className=""><strong>GH-8821</strong> bắt đầu di chuyển về Thới Lai (Tài xế Út - Xe lôi)</span>
-                </span>
-                <span className="text-[11px] text-slate-500 shrink-0">GPS: 10.0452° N, 105.7469° E</span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
-                <span className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded">09:12</span>
-                  <span className=""><strong>GH-8819</strong> hoàn tất giao 30 gói Virtako tại Cờ Đỏ (Tài xế Bảo - Thu đủ 2.160.000 đ)</span>
-                </span>
-                <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 shrink-0">
-                  <CheckCircle2 size={14} /> Đã đối soát
-                </span>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
-                <span className="flex items-center gap-2">
-                  <span className="font-mono text-[11px] text-rose-700 font-bold bg-rose-100 px-1.5 py-0.5 rounded">08:45</span>
-                  <span className=""><strong>GH-8817</strong> cập nhật thất bại: Khách hẹn giao sau mưa lớn (Điều phối viên Minh)</span>
-                </span>
-                <span className="text-[11px] text-rose-600 font-bold shrink-0">Hẹn lại 15:00</span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-blue-700 font-bold bg-blue-100 px-1.5 py-0.5 rounded">09:12</span>
+                <span className=""><strong>GH-8819</strong> hoàn tất giao 30 gói Virtako tại Cờ Đỏ (Tài xế Bảo - Thu đủ 2.160.000 đ)</span>
+              </span>
+              <span className="text-[11px] text-emerald-600 font-bold flex items-center gap-1 shrink-0">
+                <CheckCircle2 size={14} /> Đã đối soát
+              </span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-slate-700 bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+              <span className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-rose-700 font-bold bg-rose-100 px-1.5 py-0.5 rounded">08:45</span>
+                <span className=""><strong>GH-8817</strong> cập nhật thất bại: Khách hẹn giao sau mưa lớn (Điều phối viên Minh)</span>
+              </span>
+              <span className="text-[11px] text-rose-600 font-bold shrink-0">Hẹn lại 15:00</span>
             </div>
           </div>
         </div>
+      </div>
 
       {/* DETAIL MODAL: CHI TIẾT CHUYẾN GIAO ĐANG CHỌN */}
       <DetailModal open={selectedTrip !== null} onClose={() => setSelectedId(null)}>
         {selectedTrip ? (
           <div className="flex flex-col divide-y divide-slate-100">
-          <div className="p-5 bg-slate-50">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold tracking-wider uppercase text-slate-500">Chi tiết chuyến giao</span>
-              <StatusBadge label={selectedTrip.statusBadge.label} className={selectedTrip.statusBadge.className} />
-            </div>
-            <div className="flex items-baseline justify-between">
-              <h2 className="text-xl font-bold text-slate-900 font-mono">#{selectedTrip.id}</h2>
-              <span className="text-sm text-slate-500">Đơn gốc: <strong className="text-slate-900 font-mono">{selectedTrip.orderId}</strong></span>
-            </div>
-          </div>
-          <div className="p-5 space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                <User size={20} />
+            <div className="p-5 bg-slate-50">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold tracking-wider uppercase text-slate-500">Chi tiết chuyến giao</span>
+                <StatusBadge label={selectedTrip.statusBadge.label} className={selectedTrip.statusBadge.className} />
               </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-base font-bold text-slate-900">{selectedTrip.customerName}</span>
-                  <a className="text-sm text-emerald-700 font-bold hover:underline" href={`tel:${selectedTrip.customerPhone.replace(/\./g, '')}`}>{selectedTrip.customerPhone}</a>
+              <div className="flex items-baseline justify-between">
+                <h2 className="text-xl font-bold text-slate-900 font-mono">#{selectedTrip.id}</h2>
+                <span className="text-sm text-slate-500">Đơn gốc: <strong className="text-slate-900 font-mono">{selectedTrip.orderId}</strong></span>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <User size={20} />
                 </div>
-                <p className="text-sm text-slate-600 mt-1 leading-snug">
-                  {selectedTrip.customerAddressDetail}
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-bold text-slate-900">{selectedTrip.customerName}</span>
+                    <a className="text-sm text-emerald-700 font-bold hover:underline" href={`tel:${selectedTrip.customerPhone.replace(/\./g, '')}`}>{selectedTrip.customerPhone}</a>
+                  </div>
+                  <p className="text-sm text-slate-600 mt-1 leading-snug">
+                    {selectedTrip.customerAddressDetail}
+                  </p>
+                </div>
+              </div>
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between mt-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm">
+                    {selectedTrip.driverInitial}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">{selectedTrip.driverName}</p>
+                    <p className="text-xs text-slate-500">{selectedTrip.driverRoleLabel} • {selectedTrip.driverPhone}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-500 block">Hẹn giao</span>
+                  <span className="text-sm font-bold text-emerald-700">{selectedTrip.scheduledWindow}</span>
+                </div>
+              </div>
+            </div>
+            <div className="p-5 bg-white">
+              <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-4">Tiến độ chuyến giao</h3>
+              <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200 pl-1">
+                {selectedTrip.timeline.map((step, idx) => (
+                  <div key={idx} className="relative flex items-start gap-4">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${timelineCircleClassName(step.state)}`}>
+                      {timelineIcon(step)}
+                    </div>
+                    {step.state === 'current' || step.state === 'failed' ? (
+                      <div
+                        className={`min-w-0 flex-1 p-3 rounded-xl border ${step.state === 'current' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'
+                          }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm font-bold ${step.state === 'current' ? 'text-emerald-800' : 'text-rose-800'}`}>
+                            {step.label}
+                          </span>
+                          <span className={`font-mono text-xs font-bold ${step.state === 'current' ? 'text-emerald-700' : 'text-rose-700'}`}>
+                            {step.time}
+                          </span>
+                        </div>
+                        <p className={`text-xs mt-1 ${step.state === 'current' ? 'text-emerald-600' : 'text-rose-600'}`}>{step.note}</p>
+                      </div>
+                    ) : (
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className={`text-sm ${step.state === 'done' ? 'font-bold text-slate-900' : 'font-medium text-slate-500'}`}>
+                            {step.label}
+                          </span>
+                          <span className={`font-mono text-xs ${step.state === 'done' ? 'text-slate-500' : 'text-slate-400'}`}>{step.time}</span>
+                        </div>
+                        <p className={`text-xs mt-0.5 ${step.state === 'done' ? 'text-slate-600' : 'text-slate-400'}`}>{step.note}</p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="p-5 space-y-3">
+              <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold">Danh mục vật tư giao đợt này</h3>
+              <div className="space-y-2 text-sm divide-y divide-slate-100">
+                {selectedTrip.items.map((item) => (
+                  <div key={item.name} className="pt-2 flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-slate-900">{item.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{item.qtyPrice}</p>
+                    </div>
+                    <span className="font-bold text-slate-900 tabular-nums">{item.total}</span>
+                  </div>
+                ))}
+                {selectedTrip.shippingFeeNote ? (
+                  <div className="pt-2 flex justify-between items-start text-xs text-slate-500 font-medium">
+                    <span className="">{selectedTrip.shippingFeeNote.label}</span>
+                    <span className={selectedTrip.shippingFeeNote.valueClassName}>{selectedTrip.shippingFeeNote.value}</span>
+                  </div>
+                ) : null}
+              </div>
+              <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 mt-3">
+                <div className="flex justify-between items-baseline mb-2">
+                  <span className="text-sm text-amber-900 font-semibold">Tổng tiền đơn hàng:</span>
+                  <span className="font-bold text-amber-900 tabular-nums">{selectedTrip.orderTotalLabel}</span>
+                </div>
+                <div className="flex justify-between items-baseline pt-2 border-t border-amber-200">
+                  <span className="text-sm text-amber-700 font-bold flex items-center gap-1.5">
+                    <Banknote size={18} />
+                    Cần thu hộ COD:
+                  </span>
+                  <span className="text-xl font-bold text-amber-900 tabular-nums">{selectedTrip.codToCollectLabel}</span>
+                </div>
+                <p className="text-xs text-amber-700 mt-2 font-medium">
+                  * {selectedTrip.codNote}
                 </p>
               </div>
             </div>
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between mt-2">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-sm">
-                  {selectedTrip.driverInitial}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{selectedTrip.driverName}</p>
-                  <p className="text-xs text-slate-500">{selectedTrip.driverRoleLabel} • {selectedTrip.driverPhone}</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-slate-500 block">Hẹn giao</span>
-                <span className="text-sm font-bold text-emerald-700">{selectedTrip.scheduledWindow}</span>
-              </div>
-            </div>
-          </div>
-          <div className="p-5 bg-white">
-            <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-4">Tiến độ chuyến giao</h3>
-            <div className="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200 pl-1">
-              {selectedTrip.timeline.map((step, idx) => (
-                <div key={idx} className="relative flex items-start gap-4">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 z-10 ${timelineCircleClassName(step.state)}`}>
-                    {timelineIcon(step)}
-                  </div>
-                  {step.state === 'current' || step.state === 'failed' ? (
-                    <div
-                      className={`min-w-0 flex-1 p-3 rounded-xl border ${
-                        step.state === 'current' ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm font-bold ${step.state === 'current' ? 'text-emerald-800' : 'text-rose-800'}`}>
-                          {step.label}
-                        </span>
-                        <span className={`font-mono text-xs font-bold ${step.state === 'current' ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {step.time}
-                        </span>
-                      </div>
-                      <p className={`text-xs mt-1 ${step.state === 'current' ? 'text-emerald-600' : 'text-rose-600'}`}>{step.note}</p>
-                    </div>
-                  ) : (
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className={`text-sm ${step.state === 'done' ? 'font-bold text-slate-900' : 'font-medium text-slate-500'}`}>
-                          {step.label}
-                        </span>
-                        <span className={`font-mono text-xs ${step.state === 'done' ? 'text-slate-500' : 'text-slate-400'}`}>{step.time}</span>
-                      </div>
-                      <p className={`text-xs mt-0.5 ${step.state === 'done' ? 'text-slate-600' : 'text-slate-400'}`}>{step.note}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="p-5 space-y-3">
-            <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold">Danh mục vật tư giao đợt này</h3>
-            <div className="space-y-2 text-sm divide-y divide-slate-100">
-              {selectedTrip.items.map((item) => (
-                <div key={item.name} className="pt-2 flex justify-between items-start">
-                  <div>
-                    <p className="font-bold text-slate-900">{item.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{item.qtyPrice}</p>
-                  </div>
-                  <span className="font-bold text-slate-900 tabular-nums">{item.total}</span>
-                </div>
-              ))}
-              {selectedTrip.shippingFeeNote ? (
-                <div className="pt-2 flex justify-between items-start text-xs text-slate-500 font-medium">
-                  <span className="">{selectedTrip.shippingFeeNote.label}</span>
-                  <span className={selectedTrip.shippingFeeNote.valueClassName}>{selectedTrip.shippingFeeNote.value}</span>
-                </div>
-              ) : null}
-            </div>
-            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 mt-3">
-              <div className="flex justify-between items-baseline mb-2">
-                <span className="text-sm text-amber-900 font-semibold">Tổng tiền đơn hàng:</span>
-                <span className="font-bold text-amber-900 tabular-nums">{selectedTrip.orderTotalLabel}</span>
-              </div>
-              <div className="flex justify-between items-baseline pt-2 border-t border-amber-200">
-                <span className="text-sm text-amber-700 font-bold flex items-center gap-1.5">
-                  <Banknote size={18} />
-                  Cần thu hộ COD:
-                </span>
-                <span className="text-xl font-bold text-amber-900 tabular-nums">{selectedTrip.codToCollectLabel}</span>
-              </div>
-              <p className="text-xs text-amber-700 mt-2 font-medium">
-                * {selectedTrip.codNote}
-              </p>
-            </div>
-          </div>
-          <div className="p-5 bg-slate-50 space-y-3">
-            <button
-              className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              type="button"
-              disabled={selectedTrip.statusBadge.label === 'Giao thành công'}
-              onClick={() => confirmDelivery(selectedTrip.id)}
-            >
-              <CheckCircle2 size={20} />
-              <span className="">
-                {selectedTrip.statusBadge.label === 'Giao thành công' ? 'Đã giao thành công' : 'Xác nhận giao hàng & Thu COD'}
-              </span>
-            </button>
-            <div className="grid grid-cols-2 gap-3">
-              <a
-                className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
-                href={`tel:${selectedTrip.driverPhone.replace(/\./g, '')}`}
-              >
-                <Phone size={16} className="text-emerald-700" />
-                <span className="">Gọi tài xế</span>
-              </a>
+            <div className="p-5 bg-slate-50 space-y-3">
               <button
-                className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                disabled={selectedTrip.statusBadge.label === 'Giao thành công'}
+                onClick={() => confirmDelivery(selectedTrip.id)}
+              >
+                <CheckCircle2 size={20} />
+                <span className="">
+                  {selectedTrip.statusBadge.label === 'Giao thành công' ? 'Đã giao thành công' : 'Xác nhận giao hàng & Thu COD'}
+                </span>
+              </button>
+              <div className="grid grid-cols-2 gap-3">
+                <a
+                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  href={`tel:${selectedTrip.driverPhone.replace(/\./g, '')}`}
+                >
+                  <Phone size={16} className="text-emerald-700" />
+                  <span className="">Gọi tài xế</span>
+                </a>
+                <button
+                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  type="button"
+                  onClick={() => {
+                    showToast(`Đang in phiếu giao cho chuyến #${selectedTrip.id}`)
+                    window.print()
+                  }}
+                >
+                  <Printer size={16} className="text-slate-500" />
+                  <span className="">In phiếu giao</span>
+                </button>
+              </div>
+              <button
+                className="w-full py-2.5 px-3 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                 type="button"
                 onClick={() => {
-                  showToast(`Đang in phiếu giao cho chuyến #${selectedTrip.id}`)
-                  window.print()
+                  setTripStatus(selectedTrip.id, 'Giao thất bại')
+                  showToast(`Đã ghi nhận báo giao thất bại / đổi lịch cho chuyến #${selectedTrip.id}`)
                 }}
               >
-                <Printer size={16} className="text-slate-500" />
-                <span className="">In phiếu giao</span>
+                <AlertTriangle size={18} />
+                <span className="">Báo giao thất bại / Đổi lịch</span>
               </button>
             </div>
-            <button
-              className="w-full py-2.5 px-3 bg-white border border-rose-300 text-rose-700 hover:bg-rose-50 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
-              type="button"
-              onClick={() => {
-                setTripStatus(selectedTrip.id, 'Giao thất bại')
-                showToast(`Đã ghi nhận báo giao thất bại / đổi lịch cho chuyến #${selectedTrip.id}`)
-              }}
-            >
-              <AlertTriangle size={18} />
-              <span className="">Báo giao thất bại / Đổi lịch</span>
-            </button>
-          </div>
           </div>
         ) : null}
       </DetailModal>

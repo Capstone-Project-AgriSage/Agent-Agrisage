@@ -21,7 +21,7 @@ import { downloadCsv } from '../../utils/csv'
 import type { Order, OrderStatus } from '../../types'
 
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
-const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt tại kho', 'Cọc 50%', 'Gối nợ vụ mùa']
+const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt (COD)', 'Cọc 50%', 'Gối nợ vụ mùa']
 
 const STATUS_VISUALS: Record<OrderStatus, { className: string; panelClassName: string }> = {
   'Chờ xác nhận': { className: 'bg-amber-100 text-amber-800 border-amber-300', panelClassName: 'bg-amber-100 text-amber-800' },
@@ -425,10 +425,25 @@ export default function OrdersPage() {
                         {order.total}
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[120px]" />
+                        <div className="flex flex-col items-center gap-1">
+                          <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[120px]" />
+                          {(order.paymentBadge.label === 'Tiền mặt khi giao' || order.paymentBadge.label.includes('COD') || order.paymentBadge.label === 'Cọc 50%') && (
+                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
+                              Thu COD: {order.paymentBadge.label === 'Cọc 50%' ? '50%' : order.total}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
+                        <div className="flex flex-col items-center gap-1">
+                          <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
+                          {order.shippingLabel && (
+                            <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5">
+                              <Truck size={10} className={order.shippingIconClassName} />
+                              <span>{order.shippingLabel}</span>
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 pr-4 pl-3 text-center whitespace-nowrap">
                         <div className="flex items-center justify-center">

@@ -13,6 +13,14 @@ import AiRecommendationsPage from './features/ai-recommendations/AiRecommendatio
 import FarmersPage from './features/farmers/FarmersPage'
 import ActivityLogPage from './features/activity-log/ActivityLogPage'
 import SettingsPage from './features/settings/SettingsPage'
+import StockMovementsPage from './features/inventory/StockMovementsPage'
+import StocktakePage from './features/inventory/StocktakePage'
+import SuppliersPage from './features/purchases/SuppliersPage'
+import PurchaseOrdersPage from './features/purchases/PurchaseOrdersPage'
+import SeasonalCreditPage from './features/debts/SeasonalCreditPage'
+import DeliveryPage from './features/delivery/DeliveryPage'
+import ProductReviewsPage from './features/products/ProductReviewsPage'
+import StaffManagementPage from './features/staff/StaffManagementPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -34,6 +42,14 @@ export const router = createBrowserRouter([
           { path: 'farmers', element: <FarmersPage /> },
           { path: 'activity-log', element: <ActivityLogPage /> },
           { path: 'settings', element: <SettingsPage /> },
+          { path: 'inventory/movements', element: <StockMovementsPage /> },
+          { path: 'inventory/stocktake', element: <StocktakePage /> },
+          { path: 'purchases/suppliers', element: <SuppliersPage /> },
+          { path: 'purchases/orders', element: <PurchaseOrdersPage /> },
+          { path: 'debts/seasonal-credit', element: <SeasonalCreditPage /> },
+          { path: 'deliveries', element: <DeliveryPage /> },
+          { path: 'products/reviews', element: <ProductReviewsPage /> },
+          { path: 'staff', element: <StaffManagementPage /> },
         ],
       },
     ],
