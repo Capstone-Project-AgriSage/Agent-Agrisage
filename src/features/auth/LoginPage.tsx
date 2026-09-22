@@ -1,20 +1,34 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { CURRENT_APP_ROLE, ROLE_OPTIONS, type StaffRole } from '../../config/roles'
 
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [email, setEmail] = useState('')
+  const [selectedRole, setSelectedRole] = useState<StaffRole>(CURRENT_APP_ROLE)
+  const [email, setEmail] = useState(ROLE_OPTIONS.find((r) => r.id === CURRENT_APP_ROLE)!.email)
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
+  const handleSelectRole = (role: StaffRole) => {
+    setSelectedRole(role)
+    setEmail(ROLE_OPTIONS.find((r) => r.id === role)!.email)
+    setPassword('')
+    setError('')
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (!email || !password) {
       setError('Vui lòng nhập đầy đủ email/số điện thoại và mật khẩu.')
+      return
+    }
+    if (selectedRole !== CURRENT_APP_ROLE) {
+      const roleLabel = ROLE_OPTIONS.find((r) => r.id === selectedRole)!.label
+      setError(`Vai trò "${roleLabel}" không đăng nhập được tại ứng dụng này. Vui lòng mở ứng dụng dành cho ${roleLabel}.`)
       return
     }
     setError('')
@@ -46,9 +60,40 @@ export default function LoginPage() {
 
         <div className="bg-white rounded-lg border border-outline-variant/60 shadow-2xs p-6 sm:p-8">
           <div className="mb-6 text-center">
-            <h1 className="font-headline-sm text-headline-sm text-on-surface font-bold">Đăng nhập Đại lý</h1>
+            <h1 className="font-headline-sm text-headline-sm text-on-surface font-bold">Đăng nhập AgriSage</h1>
             <p className="font-body-sm text-body-sm text-on-surface-variant mt-1">
-              Truy cập trung tâm điều hành trạm vật tư nông nghiệp
+              Chọn vai trò để đăng nhập vào đúng ứng dụng của bạn
+            </p>
+          </div>
+
+          <div className="mb-5">
+            <label className="block font-label-sm text-label-sm uppercase text-on-surface-variant mb-1.5">
+              Vai trò
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {ROLE_OPTIONS.map((role) => (
+                <button
+                  key={role.id}
+                  type="button"
+                  onClick={() => handleSelectRole(role.id)}
+                  className={`flex flex-col items-center justify-center gap-1 py-2.5 rounded border text-center transition-all ${
+                    selectedRole === role.id
+                      ? 'border-primary bg-primary-fixed/40 text-primary'
+                      : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[20px]">{role.icon}</span>
+                  <span className="font-label-sm text-label-sm font-semibold">{role.shortLabel}</span>
+                </button>
+              ))}
+            </div>
+            <p
+              className={`flex items-center gap-1.5 mt-2 font-body-sm text-body-sm text-on-secondary-fixed-variant ${
+                selectedRole !== CURRENT_APP_ROLE ? 'visible' : 'invisible'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">info</span>
+              Ứng dụng này dành cho {ROLE_OPTIONS.find((r) => r.id === CURRENT_APP_ROLE)!.label}. Chọn vai trò khác chỉ để xem email tương ứng.
             </p>
           </div>
 
