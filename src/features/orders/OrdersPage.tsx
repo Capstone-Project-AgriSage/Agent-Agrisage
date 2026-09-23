@@ -23,6 +23,33 @@ import type { Order, OrderStatus } from '../../types'
 const STATUS_OPTIONS = ['Tất cả trạng thái', 'Chờ xác nhận', 'Đã xác nhận', 'Đang xử lý', 'Đang giao', 'Hoàn thành', 'Đã hủy']
 const PAYMENT_OPTIONS = ['Tất cả thanh toán', 'VietQR (Đã TT)', 'Chuyển khoản', 'Tiền mặt (COD)', 'Cọc 50%', 'Gối nợ vụ mùa']
 
+const MinimalBadge = ({ label, type }: { label: string, type: 'status' | 'billing' }) => {
+  if (type === 'status') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border border-slate-200 text-slate-500 bg-white">
+        {label}
+      </span>
+    )
+  }
+  
+  // Billing
+  let icon = <div className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-1.5" />;
+  if (label.includes('Đã TT') || label.includes('Chuyển khoản') || label.includes('Tiền mặt')) {
+    icon = <CheckCircle size={10} className="text-emerald-500 mr-1.5" />;
+  } else if (label.includes('Cọc')) {
+    icon = <Clock size={10} className="text-amber-500 mr-1.5" />;
+  } else if (label.includes('Gối nợ')) {
+    icon = <div className="w-1.5 h-1.5 rounded-full bg-orange-400 mr-1.5" />;
+  }
+  
+  return (
+    <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-medium border border-slate-200 text-slate-600 bg-white min-w-[100px]">
+      {icon}
+      {label}
+    </span>
+  )
+}
+
 const STATUS_VISUALS: Record<OrderStatus, { className: string; panelClassName: string }> = {
   'Chờ xác nhận': { className: 'bg-amber-100 text-amber-800 border-amber-300', panelClassName: 'bg-amber-100 text-amber-800' },
   'Đã xác nhận': { className: 'bg-sky-100 text-sky-800 border-sky-300', panelClassName: 'bg-sky-100 text-sky-800' },
@@ -226,7 +253,7 @@ export default function OrdersPage() {
         </nav>
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50/50 transition-colors shadow-sm"
             type="button"
             onClick={handleExportOrders}
           >
@@ -234,7 +261,7 @@ export default function OrdersPage() {
             <span>Xuất Excel</span>
           </button>
           <button
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50/50 transition-colors shadow-sm"
             type="button"
             onClick={handlePrintOrders}
           >
@@ -350,8 +377,8 @@ export default function OrdersPage() {
       </div>
 
       {/* MAIN TABLE */}
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+      <div className="bg-white rounded-xl flex flex-col pt-2">
+          <div className="px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-slate-900">Danh sách đơn xuất kho trạm #04</span>
               <span className="text-[10px] font-mono bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">{filteredOrders.length} bản ghi</span>
@@ -376,18 +403,20 @@ export default function OrdersPage() {
           <div className="flex-1 overflow-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100 text-slate-500 text-xs font-semibold uppercase tracking-wider">
-                  <th className="py-3 pl-4 px-3">Mã đơn</th>
-                  <th className="py-3 px-3">Khách hàng &amp; Xã</th>
-                  <th className="py-3 px-3">Thời gian</th>
-                  <th className="py-3 px-3">Sản phẩm chính</th>
-                  <th className="py-3 px-3 text-center">Tổng tiền</th>
-                  <th className="py-3 px-3 text-center">Thanh toán</th>
-                  <th className="py-3 px-3 text-center">Trạng thái</th>
-                  <th className="py-3 pr-4 pl-3 text-center">Thao tác</th>
+                <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                  <th className="py-4 pl-4 pr-3 w-10">
+                    <input type="checkbox" className="rounded border-slate-300" />
+                  </th>
+                  <th className="py-4 px-3">Khách hàng</th>
+                  <th className="py-4 px-3 text-center">Trạng thái</th>
+                  <th className="py-4 px-3 text-center">Thanh toán</th>
+                  <th className="py-4 px-3 text-center">Tổng tiền</th>
+                  <th className="py-4 px-3">Sản phẩm</th>
+                  <th className="py-4 px-3">Thời gian</th>
+                  <th className="py-4 pr-4 pl-3 text-center"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-50">
                 {filteredOrders.length === 0 ? (
                   <EmptyTableRow colSpan={8} message="Không tìm thấy đơn hàng phù hợp với bộ lọc." />
                 ) : null}
@@ -397,55 +426,43 @@ export default function OrdersPage() {
                     <tr
                       key={order.id}
                       onClick={() => setSelectedId(order.id)}
-                      className={`transition-colors cursor-pointer group ${
+                      className={`transition-colors cursor-pointer group border-b border-slate-50 ${
                         isSelected
-                          ? 'bg-emerald-50/50 hover:bg-emerald-50 border-l-2 border-l-emerald-500'
-                          : `hover:bg-slate-50 ${order.rowAttentionClassName ?? ''}`
+                          ? 'bg-slate-50'
+                          : `hover:bg-slate-50/50 ${order.rowAttentionClassName ?? ''}`
                       }`}
                     >
-                      <td className={`py-3 pl-4 px-3 font-mono font-medium text-xs ${isSelected ? 'text-emerald-600' : 'text-slate-900'}`}>
-                        {order.id}
+                      <td className="py-4 pl-4 pr-3">
+                         <input type="checkbox" className="rounded border-slate-300" checked={isSelected} readOnly />
                       </td>
-                      <td className="py-3 px-3">
-                        <div className="font-semibold text-slate-900 text-sm">{order.customerName}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">{order.phone} • {order.shortLocation}</div>
+                      <td className="py-4 px-3">
+                         <div className="flex items-center gap-3">
+                           <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-semibold text-xs border border-slate-200">
+                             {order.customerName.charAt(0)}
+                           </div>
+                           <div>
+                             <div className="font-semibold text-slate-800 text-[13px]">{order.customerName}</div>
+                             <div className="text-[11px] text-slate-400 mt-0.5">{order.id}</div>
+                           </div>
+                         </div>
                       </td>
-                      <td className="py-3 px-3 text-slate-500 whitespace-nowrap text-xs">
-                        {order.timeBold ? <span className="font-semibold text-slate-900">{order.timeBold}</span> : null}
-                        {order.timeBold ? ' ' : ''}
-                        {order.timeRest}
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
+                         <MinimalBadge label={order.statusBadge.label} type="status" />
                       </td>
-                      <td className="py-3 px-3 max-w-[200px]">
-                        <div className="truncate text-slate-900 font-medium text-sm" title={order.productTitle}>
-                          {order.productLine}
-                        </div>
-                        <span className="text-xs text-slate-500">{order.productNote}</span>
+                      <td className="py-4 px-3 text-center whitespace-nowrap">
+                         <MinimalBadge label={order.paymentBadge.label} type="billing" />
                       </td>
-                      <td className="py-3 px-3 text-center font-mono font-semibold text-slate-900 whitespace-nowrap">
-                        {order.total}
+                      <td className="py-4 px-3 text-center font-medium text-slate-700 text-[13px] whitespace-nowrap">
+                         {order.total}
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <div className="flex flex-col items-center gap-1">
-                          <StatusBadge label={order.paymentBadge.label} className={order.paymentBadge.className} minWidthClassName="min-w-[120px]" />
-                          {(order.paymentBadge.label === 'Tiền mặt khi giao' || order.paymentBadge.label.includes('COD') || order.paymentBadge.label === 'Cọc 50%') && (
-                            <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">
-                              Thu COD: {order.paymentBadge.label === 'Cọc 50%' ? '50%' : order.total}
-                            </span>
-                          )}
-                        </div>
+                      <td className="py-4 px-3 max-w-[200px]">
+                         <div className="truncate text-slate-700 text-[13px]">{order.productLine}</div>
                       </td>
-                      <td className="py-3 px-3 text-center whitespace-nowrap">
-                        <div className="flex flex-col items-center gap-1">
-                          <StatusBadge label={order.statusBadge.label} className={order.statusBadge.className} minWidthClassName="min-w-[110px]" />
-                          {order.shippingLabel && (
-                            <div className="flex items-center gap-1 text-[10px] text-slate-500 mt-0.5">
-                              <Truck size={10} className={order.shippingIconClassName} />
-                              <span>{order.shippingLabel}</span>
-                            </div>
-                          )}
-                        </div>
+                      <td className="py-4 px-3 text-slate-500 whitespace-nowrap text-[12px] leading-tight">
+                         <div className="text-slate-700 font-medium">{order.timeBold ? order.timeBold : order.timeRest}</div>
+                         <div className="text-slate-400 text-[11px] mt-0.5">{order.timeBold ? `lúc ${order.timeRest}` : ''}</div>
                       </td>
-                      <td className="py-3 pr-4 pl-3 text-center whitespace-nowrap">
+                      <td className="py-4 pr-4 pl-3 text-right whitespace-nowrap">
                         <div className="flex items-center justify-center">
                           <RowActionsMenu
                             triggerLabel={`Thao tác đơn #${order.id}`}
@@ -546,7 +563,7 @@ export default function OrdersPage() {
             <div className="p-4 bg-slate-50 rounded-b-xl space-y-2">
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 rounded-lg text-xs font-semibold transition-colors shadow-sm"
                   type="button"
                   onClick={() => {
                     showToast(`Đang in phiếu giao hàng cho đơn #${selectedOrder.id}`)
@@ -571,7 +588,7 @@ export default function OrdersPage() {
                 </button>
               </div>
               <button
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-2 border border-slate-200 bg-white hover:bg-slate-50/50 text-slate-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
                 type="button"
                 onClick={() => showToast(`Đã gửi SMS cập nhật cho ${selectedOrder.customerName}`)}
               >

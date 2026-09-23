@@ -102,38 +102,38 @@ export default function SuppliersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 w-24">Mã NCC</th>
-                <th className="py-3 px-3 min-w-[220px]">Nhà cung cấp</th>
-                <th className="py-3 px-3 min-w-[180px]">Liên hệ</th>
-                <th className="py-3 px-3 min-w-[130px]">Trạng thái</th>
-                <th className="py-3 pr-4 pl-3 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 w-24">Mã NCC</th>
+                <th className="py-4 px-3 min-w-[220px]">Nhà cung cấp</th>
+                <th className="py-4 px-3 min-w-[180px]">Liên hệ</th>
+                <th className="py-4 px-3 min-w-[130px]">Trạng thái</th>
+                <th className="py-4 pr-4 pl-3 w-10 "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={5} message="Không tìm thấy nhà cung cấp phù hợp." />
               ) : null}
               {paginated.map((supplier) => {
                 const isInactive = supplier.status === 'Ngừng hợp tác'
                 return (
-                  <tr key={supplier.id} className={`hover:bg-slate-50 transition-colors ${isInactive ? 'opacity-60' : ''}`}>
-                    <td className="py-3 pl-4 px-3 font-mono text-slate-500">{supplier.id}</td>
-                    <td className="py-3 px-3">
+                  <tr key={supplier.id} className={`hover:bg-slate-50/50 transition-colors ${isInactive ? 'opacity-60' : ''}`}>
+                    <td className="py-4 pl-4 px-3 font-mono text-slate-500">{supplier.id}</td>
+                    <td className="py-4 px-3">
                       <div className="font-semibold text-slate-900">{supplier.name}</div>
                       <div className="text-xs text-slate-500 mt-0.5 max-w-[250px] truncate" title={supplier.address}>{supplier.address}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-700">{supplier.contactName}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{supplier.phone} - {supplier.email}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge 
                         label={supplier.status} 
                         className={isInactive ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}
                       />
                     </td>
-                    <td className="py-3 pr-4 pl-3 text-center">
+                    <td className="py-4 pr-4 pl-3 text-center">
                       <RowActionsMenu
                         triggerLabel={`Thao tác ${supplier.name}`}
                         actions={supplier.actions.map(a => ({

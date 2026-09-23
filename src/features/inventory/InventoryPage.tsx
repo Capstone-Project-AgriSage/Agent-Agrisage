@@ -357,7 +357,7 @@ export default function InventoryPage() {
         {/* Major Operational Action Buttons */}
         <div className="flex items-center gap-2.5 flex-wrap">
           <button
-            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50/50 transition-colors shadow-sm"
             type="button"
             onClick={activeTab === 'stock' ? handleExportInventory : handleExportLedger}
           >
@@ -522,11 +522,11 @@ export default function InventoryPage() {
           </div>
 
           {/* MAIN INVENTORY DATA TABLE */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl flex flex-col pt-2 shadow-sm border border-slate-100">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
+                  <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
                     <th className="py-3 px-4" scope="col">Sản phẩm &amp; Hoạt chất</th>
                     <th className="py-3 px-3" scope="col">SKU</th>
                     <th className="py-3 px-3 text-center" scope="col">Danh mục</th>
@@ -536,7 +536,7 @@ export default function InventoryPage() {
                     <th className="py-3 px-4 text-center w-28" scope="col">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+                <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
                   {paginated.length === 0 ? (
                     <EmptyTableRow colSpan={7} message="Không tìm thấy sản phẩm phù hợp với bộ lọc." />
                   ) : null}
@@ -549,10 +549,10 @@ export default function InventoryPage() {
                         className={`transition-colors cursor-pointer group ${
                           isSelected
                             ? 'bg-emerald-50/50 hover:bg-emerald-50 border-l-2 border-l-emerald-500'
-                            : `hover:bg-slate-50 ${item.rowClassName ?? ''}`
+                            : `hover:bg-slate-50/50 ${item.rowClassName ?? ''}`
                         }`}
                       >
-                        <td className="py-3.5 px-4">
+                        <td className="py-4.5 px-4">
                           <div className="flex flex-col">
                             <span className={`font-semibold text-sm group-hover:text-emerald-600 transition-colors ${item.nameClassName ?? 'text-slate-900'}`}>
                               {item.name}
@@ -560,25 +560,25 @@ export default function InventoryPage() {
                             <span className="text-xs text-slate-500 mt-0.5">{item.description}</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-3 font-mono text-xs text-slate-500 font-medium">{item.sku}</td>
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-4.5 px-3 font-mono text-xs text-slate-500 font-medium">{item.sku}</td>
+                        <td className="py-4.5 px-3 text-center">
                           <span className={`inline-flex items-center justify-center min-w-[110px] px-2 py-0.5 rounded-full text-[10px] font-semibold border ${getCategoryBadgeClassName(item.categoryLabel)}`}>{item.categoryLabel}</span>
                         </td>
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-4.5 px-3 text-center">
                           <span className={`font-semibold font-mono ${item.stockQuantityClassName ?? 'text-slate-900'}`}>{item.stockQuantity}</span>
                         </td>
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-4.5 px-3 text-center">
                           <span className={`inline-flex items-center justify-center min-w-[120px] px-2 py-0.5 rounded-full text-[11px] font-semibold border ${item.stockClassName}`}>
                             {item.stockLabel}
                           </span>
                         </td>
-                        <td className="py-3.5 px-3">
+                        <td className="py-4.5 px-3">
                           <div className="flex flex-col text-[11px]">
                             <span className="text-slate-900 font-medium">{item.updatedAgo}</span>
                             <span className="text-slate-500">{item.updatedBy}</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-center">
+                        <td className="py-4.5 px-4 text-center">
                           <div className="flex items-center justify-center">
                             <RowActionsMenu
                               triggerLabel={`Thao tác ${item.name}`}
@@ -619,7 +619,7 @@ export default function InventoryPage() {
                 </div>
                 <span className="text-[11px] px-2 py-0.5 rounded bg-rose-100 text-rose-700 font-medium">Ngưỡng báo động</span>
               </div>
-              <div className="p-4 divide-y divide-slate-100">
+              <div className="p-4 divide-y divide-slate-50">
                 {/* Alert Item 1: Virtako 40WG */}
                 <div className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
@@ -651,7 +651,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                   <button
-                    className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors"
+                    className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 text-xs font-medium transition-colors"
                     type="button"
                     onClick={() => showToast('Đã tạo đề nghị nhập: Thuốc Trừ Bệnh Beam 75WP')}
                   >
@@ -670,7 +670,7 @@ export default function InventoryPage() {
                     </div>
                   </div>
                   <button
-                    className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium transition-colors"
+                    className="shrink-0 px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 text-xs font-medium transition-colors"
                     type="button"
                     onClick={() => showToast('Đã tạo đề nghị nhập: Phân NPK Đầu Trâu 20-20-15+TE')}
                   >
@@ -696,7 +696,7 @@ export default function InventoryPage() {
                   <ArrowRight size={14} />
                 </button>
               </div>
-              <div className="p-4 divide-y divide-slate-100">
+              <div className="p-4 divide-y divide-slate-50">
                 {stockMovements.slice(0, 3).map((m) => (
                   <div key={m.id} className="py-2.5 first:pt-0 last:pb-0 flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
@@ -833,11 +833,11 @@ export default function InventoryPage() {
           </div>
 
           {/* STOCK MOVEMENTS TABLE */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl flex flex-col pt-2 shadow-sm border border-slate-100">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
+                  <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
                     <th className="py-3 px-4" scope="col">Mã GD &amp; Thời gian</th>
                     <th className="py-3 px-3" scope="col">Sản phẩm &amp; SKU</th>
                     <th className="py-3 px-3 text-center" scope="col">Loại biến động</th>
@@ -848,27 +848,27 @@ export default function InventoryPage() {
                     <th className="py-3 px-4" scope="col">Ghi chú</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
+                <tbody className="divide-y divide-slate-50 text-sm">
                   {paginatedMovements.length === 0 ? (
                     <EmptyTableRow colSpan={8} message="Không có bản ghi biến động thẻ kho phù hợp." />
                   ) : null}
                   {paginatedMovements.map((m) => {
                     const isPositive = m.quantityChange > 0
                     return (
-                      <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3 px-4">
+                      <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-4 px-4">
                           <div className="flex flex-col">
                             <span className="font-mono text-xs font-bold text-slate-900">{m.id}</span>
                             <span className="text-[11px] text-slate-500 mt-0.5">{m.createdAt}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-4 px-3">
                           <div className="flex flex-col">
                             <span className="font-semibold text-sm text-slate-900">{m.productName}</span>
                             <span className="font-mono text-[11px] text-slate-500">{m.sku}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-4 px-3 text-center">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
                               m.movementType === 'STOCK_IN'
@@ -894,7 +894,7 @@ export default function InventoryPage() {
                               : 'Điều chỉnh'}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-4 px-3 text-center">
                           <span
                             className={`font-semibold font-mono ${
                               isPositive ? 'text-emerald-600' : 'text-slate-900'
@@ -903,12 +903,12 @@ export default function InventoryPage() {
                             {isPositive ? `+${m.quantityChange}` : m.quantityChange} {m.unit}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-4 px-3 text-center">
                           <span className="font-mono text-sm font-bold text-slate-900 tabular-nums">
                             {m.balanceAfter} <span className="font-normal text-xs text-slate-500">{m.unit}</span>
                           </span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-4 px-3">
                           <div className="flex flex-col gap-1">
                             {m.reason ? (
                               <span className="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 w-fit">
@@ -924,7 +924,7 @@ export default function InventoryPage() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-xs text-slate-900 font-medium">
+                        <td className="py-4 px-3 text-xs text-slate-900 font-medium">
                           {m.createdBy}
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-500 max-w-[240px] truncate" title={m.note}>
@@ -1073,7 +1073,7 @@ export default function InventoryPage() {
                     className={`px-3 py-2.5 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
                       adjustChangeType === 'decrease'
                         ? 'border-rose-200 bg-rose-50 text-rose-600'
-                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50/50'
                     }`}
                   >
                     <TrendingDown size={18} />
@@ -1085,7 +1085,7 @@ export default function InventoryPage() {
                     className={`px-3 py-2.5 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-colors ${
                       adjustChangeType === 'increase'
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50'
+                        : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50/50'
                     }`}
                   >
                     <Plus size={18} />
@@ -1172,7 +1172,7 @@ export default function InventoryPage() {
               <button
                 type="button"
                 onClick={() => setAdjustOpen(false)}
-                className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors shadow-sm"
+                className="px-4 py-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-50/50 text-sm font-medium transition-colors shadow-sm"
               >
                 Hủy bỏ
               </button>

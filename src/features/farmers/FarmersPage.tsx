@@ -94,7 +94,7 @@ export default function FarmersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-4 pb-4">
         <div className="flex items-center gap-2.5">
           <button
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 text-sm font-medium shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50/50 text-sm font-medium shadow-sm transition-colors"
             onClick={handleExportFarmers}
           >
             <Download size={16} />
@@ -192,19 +192,19 @@ export default function FarmersPage() {
           <div className="overflow-x-auto flex-1 custom-scrollbar">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold text-slate-500 uppercase tracking-wider sticky top-0">
-                  <th className="py-3 px-4">Nông dân</th>
-                  <th className="py-3 px-3">Số điện thoại</th>
-                  <th className="py-3 px-3">Khu vực</th>
-                  <th className="py-3 px-3">Đơn gần nhất</th>
-                  <th className="py-3 px-3 text-center">Tổng mua</th>
-                  <th className="py-3 px-3 text-center">Công nợ</th>
-                  <th className="py-3 px-3">Hoạt động</th>
-                  <th className="py-3 px-3 text-center">Trạng thái</th>
-                  <th className="py-3 px-4 text-right">Thao tác</th>
+                <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                  <th className="py-4 px-4">Nông dân</th>
+                  <th className="py-4 px-3">Số điện thoại</th>
+                  <th className="py-4 px-3">Khu vực</th>
+                  <th className="py-4 px-3">Đơn gần nhất</th>
+                  <th className="py-4 px-3 text-center">Tổng mua</th>
+                  <th className="py-4 px-3 text-center">Công nợ</th>
+                  <th className="py-4 px-3">Hoạt động</th>
+                  <th className="py-4 px-3 text-center">Trạng thái</th>
+                  <th className="py-4 px-4 text-right "></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm font-normal">
+              <tbody className="divide-y divide-slate-50 text-sm font-normal">
                 {filteredFarmers.length === 0 ? (
                   <EmptyTableRow colSpan={9} message="Không tìm thấy nông dân phù hợp với bộ lọc." className="text-slate-400" />
                 ) : null}
@@ -215,10 +215,10 @@ export default function FarmersPage() {
                       key={farmer.id}
                       onClick={() => setSelectedId(farmer.id)}
                       className={`transition-colors cursor-pointer ${
-                        isSelected ? 'bg-emerald-50/50 border-l-2 border-l-emerald-500 hover:bg-emerald-50' : 'hover:bg-slate-50 border-l-2 border-transparent'
+                        isSelected ? 'bg-emerald-50/50 border-l-2 border-l-emerald-500 hover:bg-emerald-50' : 'hover:bg-slate-50/50 border-l-2 border-transparent'
                       }`}
                     >
-                      <td className="py-3.5 px-4">
+                      <td className="py-4.5 px-4">
                         <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                           <span className="">{farmer.name}</span>
                           {farmer.verified ? (
@@ -229,16 +229,16 @@ export default function FarmersPage() {
                         </div>
                         <div className="text-[11px] text-slate-500">#{farmer.id}</div>
                       </td>
-                      <td className="py-3.5 px-3 font-medium text-slate-700 text-xs">{farmer.phone}</td>
+                      <td className="py-4.5 px-3 font-medium text-slate-700 text-xs">{farmer.phone}</td>
                       <td className="py-3.5 px-3 text-slate-600 truncate max-w-[130px] text-xs" title={farmer.areaTitle}>
                         {farmer.areaShort}
                       </td>
-                      <td className="py-3.5 px-3">
+                      <td className="py-4.5 px-3">
                         <span className="font-medium text-slate-900 text-xs">{farmer.lastOrderId}</span>
                         <span className="block text-[11px] text-slate-500">{farmer.lastOrderAgo}</span>
                       </td>
-                      <td className="py-3.5 px-3 text-center font-semibold text-slate-900 text-xs tabular-nums">{farmer.totalPurchaseLabel}</td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-4.5 px-3 text-center font-semibold text-slate-900 text-xs tabular-nums">{farmer.totalPurchaseLabel}</td>
+                      <td className="py-4.5 px-3 text-center">
                         {farmer.hasDebt ? (
                           <>
                             <span
@@ -260,21 +260,25 @@ export default function FarmersPage() {
                           <span className="font-medium text-slate-400 text-xs">{farmer.debtLabel}</span>
                         )}
                       </td>
-                      <td className="py-3.5 px-3 text-slate-600">
+                      <td className="py-4.5 px-3 text-slate-600">
                         <div className="truncate max-w-[130px] text-xs font-medium text-slate-900" title={`${farmer.activityDate} - ${farmer.activityNote}`}>
                           {farmer.activityDate}
                         </div>
                         <span className={`text-[11px] ${farmer.activityNoteClassName}`}>{farmer.activityNote}</span>
                       </td>
-                      <td className="py-3.5 px-3 text-center">
+                      <td className="py-4.5 px-3 text-center">
                         <StatusBadge label={farmer.statusBadge.label} className={farmer.statusBadge.className} minWidthClassName="min-w-[135px]" />
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-4.5 px-4 text-right">
                         <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedId(farmer.id);
+                          }}
                           className={
                             isSelected
                               ? 'px-3 py-1.5 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors shadow-sm'
-                              : 'px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors'
+                              : 'px-3 py-1.5 text-xs font-medium bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50/50 transition-colors'
                           }
                         >
                           Chi tiết

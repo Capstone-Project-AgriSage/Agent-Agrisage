@@ -169,16 +169,16 @@ export default function ProductReviewsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 min-w-[150px]">Khách hàng</th>
-                <th className="py-3 px-3 min-w-[200px]">Sản phẩm</th>
-                <th className="py-3 px-3 min-w-[100px]">Đánh giá</th>
-                <th className="py-3 px-3 min-w-[250px]">Nội dung & Phản hồi</th>
-                <th className="py-3 px-3 min-w-[130px]">Trạng thái</th>
-                <th className="py-3 pr-4 pl-3 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 min-w-[150px]">Khách hàng</th>
+                <th className="py-4 px-3 min-w-[200px]">Sản phẩm</th>
+                <th className="py-4 px-3 min-w-[100px]">Đánh giá</th>
+                <th className="py-4 px-3 min-w-[250px]">Nội dung & Phản hồi</th>
+                <th className="py-4 px-3 min-w-[130px]">Trạng thái</th>
+                <th className="py-4 pr-4 pl-3 w-10 "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={6} message="Không tìm thấy đánh giá nào." />
               ) : null}
@@ -186,22 +186,22 @@ export default function ProductReviewsPage() {
                 const badge = getStatusBadgeProps(rev.status)
                 const isHidden = rev.status === 'HIDDEN'
                 return (
-                  <tr key={rev.id} className={`hover:bg-slate-50 transition-colors ${isHidden ? 'opacity-60' : ''}`}>
-                    <td className="py-3 pl-4 px-3">
+                  <tr key={rev.id} className={`hover:bg-slate-50/50 transition-colors ${isHidden ? 'opacity-60' : ''}`}>
+                    <td className="py-4 pl-4 px-3">
                       <div className="font-semibold text-slate-900">{rev.farmerName}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{new Date(rev.createdAt).toLocaleDateString('vi-VN')}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-900">{rev.productName}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="flex items-center gap-1 text-amber-400">
                         {Array.from({ length: 5 }).map((_, i) => (
                           <Star key={i} size={14} fill={i < rev.rating ? 'currentColor' : 'none'} className={i >= rev.rating ? 'text-slate-300' : ''} />
                         ))}
                       </div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="text-sm text-slate-800">{rev.comment}</div>
                       {rev.reply && (
                         <div className="mt-2 bg-slate-50 p-2 rounded border border-slate-100">
@@ -210,10 +210,10 @@ export default function ProductReviewsPage() {
                         </div>
                       )}
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge label={badge.label} className={badge.className} />
                     </td>
-                    <td className="py-3 pr-4 pl-3 text-center">
+                    <td className="py-4 pr-4 pl-3 text-center">
                       <RowActionsMenu
                         triggerLabel={`Thao tác ${rev.id}`}
                         actions={rev.actions.map(a => ({

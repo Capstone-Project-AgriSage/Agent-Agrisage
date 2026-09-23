@@ -275,7 +275,7 @@ export default function DeliveryPage() {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <button
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition-colors"
             type="button"
             onClick={handleExportTrips}
           >
@@ -283,7 +283,7 @@ export default function DeliveryPage() {
             <span className="">Xuất danh sách</span>
           </button>
           <button
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition-colors"
             type="button"
             onClick={handlePrintTrips}
           >
@@ -412,15 +412,15 @@ export default function DeliveryPage() {
         <div className="flex-1 overflow-auto">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <th className="py-3 px-4">Mã GH / Đơn</th>
-                <th className="py-3 px-4">Khách hàng &amp; Địa chỉ</th>
-                <th className="py-3 px-4 text-right">Thu COD</th>
-                <th className="py-3 px-4 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-right">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 px-4">Mã GH / Đơn</th>
+                <th className="py-4 px-4">Khách hàng &amp; Địa chỉ</th>
+                <th className="py-4 px-4 text-right">Thu COD</th>
+                <th className="py-4 px-4 text-center">Trạng thái</th>
+                <th className="py-4 px-4 text-right "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-slate-50">
               {filteredTrips.length === 0 ? (
                 <EmptyTableRow colSpan={5} message="Không tìm thấy chuyến giao phù hợp với bộ lọc." className="text-slate-400" />
               ) : null}
@@ -432,32 +432,32 @@ export default function DeliveryPage() {
                     onClick={() => setSelectedId(trip.id)}
                     className={`transition-colors cursor-pointer ${isSelected
                       ? 'bg-emerald-50 hover:bg-emerald-50 border-l-4 border-l-emerald-600'
-                      : `hover:bg-slate-50/80 ${trip.rowClassName ?? ''}`
+                      : `hover:bg-slate-50/50/80 ${trip.rowClassName ?? ''}`
                       }`}
                   >
-                    <td className="py-3 px-4">
+                    <td className="py-4 px-4">
                       <div className="font-semibold text-slate-900 text-[13px]">{trip.id}</div>
                       <div className="text-[11px] text-slate-500">{trip.orderId}</div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-4 px-4">
                       <div className="font-medium text-slate-900">{trip.customerName}</div>
                       <div className="text-[11px] text-slate-500 truncate max-w-[190px]" title={trip.addressTitle}>
                         {trip.addressShort}
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-4 px-4 text-right">
                       <div className={trip.codAmountClassName}>{trip.codAmountLabel}</div>
                       <span className={`inline-block px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-semibold ${trip.codBadge.className}`}>
                         {trip.codBadge.label}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-center">
+                    <td className="py-4 px-4 text-center">
                       <StatusBadge label={trip.statusBadge.label} className={trip.statusBadge.className} minWidthClassName="min-w-[144px]" />
                       {trip.failureNote ? (
                         <div className="text-[11px] text-rose-600 mt-1 font-medium">{trip.failureNote}</div>
                       ) : null}
                     </td>
-                    <td className="py-3 px-4 text-right whitespace-nowrap">
+                    <td className="py-4 px-4 text-right whitespace-nowrap">
                       <div className="flex items-center justify-end">
                         <RowActionsMenu
                           triggerLabel={`Thao tác chuyến #${trip.id}`}
@@ -524,7 +524,7 @@ export default function DeliveryPage() {
       {/* DETAIL MODAL: CHI TIẾT CHUYẾN GIAO ĐANG CHỌN */}
       <DetailModal open={selectedTrip !== null} onClose={() => setSelectedId(null)}>
         {selectedTrip ? (
-          <div className="flex flex-col divide-y divide-slate-100">
+          <div className="flex flex-col divide-y divide-slate-50">
             <div className="p-5 bg-slate-50">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-bold tracking-wider uppercase text-slate-500">Chi tiết chuyến giao</span>
@@ -606,7 +606,7 @@ export default function DeliveryPage() {
             </div>
             <div className="p-5 space-y-3">
               <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold">Danh mục vật tư giao đợt này</h3>
-              <div className="space-y-2 text-sm divide-y divide-slate-100">
+              <div className="space-y-2 text-sm divide-y divide-slate-50">
                 {selectedTrip.items.map((item) => (
                   <div key={item.name} className="pt-2 flex justify-between items-start">
                     <div>
@@ -654,14 +654,14 @@ export default function DeliveryPage() {
               </button>
               <div className="grid grid-cols-2 gap-3">
                 <a
-                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                   href={`tel:${selectedTrip.driverPhone.replace(/\./g, '')}`}
                 >
                   <Phone size={16} className="text-emerald-700" />
                   <span className="">Gọi tài xế</span>
                 </a>
                 <button
-                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  className="py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
                   type="button"
                   onClick={() => {
                     showToast(`Đang in phiếu giao cho chuyến #${selectedTrip.id}`)

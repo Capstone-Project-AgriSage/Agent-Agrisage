@@ -71,7 +71,7 @@ export default function StockMovementsPage() {
         </nav>
         <div className="flex justify-end">
           <button
-            className="flex items-center gap-2 h-9 px-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-slate-700 text-sm font-medium transition-colors shadow-sm"
+            className="flex items-center gap-2 h-9 px-3 bg-white hover:bg-slate-50/50 border border-slate-200 rounded-lg text-slate-700 text-sm font-medium transition-colors shadow-sm"
             onClick={() => showToast('Tính năng xuất báo cáo đang phát triển')}
             type="button"
           >
@@ -147,16 +147,16 @@ export default function StockMovementsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 w-[140px]">Thời gian</th>
-                <th className="py-3 px-3 min-w-[200px]">Sản phẩm & SKU</th>
-                <th className="py-3 px-3 min-w-[140px]">Loại</th>
-                <th className="py-3 px-3 min-w-[120px] text-right">Thay đổi</th>
-                <th className="py-3 px-3 min-w-[120px] text-right">Tồn cuối</th>
-                <th className="py-3 pr-4 pl-3 min-w-[200px]">Chi tiết & Người thực hiện</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 w-[140px]">Thời gian</th>
+                <th className="py-4 px-3 min-w-[200px]">Sản phẩm & SKU</th>
+                <th className="py-4 px-3 min-w-[140px]">Loại</th>
+                <th className="py-4 px-3 min-w-[120px] text-right">Thay đổi</th>
+                <th className="py-4 px-3 min-w-[120px] text-right">Tồn cuối</th>
+                <th className="py-4 pr-4 pl-3 min-w-[200px]">Chi tiết & Người thực hiện</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={6} message="Không tìm thấy lịch sử biến động kho." />
               ) : null}
@@ -164,25 +164,25 @@ export default function StockMovementsPage() {
                 const badge = getTypeBadge(m.type)
                 const isPositive = m.quantityChange > 0
                 return (
-                  <tr key={m.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 pl-4 px-3">
+                  <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 pl-4 px-3">
                       <div className="font-semibold text-slate-900">{new Date(m.createdAt).toLocaleDateString('vi-VN')}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{new Date(m.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-900">{m.productName}</div>
                       <div className="text-xs text-slate-500 mt-0.5 font-mono">{m.sku}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge label={badge.label} className={badge.className} />
                     </td>
                     <td className={`py-3 px-3 text-right font-semibold font-mono ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                       {isPositive ? '+' : ''}{m.quantityChange}
                     </td>
-                    <td className="py-3 px-3 text-right font-semibold font-mono text-slate-900">
+                    <td className="py-4 px-3 text-right font-semibold font-mono text-slate-900">
                       {m.balanceAfter}
                     </td>
-                    <td className="py-3 pr-4 pl-3">
+                    <td className="py-4 pr-4 pl-3">
                       <div className="text-sm text-slate-700">{m.note}</div>
                       <div className="text-xs text-slate-500 mt-0.5">
                         Bởi: <span className="font-medium text-slate-700">{m.createdBy}</span> 

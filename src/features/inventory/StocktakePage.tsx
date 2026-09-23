@@ -148,16 +148,16 @@ export default function StocktakePage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 w-[140px]">Mã phiếu</th>
-                <th className="py-3 px-3 min-w-[150px]">Ngày tạo</th>
-                <th className="py-3 px-3 min-w-[150px]">Người thực hiện</th>
-                <th className="py-3 px-3 min-w-[120px]">Sản phẩm KP</th>
-                <th className="py-3 px-3 min-w-[140px]">Trạng thái</th>
-                <th className="py-3 pr-4 pl-3 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 w-[140px]">Mã phiếu</th>
+                <th className="py-4 px-3 min-w-[150px]">Ngày tạo</th>
+                <th className="py-4 px-3 min-w-[150px]">Người thực hiện</th>
+                <th className="py-4 px-3 min-w-[120px]">Sản phẩm KP</th>
+                <th className="py-4 px-3 min-w-[140px]">Trạng thái</th>
+                <th className="py-4 pr-4 pl-3 w-10 "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={6} message="Không tìm thấy phiếu kiểm kê." />
               ) : null}
@@ -165,16 +165,16 @@ export default function StocktakePage() {
                 const badge = getStatusBadgeProps(st.status)
                 const hasVariance = st.items.some(i => i.variance !== 0)
                 return (
-                  <tr key={st.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 pl-4 px-3 font-semibold text-slate-900">{st.id}</td>
-                    <td className="py-3 px-3">
+                  <tr key={st.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 pl-4 px-3 font-semibold text-slate-900">{st.id}</td>
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-700">{new Date(st.createdAt).toLocaleDateString('vi-VN')}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{new Date(st.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-900">{st.createdBy}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-semibold tabular-nums text-slate-900">{st.items.length} loại</div>
                       {st.status === 'COMPLETED' && hasVariance && (
                         <div className="text-xs text-rose-600 mt-0.5 font-medium flex items-center gap-1">
@@ -182,10 +182,10 @@ export default function StocktakePage() {
                         </div>
                       )}
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge label={badge.label} className={badge.className} />
                     </td>
-                    <td className="py-3 pr-4 pl-3 text-center">
+                    <td className="py-4 pr-4 pl-3 text-center">
                       <RowActionsMenu
                         triggerLabel={`Thao tác ${st.id}`}
                         actions={st.actions.map(a => ({

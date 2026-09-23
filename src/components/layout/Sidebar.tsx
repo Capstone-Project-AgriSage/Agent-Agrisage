@@ -135,31 +135,31 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  end={item.to === '/'}
+                  end={true}
                   onClick={onClose}
                   className={({ isActive }) =>
-                    `flex items-center justify-between px-space-md py-space-sm font-label-md text-label-md rounded transition-all ${
+                    `flex items-center justify-between px-space-md py-space-sm font-label-md text-label-md rounded transition-all overflow-hidden ${
                       isActive
-                        ? 'bg-surface-container text-primary font-title-md text-title-md border-r-2 border-primary rounded-l'
-                        : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface'
+                        ? 'bg-surface-container text-primary font-bold border-r-2 border-primary rounded-l'
+                        : 'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface font-medium'
                     }`
                   }
                 >
                   {({ isActive }) => (
                     <>
-                      <div className="flex items-center gap-space-sm">
+                      <div className="flex items-center gap-space-sm flex-1 min-w-0">
                         <span
-                          className={`material-symbols-outlined text-[20px] ${
+                          className={`material-symbols-outlined text-[20px] flex-shrink-0 ${
                             isActive || item.iconTone === 'primary' ? 'text-primary' : ''
                           }`}
                         >
                           {item.icon}
                         </span>
-                        <span>{item.label}</span>
+                        <span className="truncate">{item.label}</span>
                       </div>
                       {item.badge ? (
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[11px] tabular-nums ${badgeClasses(item.badgeTone)}`}
+                          className={`ml-2 px-1.5 py-0.5 rounded text-[11px] tabular-nums flex-shrink-0 ${badgeClasses(item.badgeTone)}`}
                         >
                           {item.badge}
                         </span>

@@ -219,7 +219,7 @@ export default function DebtsPage() {
         </div>
         <div className="flex items-center gap-2.5 self-start md:self-auto">
           <button
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50/50 transition-colors shadow-sm"
             type="button"
             onClick={handleExportDebts}
           >
@@ -227,7 +227,7 @@ export default function DebtsPage() {
             <span className="">Xuất báo cáo</span>
           </button>
           <button
-            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50 transition-colors shadow-sm"
+            className="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-300 text-slate-700 font-semibold text-sm rounded-lg hover:bg-slate-50/50 transition-colors shadow-sm"
             type="button"
             onClick={handlePrintDebts}
           >
@@ -404,7 +404,7 @@ export default function DebtsPage() {
           </section>
 
           {/* BẢNG QUẢN LÝ CÔNG NỢ */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="bg-white rounded-xl flex flex-col pt-2 shadow-sm border border-slate-100">
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-bold text-slate-900">Danh sách công nợ khách hàng</h2>
@@ -416,17 +416,17 @@ export default function DebtsPage() {
             <div className="flex-1 overflow-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50/50 text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                    <th className="py-3 px-4">Khách Hàng &amp; SĐT</th>
-                    <th className="py-3 px-3 text-center">Tổng Mua</th>
-                    <th className="py-3 px-3 text-center">Đã Trả</th>
-                    <th className="py-3 px-3 text-center font-bold text-slate-900">Còn Nợ</th>
-                    <th className="py-3 px-3 text-center">Hạn Trả</th>
-                    <th className="py-3 px-3 text-center">Trạng Thái</th>
-                    <th className="py-3 px-4 text-center">Thao Tác</th>
+                  <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                    <th className="py-4 px-4">Khách Hàng &amp; SĐT</th>
+                    <th className="py-4 px-3 text-center">Tổng Mua</th>
+                    <th className="py-4 px-3 text-center">Đã Trả</th>
+                    <th className="py-4 px-3 text-center font-bold text-slate-900">Còn Nợ</th>
+                    <th className="py-4 px-3 text-center">Hạn Trả</th>
+                    <th className="py-4 px-3 text-center">Trạng Thái</th>
+                    <th className="py-4 px-4 text-center "></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+                <tbody className="divide-y divide-slate-50 text-xs sm:text-sm">
                   {filteredCustomers.length === 0 ? (
                     <EmptyTableRow colSpan={7} message="Không tìm thấy khách hàng phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
@@ -439,10 +439,10 @@ export default function DebtsPage() {
                         className={`transition-colors cursor-pointer ${
                           isSelected
                             ? 'bg-emerald-50 border-l-4 border-l-emerald-600'
-                            : 'hover:bg-slate-50'
+                            : 'hover:bg-slate-50/50'
                         }`}
                       >
-                        <td className="py-3 px-4">
+                        <td className="py-4 px-4">
                           <div className="font-semibold text-slate-900 flex items-center gap-1.5">
                             <span>{customer.name}</span>
                             {customer.cropBadge && (
@@ -453,16 +453,16 @@ export default function DebtsPage() {
                           </div>
                           <div className="text-xs text-slate-500 font-mono mt-0.5">{customer.phone} · {customer.addressShort}</div>
                         </td>
-                        <td className="py-3 px-3 text-center font-mono text-slate-600">{customer.totalPurchase}</td>
-                        <td className="py-3 px-3 text-center font-mono text-emerald-700 font-medium">{customer.paidAmount}</td>
+                        <td className="py-4 px-3 text-center font-mono text-slate-600">{customer.totalPurchase}</td>
+                        <td className="py-4 px-3 text-center font-mono text-emerald-700 font-medium">{customer.paidAmount}</td>
                         <td className={`py-3 px-3 text-center font-mono font-bold ${customer.remainingCellClassName}`}>
                           {customer.remaining}
                         </td>
                         <td className={`py-3 px-3 text-center font-mono text-xs ${customer.dueDateClassName}`}>{customer.dueDate}</td>
-                        <td className="py-3 px-3 text-center">
+                        <td className="py-4 px-3 text-center">
                           <StatusBadge label={customer.statusBadge.label} className={customer.statusBadge.className} minWidthClassName="min-w-[110px]" />
                         </td>
-                        <td className="py-3 px-4 text-center">
+                        <td className="py-4 px-4 text-center">
                           <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                             <RowActionsMenu
                               triggerLabel={`Thao tác công nợ ${customer.name}`}
@@ -512,18 +512,18 @@ export default function DebtsPage() {
         </span>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
-                <th className="py-3 px-4">Mã YC / Đơn hàng</th>
-                <th className="py-3 px-4">Nông dân &amp; SĐT</th>
-                <th className="py-3 px-3">Vụ mùa</th>
-                <th className="py-3 px-3 text-center">Số tiền đề nghị</th>
-                <th className="py-3 px-3 text-center">Hạn mức / Còn lại</th>
-                <th className="py-3 px-3 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-center">Thao tác duyệt</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 px-4">Mã YC / Đơn hàng</th>
+                <th className="py-4 px-4">Nông dân &amp; SĐT</th>
+                <th className="py-4 px-3">Vụ mùa</th>
+                <th className="py-4 px-3 text-center">Số tiền đề nghị</th>
+                <th className="py-4 px-3 text-center">Hạn mức / Còn lại</th>
+                <th className="py-4 px-3 text-center">Trạng thái</th>
+                <th className="py-4 px-4 text-center">Thao tác duyệt</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -533,24 +533,24 @@ export default function DebtsPage() {
                 const isRejected = cr.status === 'REJECTED'
 
                 return (
-                  <tr key={cr.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-mono">
+                  <tr key={cr.id} className="hover:bg-slate-50/50/70 transition-colors">
+                    <td className="py-4.5 px-4 font-mono">
                       <div className="font-bold text-slate-900">{cr.id}</div>
                       <div className="text-slate-500 text-[11px]">{cr.orderCode}</div>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-4.5 px-4">
                       <div className="font-semibold text-slate-900">{cr.farmerName}</div>
                       <div className="text-slate-500 font-mono text-[11px]">{cr.farmerPhone}</div>
                     </td>
-                    <td className="py-3.5 px-3 font-medium text-slate-700">{cr.cropSeason}</td>
-                    <td className="py-3.5 px-3 text-center font-mono font-bold text-emerald-700 text-sm">
+                    <td className="py-4.5 px-3 font-medium text-slate-700">{cr.cropSeason}</td>
+                    <td className="py-4.5 px-3 text-center font-mono font-bold text-emerald-700 text-sm">
                       {formatVnd(cr.requestedAmount)}
                     </td>
-                    <td className="py-3.5 px-3 text-center font-mono text-[11px]">
+                    <td className="py-4.5 px-3 text-center font-mono text-[11px]">
                       <div>HM: {formatVnd(cr.seasonalLimit)}</div>
                       <div className="text-emerald-700 font-semibold">Còn lại: {formatVnd(cr.remainingLimit)}</div>
                     </td>
-                    <td className="py-3.5 px-3 text-center">
+                    <td className="py-4.5 px-3 text-center">
                       {isPending && (
                         <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-300">
                           Chờ phê duyệt
@@ -567,7 +567,7 @@ export default function DebtsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-4.5 px-4 text-center">
                       {isPending ? (
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -620,18 +620,18 @@ export default function DebtsPage() {
         </span>
       </div>
 
-      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
-                <th className="py-3 px-4">Mã TT / Đơn gốc</th>
-                <th className="py-3 px-4">Nông dân &amp; SĐT</th>
-                <th className="py-3 px-3 text-center">Số tiền trả</th>
-                <th className="py-3 px-3">Phương thức thanh toán</th>
-                <th className="py-3 px-3">Ghi chú giao dịch</th>
-                <th className="py-3 px-3 text-center">Trạng thái</th>
-                <th className="py-3 px-4 text-center">Thao tác khớp sổ</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 px-4">Mã TT / Đơn gốc</th>
+                <th className="py-4 px-4">Nông dân &amp; SĐT</th>
+                <th className="py-4 px-3 text-center">Số tiền trả</th>
+                <th className="py-4 px-3">Phương thức thanh toán</th>
+                <th className="py-4 px-3">Ghi chú giao dịch</th>
+                <th className="py-4 px-3 text-center">Trạng thái</th>
+                <th className="py-4 px-4 text-center">Thao tác khớp sổ</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -641,19 +641,19 @@ export default function DebtsPage() {
                 const isRejected = pr.status === 'REJECTED'
 
                 return (
-                  <tr key={pr.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3.5 px-4 font-mono">
+                  <tr key={pr.id} className="hover:bg-slate-50/50/70 transition-colors">
+                    <td className="py-4.5 px-4 font-mono">
                       <div className="font-bold text-slate-900">{pr.id}</div>
                       <div className="text-slate-500 text-[11px]">{pr.orderCode}</div>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-4.5 px-4">
                       <div className="font-semibold text-slate-900">{pr.farmerName}</div>
                       <div className="text-slate-500 font-mono text-[11px]">{pr.farmerPhone}</div>
                     </td>
-                    <td className="py-3.5 px-3 text-center font-mono font-bold text-emerald-700 text-sm">
+                    <td className="py-4.5 px-3 text-center font-mono font-bold text-emerald-700 text-sm">
                       +{formatVnd(pr.amount)}
                     </td>
-                    <td className="py-3.5 px-3">
+                    <td className="py-4.5 px-3">
                       {pr.paymentMethod === 'VIETQR' ? (
                         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
                           <QrCode size={14} />
@@ -666,11 +666,11 @@ export default function DebtsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-3 text-slate-600 max-w-[220px]">
+                    <td className="py-4.5 px-3 text-slate-600 max-w-[220px]">
                       <div>{pr.note || 'Không có ghi chú'}</div>
                       <div className="text-[11px] text-slate-400 mt-0.5">{pr.createdAt}</div>
                     </td>
-                    <td className="py-3.5 px-3 text-center">
+                    <td className="py-4.5 px-3 text-center">
                       {isPending && (
                         <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-[11px] border border-amber-300 animate-pulse">
                           Chờ đối soát thu tiền
@@ -687,7 +687,7 @@ export default function DebtsPage() {
                         </span>
                       )}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-4.5 px-4 text-center">
                       {isPending ? (
                         <div className="flex items-center justify-center gap-2">
                           <button

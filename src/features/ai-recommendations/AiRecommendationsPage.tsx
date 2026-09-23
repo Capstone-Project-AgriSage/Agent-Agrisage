@@ -282,7 +282,7 @@ export default function AiRecommendationsPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-md text-[13px] font-semibold transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-50/50 text-slate-700 rounded-md text-[13px] font-semibold transition-colors shadow-sm"
             onClick={() => showToast('Đang xuất báo cáo JSON')}
           >
             <Download size={15} />
@@ -363,25 +363,25 @@ export default function AiRecommendationsPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-                <th className="py-3 px-4 w-28">Mã ca</th>
-                <th className="py-3 px-4">Nông dân & Thửa</th>
-                <th className="py-3 px-3">Ảnh lá</th>
-                <th className="py-3 px-3 text-center">Độ tin cậy</th>
-                <th className="py-3 px-3">Sản phẩm gợi ý</th>
-                <th className="py-3 px-3 w-40 text-center">Trạng thái</th>
-                <th className="py-3 px-4 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 px-4 w-28">Mã ca</th>
+                <th className="py-4 px-4">Nông dân & Thửa</th>
+                <th className="py-4 px-3">Ảnh lá</th>
+                <th className="py-4 px-3 text-center">Độ tin cậy</th>
+                <th className="py-4 px-3">Sản phẩm gợi ý</th>
+                <th className="py-4 px-3 w-40 text-center">Trạng thái</th>
+                <th className="py-4 px-4 w-10 "></th>
               </tr>
             </thead>
 
             {filteredCases.length === 0 && (
-              <tbody className="divide-y divide-slate-100 text-[13px]">
+              <tbody className="divide-y divide-slate-50 text-[13px]">
                 <EmptyTableRow colSpan={7} message="Không tìm thấy kết quả phù hợp với bộ lọc." className="text-slate-500 py-10" />
               </tbody>
             )}
 
             {Object.entries(groupedCases).map(([groupName, groupCases]) => (
-              <tbody key={groupName} className="divide-y divide-slate-100 text-[13px]">
+              <tbody key={groupName} className="divide-y divide-slate-50 text-[13px]">
                 {/* GROUP SUBHEADER */}
                 <tr className="bg-slate-50/80 border-b border-slate-200">
                   <td colSpan={7} className="py-2 px-4">
@@ -401,26 +401,26 @@ export default function AiRecommendationsPage() {
                       onClick={() => { setSelectedId(item.id); setIsCorrecting(false) }}
                       className={`transition-colors cursor-pointer group ${isSelected
                         ? 'border-l-2 border-l-emerald-600 bg-emerald-50 hover:bg-emerald-50'
-                        : `hover:bg-slate-50 border-l-2 border-l-transparent ${item.rowClassName ?? ''}`
+                        : `hover:bg-slate-50/50 border-l-2 border-l-transparent ${item.rowClassName ?? ''}`
                         }`}
                     >
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4">
                         <span className={`font-mono font-bold ${isSelected ? 'text-emerald-700' : item.idClassName}`}>#{item.id}</span>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4">
                         <div className="font-semibold text-slate-900">{item.farmerName}</div>
                         <div className="text-xs text-slate-500 mt-0.5">{item.farmerLocationLine}</div>
                       </td>
-                      <td className="py-3 px-3">
+                      <td className="py-4 px-3">
                         <div className={`w-10 h-10 rounded-md border overflow-hidden relative group-hover:border-emerald-300 transition-colors ${item.imageBorderClassName}`}>
                           <img className={`w-full h-full object-cover ${item.imageBlurred ? 'blur-[1px] opacity-80' : ''}`} data-alt={item.imageAlt} src={item.imageSrc} />
                         </div>
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-4 px-3 text-center">
                         <span className={`font-bold text-[11px] tabular-nums ${item.confidenceTextClassName}`}>{item.confidencePercent}%</span>
                         <span className={`text-[11px] block mt-1 font-medium ${item.confidenceNoteClassName}`}>{item.confidenceNote}</span>
                       </td>
-                      <td className="py-3 px-3">
+                      <td className="py-4 px-3">
                         {item.productLine ? (
                           <>
                             <div className="font-semibold text-slate-900">{item.productLine}</div>
@@ -431,10 +431,10 @@ export default function AiRecommendationsPage() {
                         )}
                         {!item.productLine ? <div className="text-[11px] text-amber-700 font-bold mt-1">Chưa đủ tin cậy</div> : null}
                       </td>
-                      <td className="py-3 px-3 text-center">
+                      <td className="py-4 px-3 text-center">
                         <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
                       </td>
-                      <td className="py-3 px-4 text-center">
+                      <td className="py-4 px-4 text-center">
                         {item.actionsMode === 'menu' ? (
                           <div className="flex justify-center" onClick={e => e.stopPropagation()}>
                             <RowActionsMenu
@@ -449,7 +449,7 @@ export default function AiRecommendationsPage() {
                           <span className="text-[11px] text-emerald-700 font-bold">Đã duyệt</span>
                         ) : (
                           <button
-                            className="px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-[11px] font-bold transition-colors shadow-sm"
+                            className="px-2.5 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 text-[11px] font-bold transition-colors shadow-sm"
                             onClick={(e) => {
                               e.stopPropagation()
                               requestFieldSurvey(item.id, item.farmerName)

@@ -171,17 +171,17 @@ export default function PurchaseOrdersPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 w-[140px]">Mã Phiếu</th>
-                <th className="py-3 px-3 min-w-[220px]">Nhà cung cấp</th>
-                <th className="py-3 px-3 min-w-[120px]">Ngày tạo</th>
-                <th className="py-3 px-3 min-w-[140px] text-right">Tổng tiền</th>
-                <th className="py-3 px-3 min-w-[150px]">Trạng thái</th>
-                <th className="py-3 px-3 min-w-[150px]">Tiến độ nhận</th>
-                <th className="py-3 pr-4 pl-3 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 w-[140px]">Mã Phiếu</th>
+                <th className="py-4 px-3 min-w-[220px]">Nhà cung cấp</th>
+                <th className="py-4 px-3 min-w-[120px]">Ngày tạo</th>
+                <th className="py-4 px-3 min-w-[140px] text-right">Tổng tiền</th>
+                <th className="py-4 px-3 min-w-[150px]">Trạng thái</th>
+                <th className="py-4 px-3 min-w-[150px]">Tiến độ nhận</th>
+                <th className="py-4 pr-4 pl-3 w-10 "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={7} message="Không tìm thấy phiếu nhập phù hợp." />
               ) : null}
@@ -195,22 +195,22 @@ export default function PurchaseOrdersPage() {
                 const progressPercent = totalOrdered > 0 ? (totalReceived / totalOrdered) * 100 : 0
                 
                 return (
-                  <tr key={po.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 pl-4 px-3 font-semibold text-slate-900">{po.id}</td>
-                    <td className="py-3 px-3">
+                  <tr key={po.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 pl-4 px-3 font-semibold text-slate-900">{po.id}</td>
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-900">{po.supplierName}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{po.items.length} loại sản phẩm</div>
                     </td>
-                    <td className="py-3 px-3 text-slate-600">
+                    <td className="py-4 px-3 text-slate-600">
                       {new Date(po.createdAt).toLocaleDateString('vi-VN')}
                     </td>
-                    <td className="py-3 px-3 text-right font-semibold font-mono text-slate-900">
+                    <td className="py-4 px-3 text-right font-semibold font-mono text-slate-900">
                       {formatVndShort(po.totalAmount)}
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge label={badge.label} className={badge.className} />
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-mono text-slate-600 w-12 text-right">{progressText}</span>
                         <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
@@ -218,7 +218,7 @@ export default function PurchaseOrdersPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 pr-4 pl-3 text-center">
+                    <td className="py-4 pr-4 pl-3 text-center">
                       <RowActionsMenu
                         triggerLabel={`Thao tác ${po.id}`}
                         actions={po.actions.map(a => ({

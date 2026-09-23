@@ -179,16 +179,16 @@ export default function SeasonalCreditPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 border-b border-slate-100 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                <th className="py-3 pl-4 px-3 w-[150px]">Yêu cầu & Đơn</th>
-                <th className="py-3 px-3 min-w-[180px]">Khách hàng</th>
-                <th className="py-3 px-3 min-w-[130px] text-right">Hạn mức còn lại</th>
-                <th className="py-3 px-3 min-w-[130px] text-right">Số tiền yêu cầu</th>
-                <th className="py-3 px-3 min-w-[140px]">Trạng thái</th>
-                <th className="py-3 pr-4 pl-3 w-20 text-center">Thao tác</th>
+              <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                <th className="py-4 pl-4 px-3 w-[150px]">Yêu cầu & Đơn</th>
+                <th className="py-4 px-3 min-w-[180px]">Khách hàng</th>
+                <th className="py-4 px-3 min-w-[130px] text-right">Hạn mức còn lại</th>
+                <th className="py-4 px-3 min-w-[130px] text-right">Số tiền yêu cầu</th>
+                <th className="py-4 px-3 min-w-[140px]">Trạng thái</th>
+                <th className="py-4 pr-4 pl-3 w-10 "></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-sm text-slate-900">
+            <tbody className="divide-y divide-slate-50 text-sm text-slate-900">
               {paginated.length === 0 ? (
                 <EmptyTableRow colSpan={6} message="Không tìm thấy yêu cầu nào." />
               ) : null}
@@ -196,29 +196,29 @@ export default function SeasonalCreditPage() {
                 const badge = getStatusBadgeProps(req.status)
                 const isOverLimit = req.requestedAmount > req.remainingLimit
                 return (
-                  <tr key={req.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 pl-4 px-3">
+                  <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-4 pl-4 px-3">
                       <div className="font-semibold text-slate-900">{req.id}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{req.orderCode}</div>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <div className="font-medium text-slate-900">{req.farmerName}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{req.cropSeason}</div>
                     </td>
-                    <td className="py-3 px-3 text-right font-semibold font-mono text-slate-900">
+                    <td className="py-4 px-3 text-right font-semibold font-mono text-slate-900">
                       {formatVndShort(req.remainingLimit)}
                     </td>
-                    <td className="py-3 px-3 text-right">
+                    <td className="py-4 px-3 text-right">
                       <div className={`font-semibold font-mono ${isOverLimit ? 'text-rose-600' : 'text-slate-900'}`}>{formatVndShort(req.requestedAmount)}</div>
                       {isOverLimit && <div className="text-[10px] text-rose-500 mt-0.5">Vượt hạn mức!</div>}
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-4 px-3">
                       <StatusBadge label={badge.label} className={badge.className} />
                       {req.reviewerNote && (
                         <div className="text-[10px] text-slate-500 mt-1 max-w-[140px] truncate" title={req.reviewerNote}>{req.reviewerNote}</div>
                       )}
                     </td>
-                    <td className="py-3 pr-4 pl-3 text-center">
+                    <td className="py-4 pr-4 pl-3 text-center">
                       <RowActionsMenu
                         triggerLabel={`Thao tác ${req.id}`}
                         actions={(

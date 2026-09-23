@@ -99,7 +99,7 @@ export default function ActivityLogPage() {
       {/* Trailing Action: Export Data */}
       <div className="flex items-center justify-end gap-2 mb-4">
         <button
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 rounded-lg text-sm font-semibold shadow-sm transition"
           type="button"
           onClick={() => {
             downloadCsv(
@@ -219,22 +219,22 @@ export default function ActivityLogPage() {
       {/* ACTIVITY LOG TABLE & RECENT EVENTS */}
       <div className="space-y-4 mt-4">
           {/* Table Container */}
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+          <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-semibold uppercase tracking-wider text-slate-500 select-none">
-                    <th className="py-3 px-4">Thời gian</th>
-                    <th className="py-3 px-4">Người thực hiện</th>
-                    <th className="py-3 px-3 text-center">Phân hệ</th>
-                    <th className="py-3 px-3 text-center">Thao tác</th>
-                    <th className="py-3 px-3">Đối tượng</th>
-                    <th className="py-3 px-4 min-w-[200px]">Mô tả nghiệp vụ</th>
-                    <th className="py-3 px-3 text-center">Kết quả</th>
-                    <th className="py-3 px-4 text-right">Chi tiết</th>
+                  <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                    <th className="py-4 px-4">Thời gian</th>
+                    <th className="py-4 px-4">Người thực hiện</th>
+                    <th className="py-4 px-3 text-center">Phân hệ</th>
+                    <th className="py-4 px-3 text-center "></th>
+                    <th className="py-4 px-3">Đối tượng</th>
+                    <th className="py-4 px-4 min-w-[200px]">Mô tả nghiệp vụ</th>
+                    <th className="py-4 px-3 text-center">Kết quả</th>
+                    <th className="py-4 px-4 text-right">Chi tiết</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-sm">
+                <tbody className="divide-y divide-slate-50 text-sm">
                   {filteredEntries.length === 0 ? (
                     <EmptyTableRow colSpan={8} message="Không tìm thấy nhật ký phù hợp với bộ lọc." className="text-slate-400" />
                   ) : null}
@@ -245,7 +245,7 @@ export default function ActivityLogPage() {
                         key={entry.id}
                         onClick={() => setSelectedId(entry.id)}
                         className={`transition-colors cursor-pointer ${
-                          isSelected ? 'bg-emerald-50 border-l-4 border-emerald-600' : 'hover:bg-slate-50'
+                          isSelected ? 'bg-emerald-50 border-l-4 border-emerald-600' : 'hover:bg-slate-50/50'
                         }`}
                       >
                         <td
@@ -256,33 +256,37 @@ export default function ActivityLogPage() {
                           {entry.time}
                           {entry.timeNote ? <div className="text-[10px] text-slate-400">{entry.timeNote}</div> : null}
                         </td>
-                        <td className="py-3 px-4 whitespace-nowrap">
+                        <td className="py-4 px-4 whitespace-nowrap">
                           <span className="font-semibold text-slate-900">{entry.actorName}</span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap text-center">
+                        <td className="py-4 px-3 whitespace-nowrap text-center">
                           <span className={`inline-flex items-center justify-center min-w-[100px] px-2 py-0.5 rounded text-[11px] font-bold border ${entry.moduleClassName}`}>
                             {entry.moduleLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap text-center">
+                        <td className="py-4 px-3 whitespace-nowrap text-center">
                           <span className={`inline-flex items-center justify-center min-w-[100px] px-2 py-0.5 rounded text-[11px] font-semibold ${entry.actionClassName}`}>
                             {entry.actionLabel}
                           </span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap font-mono font-bold text-emerald-700">{entry.objectId}</td>
-                        <td className="py-3 px-4 text-slate-900">
+                        <td className="py-4 px-3 whitespace-nowrap font-mono font-bold text-emerald-700">{entry.objectId}</td>
+                        <td className="py-4 px-4 text-slate-900">
                           <p className="line-clamp-1 font-medium">{entry.description}</p>
                           <span className="text-[11px] text-slate-500">{entry.descriptionNote}</span>
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap text-center">
+                        <td className="py-4 px-3 whitespace-nowrap text-center">
                           <StatusBadge label={entry.resultLabel} className={entry.resultClassName} minWidthClassName="min-w-[105px]" />
                         </td>
-                        <td className="py-3 px-4 whitespace-nowrap text-right">
+                        <td className="py-4 px-4 whitespace-nowrap text-right">
                           <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedId(entry.id);
+                            }}
                             className={
                               isSelected
                                 ? 'px-3 py-1 rounded bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition shadow-sm'
-                                : 'px-3 py-1 rounded bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-bold transition shadow-sm'
+                                : 'px-3 py-1 rounded bg-white hover:bg-slate-50/50 border border-slate-300 text-slate-700 text-xs font-bold transition shadow-sm'
                             }
                           >
                             {isSelected ? 'Đang chọn' : 'Chi tiết'}
@@ -466,8 +470,11 @@ export default function ActivityLogPage() {
                 {selected.relatedLinks.map((link) => (
                   <a
                     key={link.label}
-                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50 transition-colors group shadow-sm"
-                    href="#"
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50 transition-colors group shadow-sm cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      showToast('Liên kết này đang được phát triển');
+                    }}
                   >
                     <div className="flex items-center gap-2.5">
                       <span className="material-symbols-outlined text-slate-400 group-hover:text-emerald-600 transition-colors" data-icon={link.icon}>
@@ -503,7 +510,7 @@ export default function ActivityLogPage() {
               <span className="">Xem phân tích AI gốc</span>
             </button>
             <button
-              className="w-full py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
+              className="w-full py-2.5 px-3 bg-white border border-slate-300 hover:bg-slate-50/50 text-slate-700 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
               type="button"
               onClick={() => {
                 navigate('/farmers')

@@ -295,7 +295,7 @@ export default function PaymentsPage() {
             <RefreshCw size={12} /> Cập nhật 5 phút trước
           </span>
           <button 
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-md text-[13px] font-bold hover:bg-slate-50 shadow-sm text-slate-700 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 rounded-md text-[13px] font-bold hover:bg-slate-50/50 shadow-sm text-slate-700 transition-colors"
             onClick={handleExportPayments}
           >
             <Download size={14} /> Xuất dữ liệu
@@ -388,18 +388,18 @@ export default function PaymentsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-200 text-slate-500 text-[11px] font-bold uppercase tracking-wider">
-                      <th className="py-3 px-4 w-32">Mã TT / Đơn</th>
-                      <th className="py-3 px-4">Khách hàng</th>
-                      <th className="py-3 px-4 text-center">Tổng đơn</th>
-                      <th className="py-3 px-4 text-center">Đã thu</th>
-                      <th className="py-3 px-4 text-center">Còn lại</th>
-                      <th className="py-3 px-4 text-center">Phương thức</th>
-                      <th className="py-3 px-4 text-center">Trạng thái</th>
-                      <th className="py-3 px-4 w-20 text-center">Thao tác</th>
+                    <tr className="border-b border-slate-100 text-slate-900 text-[13px] font-bold">
+                      <th className="py-4 px-4 w-32">Mã TT / Đơn</th>
+                      <th className="py-4 px-4">Khách hàng</th>
+                      <th className="py-4 px-4 text-center">Tổng đơn</th>
+                      <th className="py-4 px-4 text-center">Đã thu</th>
+                      <th className="py-4 px-4 text-center">Còn lại</th>
+                      <th className="py-4 px-4 text-center">Phương thức</th>
+                      <th className="py-4 px-4 text-center">Trạng thái</th>
+                      <th className="py-4 px-4 w-10 "></th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 text-[13px]">
+                  <tbody className="divide-y divide-slate-50 text-[13px]">
                     {paginatedPayments.length === 0 ? (
                       <EmptyTableRow colSpan={8} message="Không tìm thấy giao dịch nào." className="text-slate-400 py-10" />
                     ) : null}
@@ -412,31 +412,31 @@ export default function PaymentsPage() {
                           className={`transition-colors cursor-pointer group ${
                             isSelected
                               ? 'bg-slate-50/80 border-l-2 border-l-slate-900'
-                              : 'hover:bg-slate-50 border-l-2 border-l-transparent'
+                              : 'hover:bg-slate-50/50 border-l-2 border-l-transparent'
                           }`}
                         >
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-4">
                             <div className="font-bold font-mono text-slate-900">{item.id}</div>
                             <div className="text-[11px] text-slate-500 font-mono mt-0.5">{item.orderId}</div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="py-4 px-4">
                             <div className="font-semibold text-slate-900">{item.customerName}</div>
                             <div className="text-[11px] text-slate-500 mt-0.5">{item.customerPhone}</div>
                           </td>
-                          <td className="py-3 px-4 text-center font-mono font-semibold text-slate-900">{item.totalAmount}</td>
+                          <td className="py-4 px-4 text-center font-mono font-semibold text-slate-900">{item.totalAmount}</td>
                           <td className={`py-3 px-4 text-center font-mono font-semibold ${item.paidAmountClassName}`}>{item.paidAmount}</td>
                           <td className={`py-3 px-4 text-center font-mono font-bold ${item.remainingAmountClassName}`}>
                             {item.remainingAmount}
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-4 px-4 text-center">
                             <span className={`px-2 py-0.5 rounded-md text-[11px] font-bold border border-slate-200 ${item.methodClassName}`}>
                               {item.methodLabel}
                             </span>
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-4 px-4 text-center">
                             <StatusBadge label={item.statusBadge.label} className={item.statusBadge.className} minWidthClassName="min-w-[120px]" />
                           </td>
-                          <td className="py-3 px-4 text-center">
+                          <td className="py-4 px-4 text-center">
                             <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
                               <RowActionsMenu
                                 triggerLabel={`Thao tác giao dịch ${item.id}`}
@@ -509,37 +509,37 @@ export default function PaymentsPage() {
             <div className="border border-slate-200 rounded-xl p-5 shadow-sm bg-white">
                <h3 className="text-sm font-bold text-slate-900 mb-4">Lối tắt (Shortcuts)</h3>
                <div className="grid grid-cols-3 gap-4">
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Chức năng Quét QR đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <ScanLine size={20} />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Quét QR</span>
                   </button>
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Chức năng Đối soát đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <RefreshCw size={20} />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Đối soát</span>
                   </button>
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Chức năng Nhắc nợ đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <MessageCircle size={20} />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Nhắc nợ</span>
                   </button>
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Chức năng Lịch sử đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <History size={20} />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">Lịch sử</span>
                   </button>
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Chức năng KH nợ đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <User size={20} />
                     </div>
                     <span className="text-[11px] font-semibold text-slate-600 group-hover:text-slate-900">KH nợ</span>
                   </button>
-                  <button className="flex flex-col items-center gap-2 group">
+                  <button onClick={() => showToast('Các chức năng khác đang được phát triển')} className="flex flex-col items-center gap-2 group">
                     <div className="w-12 h-12 rounded-full border border-slate-200 bg-slate-50 flex items-center justify-center text-slate-600 group-hover:bg-slate-100 group-hover:border-slate-300 transition-all">
                       <MoreHorizontal size={20} />
                     </div>
@@ -639,7 +639,7 @@ export default function PaymentsPage() {
             
             <div className="p-5 border-t border-slate-200 bg-slate-50 flex items-center justify-end gap-3">
               <button 
-                className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm"
+                className="px-4 py-2 border border-slate-300 bg-white hover:bg-slate-50/50 text-slate-700 text-[13px] font-bold rounded-lg shadow-sm"
                 onClick={() => setSelectedId(null)}
               >
                 Đóng
